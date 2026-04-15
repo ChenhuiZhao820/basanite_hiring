@@ -111,6 +111,7 @@ async def process_message(
     candidate_message: str,
     role_config: dict,
     system_prompt: str,
+    recording_path: str | None = None,
 ) -> AsyncIterator[str]:
     """
     Process a candidate's message and stream the AI interviewer's response.
@@ -126,11 +127,14 @@ async def process_message(
     messages = session.get("messages", [])
 
     # Append candidate message
-    messages.append({
+    user_msg = {
         "role": "user",
         "content": candidate_message,
         "timestamp": datetime.now(timezone.utc).isoformat(),
-    })
+    }
+    if recording_path:
+        user_msg["recording_path"] = recording_path
+    messages.append(user_msg)
 
     # Build messages for Claude (strip timestamps for API call)
     api_messages = [

@@ -75,7 +75,7 @@ export default function OnboardPage() {
       const data = await res.json()
       // Store assessment_id for interview page
       sessionStorage.setItem(`assessment_${token}`, data.assessment_id)
-      router.push(`/assess/${token}/interview`)
+      router.push(`/assess/${token}/check`)
     } catch (e: any) {
       setError(e.message)
     } finally {

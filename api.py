@@ -305,12 +305,83 @@ async def interview_message(
         from core.db import update_assessment
         update_assessment(assessment_id, status="in_progress", started_at=datetime.now(timezone.utc).isoformat())
 
+    recording_path = body.get("recording_path")
+
     async def event_stream():
-        async for chunk in process_message(assessment_id, candidate_message, role, system_prompt):
+        async for chunk in process_message(
+            assessment_id, candidate_message, role, system_prompt, recording_path=recording_path
+        ):
             yield f"data: {json.dumps({'text': chunk})}\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@app.post("/assess/{token}/transcribe")
+async def transcribe_answer(
+    token: str,
+    assessment_id: str = Form(...),
+    message_index: int = Form(...),
+    file: UploadFile = File(...),
+):
+    """
+    Upload a candidate's recorded answer (webm audio+video) to Supabase Storage
+    and return a Whisper transcript. The transcript is NOT written to the session
+    here — the caller then POSTs it to /assess/{token}/message with `recording_path`
+    so the existing message flow appends it in order.
+    """
+    from core.db import get_role_by_token, get_assessment, get_client
+
+    role = get_role_by_token(token)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+
+    assessment = get_assessment(assessment_id)
+    if not assessment or assessment["role_id"] != role["id"]:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+
+    audio_bytes = await file.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Empty upload")
+
+    # Store the raw recording in Supabase Storage for later human review.
+    client = get_client()
+    if not client:
+        raise HTTPException(status_code=500, detail="Storage not configured")
+
+    recording_path = f"{assessment_id}/{message_index}.webm"
+    try:
+        client.storage.from_("interview-recordings").upload(
+            path=recording_path,
+            file=audio_bytes,
+            file_options={"content-type": "video/webm", "upsert": "true"},
+        )
+    except Exception as e:
+        print(f"  [transcribe] storage upload failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to store recording")
+
+    # Transcribe with Whisper. The SDK wants a file-like object with a .name
+    # so it can infer the format; an in-memory BytesIO with a filename works.
+    import io
+    from openai import OpenAI
+
+    openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+    buf = io.BytesIO(audio_bytes)
+    buf.name = "answer.webm"
+    try:
+        result = openai_client.audio.transcriptions.create(
+            model="whisper-1",
+            file=buf,
+        )
+        transcript = (result.text or "").strip()
+    except Exception as e:
+        print(f"  [transcribe] whisper failed: {e}")
+        raise HTTPException(status_code=500, detail="Transcription failed")
+
+    return {
+        "transcript": transcript,
+        "recording_path": recording_path,
+    }
 
 
 @app.post("/assess/{token}/complete")

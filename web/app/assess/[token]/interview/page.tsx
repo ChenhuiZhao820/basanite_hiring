@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/Logo'
+import RecorderControl from '@/components/RecorderControl'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -24,14 +25,12 @@ export default function InterviewPage() {
   const { token } = useParams<{ token: string }>()
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [phase, setPhase] = useState('not_started')
   const [assessmentId, setAssessmentId] = useState<string | null>(null)
   const [startTime] = useState(Date.now())
   const [elapsed, setElapsed] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Get assessment_id from session storage
   useEffect(() => {
@@ -44,6 +43,7 @@ export default function InterviewPage() {
 
     // Send initial empty message to get the interviewer's opening
     sendMessage('', id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 
   // Timer
@@ -65,14 +65,13 @@ export default function InterviewPage() {
     return `${m}:${s.toString().padStart(2, '0')}`
   }
 
-  async function sendMessage(text: string, overrideAssessmentId?: string) {
+  async function sendMessage(text: string, overrideAssessmentId?: string, recordingPath?: string) {
     const aid = overrideAssessmentId ?? assessmentId
     if (!aid) return
 
     if (text.trim()) {
       setMessages(prev => [...prev, { role: 'user', content: text }])
     }
-    setInput('')
     setStreaming(true)
 
     try {
@@ -82,6 +81,7 @@ export default function InterviewPage() {
         body: JSON.stringify({
           assessment_id: aid,
           message: text || '[START_INTERVIEW]',
+          recording_path: recordingPath,
         }),
       })
 
@@ -93,7 +93,6 @@ export default function InterviewPage() {
       const decoder = new TextDecoder()
       let assistantMessage = ''
 
-      // Add placeholder for streaming message
       setMessages(prev => [...prev, { role: 'assistant', content: '' }])
 
       while (true) {
@@ -125,7 +124,6 @@ export default function InterviewPage() {
         }
       }
 
-      // Check if interview is complete
       if (assistantMessage.toLowerCase().includes('concludes') || phase === 'complete') {
         setPhase('complete')
       }
@@ -133,20 +131,6 @@ export default function InterviewPage() {
       console.error('Interview message error:', e)
     } finally {
       setStreaming(false)
-      textareaRef.current?.focus()
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!input.trim() || streaming) return
-    sendMessage(input.trim())
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit(e)
     }
   }
 
@@ -160,6 +144,8 @@ export default function InterviewPage() {
     } catch {}
     router.push(`/assess/${token}/complete`)
   }
+
+  const userMessageCount = messages.filter(m => m.role === 'user').length
 
   return (
     <div className="h-screen flex flex-col bg-earth-50">
@@ -218,7 +204,7 @@ export default function InterviewPage() {
         </div>
       </div>
 
-      {/* Input */}
+      {/* Recorder / completion */}
       <div className="flex-shrink-0 border-t border-earth-200 bg-white">
         <div className="max-w-3xl mx-auto px-6 py-4">
           {phase === 'complete' ? (
@@ -228,27 +214,15 @@ export default function InterviewPage() {
             >
               View Your Feedback Report
             </button>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex gap-3">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={streaming}
-                rows={2}
-                className="flex-1 border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-none disabled:opacity-60"
-                placeholder={streaming ? 'Interviewer is typing...' : 'Type your response... (Enter to send, Shift+Enter for new line)'}
-              />
-              <button
-                type="submit"
-                disabled={streaming || !input.trim()}
-                className="self-end px-5 py-3 bg-basanite-900 text-white text-sm font-medium hover:bg-gold-600 transition-colors disabled:opacity-40"
-              >
-                Send
-              </button>
-            </form>
-          )}
+          ) : assessmentId ? (
+            <RecorderControl
+              token={token}
+              assessmentId={assessmentId}
+              messageIndex={userMessageCount}
+              disabled={streaming}
+              onTranscript={(text, recordingPath) => sendMessage(text, undefined, recordingPath)}
+            />
+          ) : null}
         </div>
       </div>
     </div>
