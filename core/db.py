@@ -24,87 +24,7 @@ def get_client():
     return _client
 
 
-def upsert_candidate(candidate: dict) -> dict | bool:
-    """
-    Upsert a candidate into Supabase, deduplicating on linkedin_url.
-
-    Returns a dict {"inserted": bool, "id": str | None} on success,
-    or False if DB not configured or error.
-    The "inserted" flag distinguishes new rows from updates (SYS-5 tracking).
-    """
-    client = get_client()
-    if not client:
-        return False
-
-    # Preserve existing enrichment/profile data when new value is None,
-    # but always overwrite display fields (current_role etc.) so stale data doesn't persist.
-    PRESERVE_IF_NONE = {"skills", "match_score", "match_reason", "years_experience", "education", "positions", "current_role", "current_company"}
-    payload = {k: v for k, v in candidate.items() if v is not None or k not in PRESERVE_IF_NONE}
-
-    linkedin_url = payload.get("linkedin_url")
-    if not linkedin_url:
-        return False
-
-    try:
-        # Check if candidate already exists so we can decide what to do with job_search_id.
-        # On conflict we must NOT overwrite job_search_id — the candidate belongs to whichever
-        # search first discovered them. Concurrent searches finding the same person would
-        # otherwise steal each other's candidates, leaving earlier searches with 0 results.
-        existing = client.table("candidates").select("id").eq("linkedin_url", linkedin_url).maybe_single().execute()
-
-        if existing is not None and existing.data:
-            # Update enrichment fields only — never touch job_search_id or match_score/reason
-            # (those reflect the original search's evaluation of this candidate).
-            skip = {"job_search_id", "match_score", "match_reason"}
-            update_payload = {k: v for k, v in payload.items() if k not in skip}
-            if update_payload:
-                client.table("candidates").update(update_payload).eq("linkedin_url", linkedin_url).execute()
-            # Return the candidate ID so caller can write candidate_scores
-            candidate["id"] = existing.data.get("id")
-            return {"inserted": False, "id": existing.data.get("id")}
-        else:
-            result = client.table("candidates").insert(payload).execute()
-            inserted_id = result.data[0].get("id") if result.data else None
-            candidate["id"] = inserted_id
-            return {"inserted": True, "id": inserted_id}
-
-    except Exception as e:
-        print(f"  DB upsert error: {e}")
-        return False
-
-
-def get_job_search_status(job_search_id: str) -> str | None:
-    """Return the current status of a job_search row, or None if not found."""
-    client = get_client()
-    if not client or not job_search_id:
-        return None
-    try:
-        result = client.table("job_searches").select("status").eq("id", job_search_id).single().execute()
-        return result.data.get("status") if result.data else None
-    except Exception:
-        return None
-
-
-def update_job_search(job_search_id: str, **fields) -> bool:
-    """
-    Update fields on a job_searches row. Uses service-role key (bypasses RLS).
-    Common usage:
-      update_job_search(id, status='running')
-      update_job_search(id, status='complete', candidate_count=142, completed_at='...')
-    """
-    client = get_client()
-    if not client or not job_search_id:
-        return False
-
-    try:
-        client.table("job_searches").update(fields).eq("id", job_search_id).execute()
-        return True
-    except Exception as e:
-        print(f"  DB job_search update error: {e}")
-        return False
-
-
-# ─── Basanite: Role helpers ────────────────────────────────────────────────
+# ─── Role helpers ──────────────────────────────────────────────────────────
 
 def create_role(role: dict) -> dict | None:
     client = get_client()
@@ -163,7 +83,7 @@ def update_role(role_id: str, **fields) -> bool:
         return False
 
 
-# ─── Basanite: Assessment helpers ──────────────────────────────────────────
+# ─── Assessment helpers ────────────────────────────────────────────────────
 
 def create_assessment(assessment: dict) -> dict | None:
     client = get_client()
@@ -217,7 +137,7 @@ def update_assessment(assessment_id: str, **fields) -> bool:
         return False
 
 
-# ─── Basanite: Interview session helpers ───────────────────────────────────
+# ─── Interview session helpers ─────────────────────────────────────────────
 
 def create_interview_session(assessment_id: str) -> dict | None:
     client = get_client()
@@ -265,7 +185,7 @@ def update_interview_session(session_id: str, **fields) -> bool:
         return False
 
 
-# ─── Basanite: Scores and reports ──────────────────────────────────────────
+# ─── Scores and reports ────────────────────────────────────────────────────
 
 def save_dimension_scores(assessment_id: str, scores: list[dict]) -> bool:
     client = get_client()

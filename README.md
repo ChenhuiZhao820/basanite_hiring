@@ -71,7 +71,7 @@ npm run dev
 
 ### Database migrations
 
-Run migrations 001-021 in order in the Supabase SQL editor. Key Basanite tables:
+Run the migrations in `supabase/migrations/` in order in the Supabase SQL editor. Key Basanite tables:
 
 - `roles` — hiring positions with evaluation dimensions and interview prompt
 - `assessments` — individual candidate evaluations

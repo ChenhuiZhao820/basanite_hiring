@@ -58,19 +58,7 @@ export async function DELETE() {
 
   const service = createServiceClient()
 
-  // Delete all user data first
-  const { data: searches } = await service
-    .from('job_searches')
-    .select('id')
-    .eq('user_id', user.id)
-
-  if (searches?.length) {
-    const ids = searches.map(s => s.id)
-    await service.from('candidates').delete().in('job_search_id', ids)
-    await service.from('job_searches').delete().in('id', ids)
-  }
-
-  // Delete the auth user via admin API
+  // Roles (and their assessments, sessions, scores, reports) cascade via FK on user_id.
   const { error } = await service.auth.admin.deleteUser(user.id)
   if (error) {
     console.error('Account delete error:', error)

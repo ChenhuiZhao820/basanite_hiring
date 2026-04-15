@@ -1,3 +1,0 @@
-ALTER TABLE candidates
-  ADD COLUMN IF NOT EXISTS match_score INT,
-  ADD COLUMN IF NOT EXISTS match_reason TEXT;
