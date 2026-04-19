@@ -2,6 +2,8 @@ import { createServiceClient, createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
+import { AssessmentRowMenu } from '@/components/AssessmentRowMenu'
+import { RoleMenu } from '@/components/RoleMenu'
 
 export default async function RoleDetailPage({
   params,
@@ -52,9 +54,12 @@ export default async function RoleDetailPage({
           <h1 className="font-display text-2xl text-basanite-900">{role.title}</h1>
           {role.company_name && <p className="text-sm text-basanite-500 mt-1">{role.company_name}</p>}
         </div>
-        <span className={`text-xs px-3 py-1 font-medium ${statusColors[role.status] ?? statusColors.draft}`}>
-          {role.status}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs px-3 py-1 font-medium ${statusColors[role.status] ?? statusColors.draft}`}>
+            {role.status}
+          </span>
+          <RoleMenu roleId={role.id} roleTitle={role.title} />
+        </div>
       </div>
 
       {/* Assessment Link */}
@@ -104,12 +109,15 @@ export default async function RoleDetailPage({
       ) : (
         <div className="border border-earth-200 bg-white divide-y divide-earth-200">
           {/* Header */}
-          <div className="grid grid-cols-12 gap-4 px-5 py-3 text-xs text-basanite-400 uppercase tracking-wide font-medium">
-            <div className="col-span-3">Candidate</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-4">Dimension Scores</div>
-            <div className="col-span-1">Score</div>
-            <div className="col-span-2">Date</div>
+          <div className="flex items-stretch text-xs text-basanite-400 uppercase tracking-wide font-medium">
+            <div className="flex-1 grid grid-cols-12 gap-4 px-5 py-3">
+              <div className="col-span-3">Candidate</div>
+              <div className="col-span-2">Status</div>
+              <div className="col-span-4">Dimension Scores</div>
+              <div className="col-span-1">Score</div>
+              <div className="col-span-2">Date</div>
+            </div>
+            <div className="w-10 pr-3" aria-hidden="true" />
           </div>
           {/* Rows */}
           {assessments.map((a: any) => {
@@ -129,39 +137,50 @@ export default async function RoleDetailPage({
             }
 
             return (
-              <Link
+              <div
                 key={a.id}
-                href={`/dashboard/roles/${id}/assessment/${a.id}`}
-                className="grid grid-cols-12 gap-4 px-5 py-4 hover:bg-earth-50 transition-colors items-center"
+                className="flex items-stretch hover:bg-earth-50 transition-colors"
               >
-                <div className="col-span-3">
-                  <p className="text-sm text-basanite-900 font-medium">{a.candidate_name ?? 'Unknown'}</p>
-                  <p className="text-xs text-basanite-400">{a.candidate_email}</p>
+                <Link
+                  href={`/dashboard/roles/${id}/assessment/${a.id}`}
+                  className="flex-1 grid grid-cols-12 gap-4 px-5 py-4 items-center"
+                >
+                  <div className="col-span-3">
+                    <p className="text-sm text-basanite-900 font-medium">{a.candidate_name ?? 'Unknown'}</p>
+                    <p className="text-xs text-basanite-400">{a.candidate_email}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className={`text-xs font-medium ${assessmentStatusColors[a.status] ?? 'text-basanite-400'}`}>
+                      {a.status}
+                    </span>
+                  </div>
+                  <div className="col-span-4 flex gap-1">
+                    {scores.map((s: any) => (
+                      <div
+                        key={s.dimension_key}
+                        className="flex items-center gap-1 bg-earth-100 px-1.5 py-0.5 text-xs"
+                        title={`${s.dimension_key}: ${s.score}/5`}
+                      >
+                        <span className="text-basanite-400 truncate max-w-[60px]">{s.dimension_key.split('_')[0]}</span>
+                        <span className="font-medium text-basanite-700">{s.score}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="col-span-1">
+                    <span className="text-sm font-display text-gold-600">{avgScore}</span>
+                  </div>
+                  <div className="col-span-2 text-xs text-basanite-400">
+                    {new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  </div>
+                </Link>
+                <div className="flex items-center pr-3">
+                  <AssessmentRowMenu
+                    roleId={id}
+                    assessmentId={a.id}
+                    candidateLabel={a.candidate_name ?? a.candidate_email ?? 'this candidate'}
+                  />
                 </div>
-                <div className="col-span-2">
-                  <span className={`text-xs font-medium ${assessmentStatusColors[a.status] ?? 'text-basanite-400'}`}>
-                    {a.status}
-                  </span>
-                </div>
-                <div className="col-span-4 flex gap-1">
-                  {scores.map((s: any) => (
-                    <div
-                      key={s.dimension_key}
-                      className="flex items-center gap-1 bg-earth-100 px-1.5 py-0.5 text-xs"
-                      title={`${s.dimension_key}: ${s.score}/5`}
-                    >
-                      <span className="text-basanite-400 truncate max-w-[60px]">{s.dimension_key.split('_')[0]}</span>
-                      <span className="font-medium text-basanite-700">{s.score}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="col-span-1">
-                  <span className="text-sm font-display text-gold-600">{avgScore}</span>
-                </div>
-                <div className="col-span-2 text-xs text-basanite-400">
-                  {new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                </div>
-              </Link>
+              </div>
             )
           })}
         </div>

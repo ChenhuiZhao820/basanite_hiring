@@ -9,8 +9,7 @@ export async function POST(
   const { token } = await params
   const form = await request.formData()
 
-  // Forward the multipart body to the Python backend as-is.
-  const res = await fetch(`${PIPELINE_URL}/assess/${token}/transcribe`, {
+  const res = await fetch(`${PIPELINE_URL}/assess/${token}/cv-upload`, {
     method: 'POST',
     body: form,
   })

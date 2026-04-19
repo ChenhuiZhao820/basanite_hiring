@@ -1,31 +1,31 @@
 """
-Basanite Interview Orchestrator — manages the state machine for AI-conducted interviews.
+Basanite Interview Orchestrator.
 
-This is the core product logic. It:
-1. Loads and assembles the interview agent prompt for a role
-2. Processes candidate messages and streams AI interviewer responses
-3. Manages interview phase transitions
-4. Triggers report generation on interview completion
+The conversation itself is run by an ElevenLabs voice agent. This module is
+responsible for:
+1. Assembling the per-assessment system prompt sent as the agent's override
+2. Normalizing the ElevenLabs transcript into Basanite's message shape
+3. Generating hirer + candidate reports once the call has ended
+4. Running the "Director" — a parallel Opus supervisor that emits tactical
+   directives mid-interview to lift question depth
 """
 import os
-import json
 from datetime import datetime, timezone
-from typing import AsyncIterator
 
-from core.llm import get_llm_service, MODEL_INTERVIEW
 from core.db import (
+    get_assessment,
     get_interview_session,
-    update_interview_session,
-    update_assessment,
     save_dimension_scores,
     save_report,
 )
+from core.llm import get_llm_service, MODEL_DIRECTOR
 from agents.report import generate_hirer_report, generate_candidate_report
+from core.email import send_report_email
 
 # Load the base interview prompt once at module level
 _BASE_PROMPT_PATH = os.path.join(
     os.path.dirname(__file__),
-    "resources", "basanite", "claudeMVP", "Basanite Interview Prompt.md",
+    "resources", "claudeMVP", "Basanite Interview Prompt.md",
 )
 
 _BASE_PROMPT: str | None = None
@@ -52,6 +52,10 @@ def assemble_interview_prompt(
     dimensions = role_config.get("dimensions", [])
     technical_depth = role_config.get("technical_depth", "application")
     jd = role_config.get("job_description", "")
+    role_title = role_config.get("title", "this role")
+    company_name = role_config.get("company_name") or "the hiring company"
+    duration_minutes = role_config.get("interview_duration_minutes", 15)
+    custom_instructions = (role_config.get("custom_instructions") or "").strip()
 
     # Build dimension context
     from agents.dimensions import DIMENSIONS
@@ -72,10 +76,61 @@ def assemble_interview_prompt(
         for e in experience_entries[:5]
     )
 
+    custom_block = (
+        f"\n### Interview focus from the hiring manager\n"
+        f"Treat this as **mandatory** guidance on top of the standard protocol — "
+        f"make sure these points are covered during the interview:\n\n{custom_instructions}\n"
+        if custom_instructions else ""
+    )
+
     context_block = f"""
 ---
 ## ROLE-SPECIFIC CONFIGURATION (injected per assessment)
 
+### Interview mode
+This interview is conducted **by voice** for the role of **{role_title}** at **{company_name}**.
+Keep turns short — one question at a time, acknowledge briefly (a few words),
+then probe. Never deliver long monologues, never read lists out loud, and
+never ask multi-part questions in a single turn.
+
+### Pacing and ending (you decide when to stop)
+- Target length: **~{duration_minutes} minutes**. Acceptable range 15–45 min;
+  may extend up to 60 min only for complex, ambiguous candidates.
+- **You** decide when the interview ends. End as soon as you have enough
+  concrete signal across every selected dimension — not before, not after.
+- The client will send you periodic SYSTEM UPDATE messages telling you how
+  much time has elapsed and, as time mounts, how urgently to close. Adjust
+  pacing to those cues.
+- When you're ready to close: deliver ONE brief closing sentence thanking
+  the candidate, then immediately invoke the `end_call` tool. Do not wait
+  for another turn.
+- If a SYSTEM cue instructs "Close now" or "final warning", your very next
+  utterance MUST be a ≤15-word thank-you, then `end_call` on that turn.
+- Never end mid-probe on an ambiguous answer — finish the thread first.
+- Never end before every selected dimension has at least one concrete
+  evidence-backed exchange.
+
+### Depth discipline (non-negotiable)
+Do **not** accept generic or abstract answers. When the candidate says
+something vague ("we used microservices", "we had good collaboration",
+"I improved performance"), always drill into:
+(1) a specific concrete example,
+(2) *their own* role and actions (not the team's),
+(3) the tradeoffs they actually considered,
+(4) what they would change with hindsight.
+Keep probing the same thread until you have concrete signal — do not
+move on after a single follow-up just because they gave an answer.
+
+### Role-context coverage (required within the first third of the interview)
+Keep the **job description** active throughout. Early in the interview:
+- Ask at least one question directly anchored in a JD responsibility or
+  required capability (e.g. "The role involves X — walk me through a time
+  you've done X yourself").
+- Ask at least one question about the candidate's familiarity with
+  **{company_name}** — what they understand about the product, market,
+  or problem space, and why this role interests them specifically. Use
+  their answer to calibrate how much context they've actually done.
+{custom_block}
 ### Job Description
 {jd}
 
@@ -106,99 +161,158 @@ Experience summary:
     return base + "\n\n" + context_block
 
 
-async def process_message(
-    assessment_id: str,
-    candidate_message: str,
+_DIRECTOR_SYSTEM = """\
+You are the Director — a senior supervising interviewer watching a live Basanite
+voice interview from the sidelines. You do not speak to the candidate. Your ONLY
+job is to emit, on each invocation, ONE short piece of tactical guidance that
+the live interviewer should apply on their very next turn.
+
+Rules:
+- Target the dimension with the weakest concrete signal so far. Only touch well-covered dimensions if the candidate just opened a rich new thread on one.
+- If the candidate has been vague, passive-voiced, or deflecting, name the exact thing to drill (a specific claim, a specific decision, a specific action they took).
+- Do not suggest a question verbatim — the live interviewer phrases it. You are giving *direction*, not dialogue.
+- Prefer action (what to probe) over commentary (what is wrong).
+- Maximum 25 words for the directive.
+
+Output JSON ONLY, matching:
+{
+  "directive": "...",      // the sentence, OR "wrap_now" to end, OR null to skip
+  "reasoning": "..."      // one line, for logs — not sent to the live interviewer
+}
+
+Special directive values:
+- "wrap_now" if every selected dimension has concrete evidence and continuing adds little. The live interviewer will close.
+- null if nothing material needs adjusting on this tick (rare — prefer some guidance).
+"""
+
+
+async def director_directive(
     role_config: dict,
-    system_prompt: str,
-    recording_path: str | None = None,
-) -> AsyncIterator[str]:
+    cv_extracted: dict,
+    messages: list[dict],
+    elapsed_seconds: int,
+) -> dict | None:
     """
-    Process a candidate's message and stream the AI interviewer's response.
+    Run one Director pass over the current transcript and return a directive.
 
-    Appends both messages to the session, updates phase, and yields text chunks.
+    Returns None on failure, on skip, or when the transcript is too thin.
+    Otherwise a dict like {"directive": "push on X", "reasoning": "..."}.
     """
+    if len(messages) < 3:
+        return None
+    # Avoid firing before the agent has actually asked + the candidate has answered.
+    user_turns = [m for m in messages if m.get("role") == "user" and (m.get("content") or "").strip()]
+    if len(user_turns) < 1:
+        return None
+
+    from agents.dimensions import DIMENSIONS
+    dims = role_config.get("dimensions") or []
+    dim_lines = "\n".join(
+        f"- {DIMENSIONS[d]['name']}: {DIMENSIONS[d]['description']}"
+        for d in dims
+        if d in DIMENSIONS
+    ) or "(no dimensions configured)"
+
+    anchor_points = cv_extracted.get("anchor_points") or []
+    anchors_block = "\n".join(f"- {a}" for a in anchor_points) or "(none extracted)"
+
+    custom = (role_config.get("custom_instructions") or "").strip() or "(none)"
+
+    jd_excerpt = (role_config.get("job_description") or "")[:1500]
+    role_title = role_config.get("title") or "the role"
+    company_name = role_config.get("company_name") or "the company"
+    target_minutes = role_config.get("interview_duration_minutes") or 20
+    elapsed_min = max(1, round(elapsed_seconds / 60))
+
+    # Format the transcript compactly. Director works off recent conversation;
+    # the base interview prompt already covers evergreen context.
+    lines = []
+    for m in messages[-60:]:  # trailing 60 turns is plenty
+        role = m.get("role")
+        content = (m.get("content") or "").strip()
+        if not content:
+            continue
+        tag = "CANDIDATE" if role == "user" else "INTERVIEWER"
+        lines.append(f"[{tag}] {content}")
+    transcript_block = "\n".join(lines) if lines else "(no exchanges yet)"
+
+    user_prompt = f"""ROLE: {role_title} at {company_name}
+
+JOB DESCRIPTION EXCERPT:
+{jd_excerpt}
+
+DIMENSIONS TO EVALUATE:
+{dim_lines}
+
+CANDIDATE CV ANCHORS:
+{anchors_block}
+
+HIRING MANAGER'S CUSTOM GUIDANCE:
+{custom}
+
+ELAPSED: {elapsed_min} min of a ~{target_minutes} min target
+
+TRANSCRIPT SO FAR:
+{transcript_block}
+
+TASK: Emit one tactical directive for the interviewer's NEXT turn. JSON only."""
+
     llm = get_llm_service()
-    session = get_interview_session(assessment_id)
-    if not session:
-        yield "[Error: No interview session found]"
-        return
-
-    messages = session.get("messages", [])
-
-    # Append candidate message
-    user_msg = {
-        "role": "user",
-        "content": candidate_message,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
-    if recording_path:
-        user_msg["recording_path"] = recording_path
-    messages.append(user_msg)
-
-    # Build messages for Claude (strip timestamps for API call)
-    api_messages = [
-        {"role": m["role"], "content": m["content"]}
-        for m in messages
-    ]
-
-    # Stream the interviewer's response
-    full_response = []
-    async for chunk in llm.generate_stream(
-        api_messages,
-        system=system_prompt,
-        model=MODEL_INTERVIEW,
-        max_tokens=4096,
-        temperature=0.4,
-    ):
-        full_response.append(chunk)
-        yield chunk
-
-    # Append assistant response
-    assistant_text = "".join(full_response)
-    messages.append({
-        "role": "assistant",
-        "content": assistant_text,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    })
-
-    # Detect phase from message count (rough heuristic — the agent manages phases internally)
-    msg_count = len([m for m in messages if m["role"] == "user"])
-    if msg_count <= 2:
-        phase = "narrative_foundation"
-    elif msg_count <= 8:
-        phase = "dimension_assessment"
-    elif msg_count <= 11:
-        # Could be knowledge_reproduction, transfer_test, or comprehensive_challenge
-        phase = "knowledge_reproduction"
-    else:
-        phase = "stress_test"
-
-    # Check if the interviewer signals completion
-    if any(signal in assistant_text.lower() for signal in [
-        "conclude the interview",
-        "that concludes our",
-        "end of the assessment",
-        "thank you for completing",
-        "this concludes",
-    ]):
-        phase = "complete"
-
-    # Update session
-    update_interview_session(
-        session["id"],
-        messages=json.dumps(messages),
-        current_phase=phase,
-        updated_at=datetime.now(timezone.utc).isoformat(),
-    )
-
-    # If interview is complete, update assessment status
-    if phase == "complete":
-        update_assessment(
-            assessment_id,
-            status="completed",
-            completed_at=datetime.now(timezone.utc).isoformat(),
+    try:
+        result = await llm.generate_json(
+            prompt=user_prompt,
+            system_instruction=_DIRECTOR_SYSTEM,
+            model=MODEL_DIRECTOR,
+            max_tokens=220,
         )
+    except Exception as e:
+        print(f"  [director] call failed: {e}")
+        return None
+
+    if not isinstance(result, dict) or "directive" not in result:
+        return None
+    if "error" in result:
+        return None
+
+    directive = result.get("directive")
+    if directive is None:
+        return None  # explicit skip
+    if isinstance(directive, str):
+        directive = directive.strip()
+        if not directive:
+            return None
+    else:
+        return None
+
+    return {
+        "directive": directive,
+        "reasoning": (result.get("reasoning") or "").strip(),
+    }
+
+
+def normalize_elevenlabs_messages(transcript: list[dict]) -> list[dict]:
+    """
+    Map the ElevenLabs conversation transcript into the Basanite message shape
+    that the report generator already understands.
+
+    ElevenLabs emits entries like {"role": "agent"|"user", "message": "...",
+    "time_in_call_secs": 12}. Reports want {"role": "assistant"|"user",
+    "content": "...", "timestamp": iso}.
+    """
+    started = datetime.now(timezone.utc)
+    out: list[dict] = []
+    for entry in transcript or []:
+        raw_role = (entry.get("role") or "").lower()
+        role = "assistant" if raw_role in ("agent", "assistant") else "user"
+        content = (entry.get("message") or entry.get("content") or "").strip()
+        if not content:
+            continue
+        out.append({
+            "role": role,
+            "content": content,
+            "timestamp": started.isoformat(),
+        })
+    return out
 
 
 async def generate_reports(assessment_id: str, role_config: dict, cv_extracted: dict):
@@ -227,3 +341,19 @@ async def generate_reports(assessment_id: str, role_config: dict, cv_extracted: 
     save_report(assessment_id, "candidate", candidate_report)
 
     print(f"  [report] Generated both reports for assessment {assessment_id}")
+
+    # Fire-and-forget email to the candidate. Mail failure never blocks DB state.
+    try:
+        assessment = get_assessment(assessment_id)
+        to = (assessment or {}).get("candidate_email") or ""
+        name = (assessment or {}).get("candidate_name") or ""
+        if to:
+            sent = send_report_email(
+                to=to,
+                candidate_name=name,
+                role_title=role_config.get("title", "the role"),
+                report=candidate_report,
+            )
+            print(f"  [report] email to {to}: {'sent' if sent else 'skipped'}")
+    except Exception as e:
+        print(f"  [report] email step failed: {e}")

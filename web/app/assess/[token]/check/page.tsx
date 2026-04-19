@@ -14,13 +14,14 @@ export default function DeviceCheckPage() {
   const [phase, setPhase] = useState<Phase>('requesting')
   const [elapsed, setElapsed] = useState(0)
   const [playbackUrl, setPlaybackUrl] = useState<string | null>(null)
-  const previewRef = useRef<HTMLVideoElement>(null)
-  const playbackRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<number | null>(null)
 
+  // Acquire mic+camera once on mount. The same stream is used for live preview
+  // and for the test recording. Playback switches the element over to the blob.
   useEffect(() => {
     let cancelled = false
     async function init() {
@@ -28,10 +29,6 @@ export default function DeviceCheckPage() {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
         streamRef.current = stream
-        if (previewRef.current) {
-          previewRef.current.srcObject = stream
-          await previewRef.current.play().catch(() => {})
-        }
         setPhase('preview')
       } catch {
         setPhase('denied')
@@ -41,30 +38,52 @@ export default function DeviceCheckPage() {
     return () => {
       cancelled = true
       if (timerRef.current) window.clearInterval(timerRef.current)
-      recorderRef.current?.state === 'recording' && recorderRef.current.stop()
+      try { recorderRef.current?.state === 'recording' && recorderRef.current.stop() } catch {}
       streamRef.current?.getTracks().forEach(t => t.stop())
+      streamRef.current = null
       if (playbackUrl) URL.revokeObjectURL(playbackUrl)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Bind the right source to the single <video> element whenever the phase
+  // flips. This is the only place srcObject/src are touched, so the two
+  // modes never fight.
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+    if (phase === 'test_playback' && playbackUrl) {
+      el.srcObject = null
+      el.muted = false
+      el.controls = true
+      el.src = playbackUrl
+      el.load()
+      el.play().catch(() => {})
+    } else if (phase === 'preview' || phase === 'test_recording') {
+      el.removeAttribute('src')
+      el.controls = false
+      el.muted = true
+      if (streamRef.current && el.srcObject !== streamRef.current) {
+        el.srcObject = streamRef.current
+      }
+      el.play().catch(() => {})
+    }
+  }, [phase, playbackUrl])
+
   function startTestRecording() {
     if (!streamRef.current) return
     chunksRef.current = []
-    const mr = new MediaRecorder(streamRef.current, { mimeType: 'video/webm' })
+    const mimeCandidates = ['video/webm;codecs=vp8,opus', 'video/webm']
+    const mimeType = mimeCandidates.find(t => MediaRecorder.isTypeSupported(t)) ?? ''
+    const mr = new MediaRecorder(streamRef.current, {
+      mimeType: mimeType || undefined,
+    })
     mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data) }
     mr.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: 'video/webm' })
       const url = URL.createObjectURL(blob)
       setPlaybackUrl(url)
       setPhase('test_playback')
-      // Allow mic to be heard on playback.
-      setTimeout(() => {
-        if (playbackRef.current) {
-          playbackRef.current.src = url
-          playbackRef.current.play().catch(() => {})
-        }
-      }, 50)
     }
     recorderRef.current = mr
     mr.start()
@@ -76,7 +95,7 @@ export default function DeviceCheckPage() {
         if (next >= TEST_SECONDS) {
           window.clearInterval(timerRef.current!)
           timerRef.current = null
-          mr.state === 'recording' && mr.stop()
+          try { mr.state === 'recording' && mr.stop() } catch {}
         }
         return next
       })
@@ -94,6 +113,8 @@ export default function DeviceCheckPage() {
     streamRef.current = null
     router.push(`/assess/${token}/interview`)
   }
+
+  const isPlayback = phase === 'test_playback'
 
   return (
     <div className="min-h-screen bg-earth-50 flex flex-col">
@@ -126,11 +147,14 @@ export default function DeviceCheckPage() {
           ) : (
             <>
               <div className="relative w-full aspect-video bg-basanite-900 overflow-hidden mb-4">
-                {phase === 'test_playback' ? (
-                  <video ref={playbackRef} controls playsInline className="w-full h-full object-cover scale-x-[-1]" />
-                ) : (
-                  <video ref={previewRef} muted playsInline className="w-full h-full object-cover scale-x-[-1]" />
-                )}
+                {/* Single video element: mirrored for live preview (feels natural),
+                    un-mirrored during playback so controls aren't flipped and
+                    playback matches what the interviewer will see. */}
+                <video
+                  ref={videoRef}
+                  playsInline
+                  className={`w-full h-full object-cover ${isPlayback ? '' : 'scale-x-[-1]'}`}
+                />
                 {phase === 'test_recording' && (
                   <span className="absolute top-2 left-2 flex items-center gap-1.5 text-xs text-white bg-red-600 px-2 py-1 font-medium">
                     <span className="w-2 h-2 rounded-full bg-white animate-pulse" />

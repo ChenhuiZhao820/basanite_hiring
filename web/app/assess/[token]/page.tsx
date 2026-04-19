@@ -11,7 +11,12 @@ export default async function AssessmentLandingPage({
   const { token } = await params
 
   // Fetch role info (public endpoint)
-  let roleInfo: { role_title?: string; company_name?: string; dimensions_count?: number } | null = null
+  let roleInfo: {
+    role_title?: string
+    company_name?: string
+    dimensions_count?: number
+    interview_duration_minutes?: number
+  } | null = null
   try {
     const res = await fetch(`${PIPELINE_URL}/assess/${token}`, { cache: 'no-store' })
     if (res.ok) roleInfo = await res.json()
@@ -53,19 +58,21 @@ export default async function AssessmentLandingPage({
               <ul className="space-y-3 text-sm text-basanite-600">
                 <li className="flex items-start gap-3">
                   <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
-                  A conversational technical interview conducted by AI, lasting approximately 45 minutes
+                  A conversational voice interview conducted by AI. It typically runs around {roleInfo.interview_duration_minutes ?? 20} minutes — the AI ends it when it has enough signal, so some interviews run longer.
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
-                  You will be asked about your real experiences and how you think — there are no trick questions
+                  You'll be asked about your real experiences and how you think — no trick questions
                 </li>
+                {typeof roleInfo.dimensions_count === 'number' && roleInfo.dimensions_count > 0 && (
+                  <li className="flex items-start gap-3">
+                    <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
+                    Your answers are evaluated across {roleInfo.dimensions_count} capability {roleInfo.dimensions_count === 1 ? 'dimension' : 'dimensions'}
+                  </li>
+                )}
                 <li className="flex items-start gap-3">
                   <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
-                  Your responses are evaluated across {roleInfo.dimensions_count ?? 'several'} capability dimensions
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
-                  After the assessment, you will receive a personal feedback report regardless of outcome
+                  You'll get a personal feedback report by email when it's done
                 </li>
               </ul>
             </div>

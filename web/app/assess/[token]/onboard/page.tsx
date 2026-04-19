@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
@@ -15,9 +15,31 @@ export default function OnboardPage() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [cvText, setCvText] = useState('')
+  const [cvFileName, setCvFileName] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isSignUp, setIsSignUp] = useState(true)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleCVFile(file: File) {
+    setError('')
+    setUploading(true)
+    setCvFileName(file.name)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch(`/api/assess/${token}/cv-upload`, { method: 'POST', body: form })
+      const data = await res.json().catch(() => ({} as any))
+      if (!res.ok) throw new Error(data.detail ?? 'We couldn\'t read that file.')
+      setCvText(data.cv_text ?? '')
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to read that file.')
+      setCvFileName(null)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
@@ -166,23 +188,60 @@ export default function OnboardPage() {
             <div className="bg-white border border-earth-200 p-8">
               <h1 className="font-display text-2xl text-basanite-900 mb-2">Upload your CV</h1>
               <p className="text-basanite-500 text-sm mb-6">
-                Paste the text content of your CV below. This helps us personalise the interview to your experience.
+                Upload a PDF or paste the text below. We use this to personalise your interview.
               </p>
 
-              <textarea
-                value={cvText}
-                onChange={e => setCvText(e.target.value)}
-                rows={14}
-                className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-y mb-4"
-                placeholder="Paste your CV content here..."
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,.pdf"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (f) void handleCVFile(f)
+                  e.target.value = ''
+                }}
               />
 
               <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full border border-earth-300 hover:border-gold-500 text-basanite-700 text-sm py-3 transition-colors mb-3 disabled:opacity-60"
+              >
+                {uploading
+                  ? 'Reading your PDF…'
+                  : cvFileName
+                    ? `Replace: ${cvFileName}`
+                    : 'Choose a PDF file'}
+              </button>
+
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-earth-200" />
+                <span className="text-xs text-basanite-400 uppercase tracking-wide">or paste text</span>
+                <div className="flex-1 h-px bg-earth-200" />
+              </div>
+
+              <textarea
+                value={cvText}
+                onChange={e => { setCvText(e.target.value); if (cvFileName) setCvFileName(null) }}
+                rows={10}
+                className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-y mb-4"
+                placeholder="Paste your CV content here…"
+              />
+
+              {cvText && (
+                <p className="text-xs text-basanite-400 mb-4">
+                  {cvFileName ? `Loaded ${cvFileName} — ${cvText.length.toLocaleString()} characters.` : `${cvText.length.toLocaleString()} characters.`}
+                </p>
+              )}
+
+              <button
                 onClick={handleCVSubmit}
-                disabled={loading || !cvText.trim()}
+                disabled={loading || uploading || !cvText.trim()}
                 className="w-full bg-basanite-900 hover:bg-gold-600 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
               >
-                {loading ? 'Processing your CV...' : 'Continue to Interview'}
+                {loading ? 'Processing your CV…' : 'Continue to Interview'}
               </button>
             </div>
           )}

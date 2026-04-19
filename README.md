@@ -55,7 +55,10 @@ npm run dev
 | Variable | Notes |
 |---|---|
 | `ANTHROPIC_API_KEY` | Anthropic API key |
-| `OPENAI_API_KEY` | OpenAI key (Whisper transcription of voice answers) |
+| `ELEVENLABS_API_KEY` | ElevenLabs API key (voice interviewer) |
+| `ELEVENLABS_AGENT_ID` | ElevenLabs Conversational AI agent ID |
+| `RESEND_API_KEY` | Resend API key (candidate report emails) |
+| `RESEND_FROM` | Sender for report emails, e.g. `Basanite <reports@your-domain>` |
 | `SUPABASE_URL` | Supabase Settings -> API |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key |
 | `PIPELINE_API_SECRET` | Shared secret — generate with `openssl rand -hex 32` |

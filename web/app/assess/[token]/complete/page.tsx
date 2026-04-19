@@ -2,21 +2,32 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
 
 export default function CompletePage() {
   const { token } = useParams<{ token: string }>()
   const [report, setReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [email, setEmail] = useState<string | null>(null)
+  const [assessmentId, setAssessmentId] = useState<string | null>(null)
 
   useEffect(() => {
-    const assessmentId = sessionStorage.getItem(`assessment_${token}`)
-    if (!assessmentId) return
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setEmail(data.user.email)
+    })
+  }, [])
+
+  useEffect(() => {
+    const id = sessionStorage.getItem(`assessment_${token}`)
+    if (!id) return
+    setAssessmentId(id)
 
     // Poll for report (generation takes a few seconds)
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/assess/${token}/report?assessment_id=${assessmentId}`)
+        const res = await fetch(`/api/assess/${token}/report?assessment_id=${id}`)
         if (res.ok) {
           const data = await res.json()
           if (data.content) {
@@ -55,7 +66,8 @@ export default function CompletePage() {
           </div>
           <h1 className="font-display text-3xl text-basanite-900 mb-3">Assessment Complete</h1>
           <p className="text-basanite-500 text-sm leading-relaxed max-w-md mx-auto">
-            Thank you for completing the assessment. Your responses have been recorded and are being evaluated.
+            Thank you. Your responses have been recorded and your feedback report is being generated
+            {email ? <> — we'll email it to <span className="text-basanite-700 font-medium">{email}</span> as soon as it's ready.</> : '.'}
           </p>
         </div>
 
@@ -70,6 +82,22 @@ export default function CompletePage() {
           </div>
         ) : report ? (
           <div className="space-y-6">
+            {/* Download */}
+            <div className="flex justify-end">
+              <a
+                href={assessmentId ? `/api/assess/${token}/report/candidate/pdf?assessment_id=${assessmentId}` : '#'}
+                aria-disabled={!assessmentId}
+                className={`inline-flex items-center gap-2 bg-basanite-900 text-white text-xs font-medium px-4 py-2 transition-colors ${assessmentId ? 'hover:bg-gold-600' : 'opacity-50 pointer-events-none'}`}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download PDF
+              </a>
+            </div>
+
             {/* Summary */}
             {report.summary && (
               <div className="bg-white border border-earth-200 p-6">
@@ -117,7 +145,10 @@ export default function CompletePage() {
           </div>
         ) : (
           <div className="bg-white border border-earth-200 p-8 text-center">
-            <p className="text-basanite-500 text-sm">Your report will be available shortly. You can close this page and check back later.</p>
+            <p className="text-basanite-500 text-sm">
+              Your report is still being generated.
+              {email ? <> It will be emailed to <span className="text-basanite-700 font-medium">{email}</span> shortly — you can close this page.</> : ' Check back in a moment, or keep an eye on your inbox.'}
+            </p>
           </div>
         )}
       </div>

@@ -4,6 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+// Target length is a hint for the AI — it decides when to end based on signal.
+const DEFAULT_TARGET_MINUTES = 20
+const MIN_MINUTES = 5
+const MAX_MINUTES = 60
+
 const ALL_DIMENSIONS = [
   { key: 'judgment_under_ambiguity', name: 'Judgment Under Ambiguity', description: 'The capacity to act decisively on incomplete information.' },
   { key: 'tacit_knowledge', name: 'Tacit Knowledge Extraction', description: 'Surfacing knowledge that lives in experience, not text.' },
@@ -28,6 +33,8 @@ export default function NewRolePage() {
   const [jobDescription, setJobDescription] = useState('')
   const [dimensions, setDimensions] = useState<string[]>([])
   const [technicalDepth, setTechnicalDepth] = useState<'application' | 'research_architecture'>('application')
+  const [interviewDurationMinutes, setInterviewDurationMinutes] = useState(DEFAULT_TARGET_MINUTES)
+  const [customInstructions, setCustomInstructions] = useState('')
   const [recommendLoading, setRecommendLoading] = useState(false)
   const [roleId, setRoleId] = useState<string | null>(null)
 
@@ -87,16 +94,26 @@ export default function NewRolePage() {
       setError('Please select at least 2 dimensions.')
       return
     }
+    if (interviewDurationMinutes < 5 || interviewDurationMinutes > 30) {
+      setError('Interview duration must be between 5 and 30 minutes.')
+      return
+    }
     if (!roleId) return
     setError('')
     setLoading(true)
 
     try {
-      // Update role with dimensions
+      // Update role with dimensions + interview config
       await fetch(`/api/roles/${roleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dimensions, technical_depth: technicalDepth, status: 'live' }),
+        body: JSON.stringify({
+          dimensions,
+          technical_depth: technicalDepth,
+          interview_duration_minutes: interviewDurationMinutes,
+          custom_instructions: customInstructions.trim() || null,
+          status: 'live',
+        }),
       })
 
       // Generate prompt
@@ -225,6 +242,49 @@ export default function NewRolePage() {
                 <span className="text-xs opacity-70">ML researcher, systems architect, platform engineer</span>
               </button>
             </div>
+          </div>
+
+          {/* Target length */}
+          <div className="mb-8">
+            <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">
+              Target length
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={MIN_MINUTES}
+                max={MAX_MINUTES}
+                step={1}
+                value={interviewDurationMinutes}
+                onChange={e =>
+                  setInterviewDurationMinutes(
+                    Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, Number(e.target.value) || DEFAULT_TARGET_MINUTES)),
+                  )
+                }
+                className="w-24 border border-earth-300 px-3 py-2.5 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+              />
+              <span className="text-sm text-basanite-500">minutes</span>
+            </div>
+            <p className="text-xs text-basanite-400 mt-2">
+              Just a target — the AI ends the interview when it has enough signal. Typical 15–25 min; can extend to {MAX_MINUTES} for complex candidates.
+            </p>
+          </div>
+
+          {/* Custom instructions */}
+          <div className="mb-8">
+            <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">
+              Extra interview instructions <span className="text-basanite-400 normal-case">(optional)</span>
+            </label>
+            <p className="text-xs text-basanite-400 mb-2">
+              Anything specific you want the interviewer to ask — e.g. "Ask about salary expectations and notice period."
+            </p>
+            <textarea
+              value={customInstructions}
+              onChange={e => setCustomInstructions(e.target.value)}
+              rows={4}
+              className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-y"
+              placeholder="Ask about their salary expectations and availability. Confirm they understand what our company does."
+            />
           </div>
 
           {/* Dimensions */}

@@ -1,6 +1,7 @@
 import { createServiceClient, createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { formatDimensionKey } from '@/lib/format'
 
 export default async function AssessmentReportPage({
   params,
@@ -51,7 +52,14 @@ export default async function AssessmentReportPage({
 
   const scores = assessment.dimension_scores ?? []
   const content = report?.content ?? {}
-  const messages = session?.messages ?? []
+  // JSONB messages may come back as a string if the row was written with a stringified
+  // payload (legacy) — parse defensively so transcripts from older rows still render.
+  const rawMessages = session?.messages
+  const messages: any[] = Array.isArray(rawMessages)
+    ? rawMessages
+    : typeof rawMessages === 'string'
+      ? (() => { try { return JSON.parse(rawMessages) } catch { return [] } })()
+      : []
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -79,6 +87,33 @@ export default async function AssessmentReportPage({
         </div>
       </div>
 
+      {assessment.status === 'completed' && (
+        <div className="flex flex-wrap gap-2 mb-8">
+          <a
+            href={`/api/roles/${id}/assessment/${assessmentId}/report/hirer/pdf`}
+            className="inline-flex items-center gap-2 bg-basanite-900 hover:bg-gold-600 text-white text-xs font-medium px-4 py-2 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download hirer report (PDF)
+          </a>
+          <a
+            href={`/api/roles/${id}/assessment/${assessmentId}/report/candidate/pdf`}
+            className="inline-flex items-center gap-2 border border-earth-300 hover:border-basanite-500 text-basanite-700 text-xs font-medium px-4 py-2 transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Candidate copy (PDF)
+          </a>
+        </div>
+      )}
+
       {/* Scoring Summary */}
       {scores.length > 0 && (
         <section className="mb-10">
@@ -87,8 +122,8 @@ export default async function AssessmentReportPage({
             {scores.map((s: any) => (
               <div key={s.dimension_key} className="px-5 py-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-basanite-900 capitalize">
-                    {s.dimension_key.replace(/_/g, ' ')}
+                  <span className="text-sm font-medium text-basanite-900">
+                    {formatDimensionKey(s.dimension_key)}
                   </span>
                   <div className="flex items-center gap-2">
                     {[1, 2, 3, 4, 5].map(n => (
@@ -129,8 +164,8 @@ export default async function AssessmentReportPage({
                 <p className="text-sm text-basanite-800 mb-2">{e.excerpt}</p>
                 <p className="text-xs text-basanite-400">{e.why_selected}</p>
                 {e.dimension && (
-                  <span className="text-xs bg-earth-100 text-basanite-500 px-2 py-0.5 mt-2 inline-block capitalize">
-                    {e.dimension.replace(/_/g, ' ')}
+                  <span className="text-xs bg-earth-100 text-basanite-500 px-2 py-0.5 mt-2 inline-block">
+                    {formatDimensionKey(e.dimension)}
                   </span>
                 )}
               </div>

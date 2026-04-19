@@ -23,6 +23,7 @@ load_dotenv()
 
 MODEL_FAST = "claude-haiku-4-5-20251001"
 MODEL_INTERVIEW = "claude-sonnet-4-6"
+MODEL_DIRECTOR = "claude-opus-4-7"  # background supervisor for live interviews
 RETRYABLE_ERRORS = ["429", "529", "overloaded"]
 BASE_BACKOFF_SECONDS = 2
 
