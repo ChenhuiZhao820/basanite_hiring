@@ -1,0 +1,19 @@
+*Cold Email Generator Prompt*
+
+⁠I need to write a cold email to [Name], [Title] at [Organisation/University].
+⁠Here is some context about them:
+⁠[Paste a short bio, LinkedIn, or link to their work / research / company]
+⁠Here is context about what I'm building:
+⁠Company: Basanite
+⁠What we do: AI-native technical hiring platform that evaluates genuine working capability rather than interview performance
+⁠Stage: Early, currently in customer/concept validation
+⁠Co-founders: Myself (Aditya, CEO), Drew (CTO), Lynn (CPO/AI Lead)
+⁠The goal of this email is: [e.g. get a coffee chat / academic validation / partnership / pilot / investor intro]
+⁠Write a cold email that:
+⁠- Opens by referencing something specific about their work or company and connecting it to a real question we think about at Basanite
+⁠- Introduces me and Basanite briefly and honestly, including our stage
+⁠- Asks 2-3 specific, tailored questions that are genuinely relevant to their expertise
+⁠- Makes clear we are not looking for endorsement but a critical or commercial perspective
+⁠- Is warm and human in tone, not salesy or stiff
+⁠- Is written in UK English with no em dashes and no AI-sounding phrases
+⁠- Ends with a low-pressure ask for a conversation
