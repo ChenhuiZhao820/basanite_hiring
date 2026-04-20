@@ -27,7 +27,10 @@ export async function POST(request: NextRequest) {
   })
   if (inviteError && inviteError.message !== 'User already registered') {
     console.error('Invite error:', inviteError)
-    return NextResponse.json({ error: 'Failed to send invite.' }, { status: 500 })
+    return NextResponse.json(
+      { error: `Failed to send invite: ${inviteError.message}` },
+      { status: 500 }
+    )
   }
 
   // Mark as approved in the waitlist table
