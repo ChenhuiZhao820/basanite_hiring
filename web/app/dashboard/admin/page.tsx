@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [entries, setEntries] = useState<WaitlistEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [approving, setApproving] = useState<string | null>(null)
+  const [rejecting, setRejecting] = useState<string | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -39,6 +40,24 @@ export default function AdminPage() {
       setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'approved' } : e))
     }
     setApproving(null)
+  }
+
+  async function reject(entry: WaitlistEntry) {
+    if (!confirm(`Delete waitlist request from ${entry.email}?`)) return
+    setRejecting(entry.id)
+    setError('')
+    const res = await fetch('/api/admin/reject', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: entry.id }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error ?? 'Failed to delete.')
+    } else {
+      setEntries(prev => prev.filter(e => e.id !== entry.id))
+    }
+    setRejecting(null)
   }
 
   const pending = entries.filter(e => e.status === 'pending')
@@ -68,13 +87,22 @@ export default function AdminPage() {
                   {new Date(entry.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </div>
               </div>
-              <button
-                onClick={() => approve(entry)}
-                disabled={approving === entry.id}
-                className="shrink-0 bg-[#0b1f3d] hover:bg-[#1d4ed8] text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-50"
-              >
-                {approving === entry.id ? 'Sending…' : 'Approve'}
-              </button>
+              <div className="shrink-0 flex items-center gap-2">
+                <button
+                  onClick={() => reject(entry)}
+                  disabled={rejecting === entry.id || approving === entry.id}
+                  className="text-slate-500 hover:text-red-600 text-xs font-medium px-3 py-2 border border-slate-200 hover:border-red-200 transition-colors disabled:opacity-50"
+                >
+                  {rejecting === entry.id ? 'Deleting…' : 'Reject'}
+                </button>
+                <button
+                  onClick={() => approve(entry)}
+                  disabled={approving === entry.id || rejecting === entry.id}
+                  className="bg-[#0b1f3d] hover:bg-[#1d4ed8] text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-50"
+                >
+                  {approving === entry.id ? 'Sending…' : 'Approve'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
