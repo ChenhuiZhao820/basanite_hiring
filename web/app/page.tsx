@@ -197,38 +197,45 @@ function HowItWorks() {
       <div ref={ref} className="reveal max-w-4xl mx-auto">
         <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-3">The process</p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-3">How Basanite works</h2>
-        <p className="text-basanite-600 text-base mb-12 max-w-xl">
+        <p className="text-basanite-600 text-base mb-16 max-w-xl">
           Five steps from job description to a ranked shortlist of technically verified candidates.
         </p>
 
-        <div className="flex flex-col gap-3">
-          {STAGES.map((stage, i) => {
-            const isOpen = active === i
-            return (
-              <button
-                key={stage.number}
-                onClick={() => setActive(isOpen ? null : i)}
-                className={`text-left bg-white border overflow-hidden transition-shadow duration-200 ${isOpen ? 'border-gold-500/60 shadow-md' : 'border-earth-300/60 hover:border-gold-500/40 hover:shadow-sm'}`}
-              >
-                <div className={`flex items-center justify-between gap-4 px-5 sm:px-7 py-5 ${isOpen ? 'border-b border-earth-200' : ''}`}>
-                  <div className="flex items-center gap-4 min-w-0">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-basanite-500 hidden sm:inline shrink-0">{stage.number}</span>
-                    <span className="w-px h-4 bg-earth-300 hidden sm:inline-block shrink-0" />
-                    <div className="min-w-0">
-                      <div className="font-display text-basanite-900 text-lg sm:text-xl truncate">{stage.title}</div>
-                      <div className="text-basanite-500 text-xs mt-0.5 truncate">{stage.summary}</div>
-                    </div>
-                  </div>
-                  <svg
-                    width="14" height="14" viewBox="0 0 12 12" fill="none"
-                    className={`transition-transform duration-500 ease-in-out shrink-0 text-basanite-500 ${isOpen ? 'rotate-180' : ''}`}
+        <div className="relative">
+          <div className="absolute left-6 top-6 bottom-6 w-px bg-gold-500/40" aria-hidden="true" />
+
+          <div className="flex flex-col gap-8">
+            {STAGES.map((stage, i) => {
+              const isOpen = active === i
+              return (
+                <div key={stage.number} className="relative flex gap-5 sm:gap-8 items-start">
+                  <button
+                    onClick={() => setActive(isOpen ? null : i)}
+                    aria-label={`Toggle step ${stage.number}`}
+                    className={`relative z-10 shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-display text-lg transition-all duration-300 ${isOpen ? 'bg-gold-500 text-white border-2 border-gold-500 shadow-[0_0_0_6px_rgba(196,154,47,0.15)]' : 'bg-white text-basanite-900 border-2 border-gold-500/60 hover:border-gold-500'}`}
                   >
-                    <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div
-                  className="overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out"
-                  style={{ maxHeight: isOpen ? '18rem' : '0', opacity: isOpen ? 1 : 0 }}
+                    {stage.number}
+                  </button>
+
+                  <button
+                    onClick={() => setActive(isOpen ? null : i)}
+                    className={`text-left flex-1 bg-white border overflow-hidden transition-shadow duration-200 ${isOpen ? 'border-gold-500/60 shadow-md' : 'border-earth-300/60 hover:border-gold-500/40 hover:shadow-sm'}`}
+                  >
+                    <div className={`flex items-center justify-between gap-4 px-5 sm:px-7 py-5 ${isOpen ? 'border-b border-earth-200' : ''}`}>
+                      <div className="min-w-0">
+                        <div className="font-display text-basanite-900 text-lg sm:text-xl">{stage.title}</div>
+                        <div className="text-basanite-500 text-xs mt-0.5">{stage.summary}</div>
+                      </div>
+                      <svg
+                        width="14" height="14" viewBox="0 0 12 12" fill="none"
+                        className={`transition-transform duration-500 ease-in-out shrink-0 text-basanite-500 ${isOpen ? 'rotate-180' : ''}`}
+                      >
+                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <div
+                      className="overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out"
+                      style={{ maxHeight: isOpen ? '18rem' : '0', opacity: isOpen ? 1 : 0 }}
                 >
                   <div className="px-5 sm:px-7 py-5">
                     <p className="text-basanite-600 text-sm leading-relaxed mb-4">{stage.description}</p>
@@ -242,8 +249,10 @@ function HowItWorks() {
                   </div>
                 </div>
               </button>
+            </div>
             )
           })}
+          </div>
         </div>
       </div>
     </section>
@@ -498,25 +507,96 @@ function Team() {
   )
 }
 
-// ─── CTA ─────────────────────────────────────────────────────────────────
-function CTA() {
+// ─── Waitlist CTA ────────────────────────────────────────────────────────
+function WaitlistCTA() {
   const ref = useReveal()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [company, setCompany] = useState('')
+  const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [errMsg, setErrMsg] = useState('')
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setState('loading')
+    setErrMsg('')
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, company }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrMsg(data.error ?? 'Something went wrong.')
+        setState('error')
+        return
+      }
+      setState('done')
+    } catch {
+      setErrMsg('Network error. Try again.')
+      setState('error')
+    }
+  }
+
   return (
-    <section className="relative py-24 sm:py-32 px-6 bg-basanite-900 overflow-hidden">
+    <section id="request-access" className="relative py-24 sm:py-32 px-6 bg-basanite-900 overflow-hidden">
       <StoneTexture />
-      <div ref={ref} className="reveal relative z-10 max-w-2xl mx-auto text-center">
+      <div ref={ref} className="reveal relative z-10 max-w-xl mx-auto text-center">
         <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
           Ready to test what matters?
         </h2>
         <p className="text-earth-300 text-lg mb-10 leading-relaxed">
-          Stop selecting for interview preparedness. Start selecting for the qualities that actually drive performance in complex, adaptive, AI era work environments.
+          Request early access. We are onboarding a small number of teams now and will be in touch.
         </p>
-        <a
-          href="/login"
-          className="inline-block px-10 py-4 bg-gold-500 hover:bg-gold-400 text-basanite-950 font-medium text-sm tracking-wide transition-colors duration-200"
-        >
-          Get started with Basanite
-        </a>
+
+        {state === 'done' ? (
+          <div className="bg-white/10 border border-gold-500/40 px-6 py-10 text-earth-50">
+            <div className="font-display text-4xl text-gold-400 mb-3">&#10004;</div>
+            <p className="font-display text-xl mb-2">You are on the list.</p>
+            <p className="text-earth-300 text-sm">We will review your request and follow up shortly.</p>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="flex flex-col gap-3 text-left">
+            <input
+              type="text"
+              placeholder="Your name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
+            />
+            <input
+              type="email"
+              placeholder="Work email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
+            />
+            <input
+              type="text"
+              placeholder="Company (optional)"
+              value={company}
+              onChange={e => setCompany(e.target.value)}
+              className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
+            />
+            {state === 'error' && (
+              <p className="text-xs text-red-200 bg-red-900/30 border border-red-500/30 px-3 py-2">{errMsg}</p>
+            )}
+            <button
+              type="submit"
+              disabled={state === 'loading'}
+              className="w-full bg-gold-500 hover:bg-gold-400 text-white font-semibold py-4 text-base tracking-wide transition-colors duration-200 disabled:opacity-60 mt-2"
+            >
+              {state === 'loading' ? 'Submitting...' : 'Request access'}
+            </button>
+            <p className="text-xs text-earth-300/70 text-center mt-2">
+              Already have access?{' '}
+              <a href="/login" className="text-gold-400 hover:text-gold-300 underline">Sign in</a>
+            </p>
+          </form>
+        )}
       </div>
     </section>
   )
@@ -555,7 +635,7 @@ export default function HomePage() {
       <Philosophy />
       <ForBoth />
       <Team />
-      <CTA />
+      <WaitlistCTA />
       <Footer />
     </>
   )
