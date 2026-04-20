@@ -1,5 +1,5 @@
 """
-Basanite FastAPI server, AI-powered technical interview and assessment platform.
+Basanite FastAPI server, AI powered technical interview and assessment platform.
 
 Run with:
     source .venv/bin/activate

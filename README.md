@@ -1,6 +1,6 @@
 # Basanite, AI-Powered Technical Assessment
 
-Basanite conducts AI-powered technical interviews that assess genuine capability, not performed competence. Named after the dark volcanic touchstone historically used to test gold purity.
+Basanite conducts AI powered technical interviews that assess genuine capability, not performed competence. Named after the dark volcanic touchstone historically used to test gold purity.
 
 **Domain:** basanite.co.uk (pending deployment)
 
@@ -9,8 +9,8 @@ Basanite conducts AI-powered technical interviews that assess genuine capability
 ## What It Does
 
 1. **Hirers** paste a job description and configure evaluation dimensions
-2. **Candidates** receive an assessment link, upload their CV, and enter a ~45 min AI-conducted interview
-3. **Basanite** evaluates across 8 capability dimensions using experience-grounded questioning, transfer tests, and anti-cheating detection
+2. **Candidates** receive an assessment link, upload their CV, and enter a ~45 min AI conducted interview
+3. **Basanite** evaluates across 8 capability dimensions using experience grounded questioning, transfer tests, and anti cheating detection
 4. **Dual reports** are generated: a hirer briefing document + a constructive candidate feedback report
 5. **Hirers** see a ranked candidate queue with dimension scores grounded in specific quotes
 
@@ -114,7 +114,7 @@ Candidate Portal (Next.js)                     │
 1. **Judgment under ambiguity**, acting decisively on incomplete information
 2. **Tacit knowledge extraction**, surfacing knowledge that lives in experience
 3. **Intuition under data scarcity**, sound judgment when data is insufficient
-4. **Psychological safety & collective learning**, creating error-correcting team conditions
+4. **Psychological safety & collective learning**, creating error correcting team conditions
 5. **Creative problem reframing**, recognising when the team solves the wrong problem
 6. **Ethical reasoning**, navigating real tradeoffs with integrity
 7. **Capacity to be changed by experience**, learning from experience, not just accumulating it

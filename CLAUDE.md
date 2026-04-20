@@ -4,9 +4,9 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 ## Project Overview
 
-**Basanite**, An AI-powered technical interview and assessment platform. Named after the dark volcanic touchstone historically used to test gold purity.
+**Basanite**, An AI powered technical interview and assessment platform. Named after the dark volcanic touchstone historically used to test gold purity.
 
-The core product: hirers create roles with evaluation dimensions, candidates take AI-conducted conversational interviews, and dual reports (hirer + candidate) are generated with dimension-by-dimension scores grounded in specific candidate quotes.
+The core product: hirers create roles with evaluation dimensions, candidates take AI conducted conversational interviews, and dual reports (hirer + candidate) are generated with dimension by dimension scores grounded in specific candidate quotes.
 
 **Key reference:** `resources/basanite/claudeMVP/Basanite Interview Prompt.md`, the 638-line interview agent prompt that defines the core product logic.
 
@@ -17,7 +17,7 @@ The core product: hirers create roles with evaluation dimensions, candidates tak
 - **Database:** Supabase (PostgreSQL) with RLS
 - **Interview LLM:** Claude Sonnet 4.6 (`claude-sonnet-4-6`) via Anthropic SDK, served through an ElevenLabs Conversational AI voice agent (candidate speaks to the agent live, 10 minute cap)
 - **Auxiliary LLM:** Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) for CV extraction, dimension recommendation
-- **Streaming:** SSE for real-time interview responses
+- **Streaming:** SSE for real time interview responses
 - **Auth:** Supabase Auth (hirers + candidates)
 
 ## Architecture
@@ -72,7 +72,7 @@ Candidate Portal (Next.js)                                  │
 1. `judgment_under_ambiguity`, Acting decisively on incomplete information
 2. `tacit_knowledge`, Surfacing knowledge that lives in experience
 3. `intuition_under_scarcity`, Sound judgment when data is insufficient
-4. `psychological_safety`, Creating error-correcting team conditions
+4. `psychological_safety`, Creating error correcting team conditions
 5. `creative_reframing`, Recognising when the team solves the wrong problem
 6. `ethical_reasoning`, Navigating real tradeoffs with integrity
 7. `capacity_for_change`, Learning from experience, not just accumulating it
@@ -81,9 +81,9 @@ Candidate Portal (Next.js)                                  │
 ## Design Principles
 
 - **Depth over breadth**, Progressive excavation into signal quality
-- **Structure as fairness**, Consistent frameworks so self-taught engineers are seen as clearly as target university grads
+- **Structure as fairness**, Consistent frameworks so self taught engineers are seen as clearly as target university grads
 - **Honest about AI limits**, Flag what requires human expert verification
-- **Two-model strategy**, Sonnet for interviews (requires strong reasoning), Haiku for auxiliary tasks (cost-efficient)
+- **Two model strategy**, Sonnet for interviews (requires strong reasoning), Haiku for auxiliary tasks (cost efficient)
 - **Prompt caching**, Interview system prompt is 64K+ chars; use Anthropic prompt caching to avoid re-processing each turn
 
 ## Brand
@@ -109,7 +109,7 @@ Use chromeflow automatically whenever a task requires:
 - Creating or configuring a third-party account (Stripe, SendGrid, Supabase, Vercel, etc.)
 - Retrieving API keys, secrets, or credentials to place in `.env`
 - Setting up pricing tiers, webhooks, or service configuration in a web UI
-- Any browser-based step that is blocking code work
+- Any browser based step that is blocking code work
 
 Do NOT ask "should I open the browser?", just do it. The user expects seamless handoff.
 

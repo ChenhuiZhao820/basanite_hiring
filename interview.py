@@ -45,7 +45,7 @@ def assemble_interview_prompt(
 ) -> str:
     """
     Assemble the full interview agent system prompt by injecting
-    role-specific and candidate-specific context into the base prompt.
+    role specific and candidate-specific context into the base prompt.
     """
     base = _load_base_prompt()
 
@@ -110,7 +110,7 @@ never ask multi-part questions in a single turn.
 - Never end before every selected dimension has at least one concrete
   evidence-backed exchange.
 
-### Depth discipline (non-negotiable)
+### Depth discipline (non negotiable)
 Do **not** accept generic or abstract answers. When the candidate says
 something vague ("we used microservices", "we had good collaboration",
 "I improved performance"), always drill into:
@@ -119,7 +119,7 @@ something vague ("we used microservices", "we had good collaboration",
 (3) the tradeoffs they actually considered,
 (4) what they would change with hindsight.
 Keep probing the same thread until you have concrete signal, do not
-move on after a single follow-up just because they gave an answer.
+move on after a single follow up just because they gave an answer.
 
 ### Role-context coverage (required within the first third of the interview)
 Keep the **job description** active throughout. Early in the interview:
@@ -151,7 +151,7 @@ Experience summary:
 {experience_summary}
 
 ### Interview Constraints
-- Evaluate the pre-selected dimensions listed above
+- Evaluate the pre selected dimensions listed above
 - Technical Depth dimension is mandatory for this technical role
 - Follow the experience path structure ({experience_path.upper()}) throughout
 - Anchor all questions in the candidate's stated experience where possible

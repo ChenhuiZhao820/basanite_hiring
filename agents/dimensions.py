@@ -18,7 +18,7 @@ DIMENSIONS = {
     },
     "intuition_under_scarcity": {
         "name": "Intuition Under Data Scarcity",
-        "description": "Sound intuition in the absence of sufficient data, the recognition-primed judgment that distinguishes genuine experts.",
+        "description": "Sound intuition in the absence of sufficient data, the recognition primed judgment that distinguishes genuine experts.",
     },
     "psychological_safety": {
         "name": "Psychological Safety & Collective Learning",
