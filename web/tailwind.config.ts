@@ -32,7 +32,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-body)', 'Georgia', 'serif'],
         display: ['var(--font-display)', 'Georgia', 'serif'],
       },
       animation: {
