@@ -75,10 +75,13 @@ function Hero() {
         />
         <div className="absolute inset-0 bg-basanite-950/70" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <div className="inline-flex items-center gap-2 border border-gold-500/40 px-4 py-1.5 mb-10">
-            <div className="w-1.5 h-1.5 rounded-full bg-gold-500" />
-            <span className="text-gold-400 text-xs font-medium tracking-[0.15em] uppercase">AI powered technical assessment</span>
-          </div>
+          <svg width="40" height="54" viewBox="0 0 40 54" fill="none" aria-hidden="true" className="mb-10">
+            <path d="M20 0 L0 18 L20 18 Z" fill="#e8c555" />
+            <path d="M20 0 L40 18 L20 18 Z" fill="#d4a843" />
+            <path d="M0 18 L20 18 L20 54 Z" fill="#c49a2f" />
+            <path d="M40 18 L20 18 L20 54 Z" fill="#a87f24" />
+            <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
+          </svg>
           <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
             Test genuine capability,<br />
             <span className="text-gold-400">not performed competence.</span>
