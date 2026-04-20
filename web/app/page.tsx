@@ -92,13 +92,13 @@ function Hero() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
               href="/login"
-              className="w-full sm:w-auto px-8 py-3.5 bg-gold-500 hover:bg-gold-400 text-basanite-950 font-medium text-sm tracking-wide transition-colors duration-200"
+              className="w-full sm:w-auto px-8 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
             >
               Start hiring with Basanite
             </a>
             <a
               href="#how-it-works"
-              className="w-full sm:w-auto px-8 py-3.5 border border-earth-200/50 text-earth-50 hover:border-earth-50 font-medium text-sm tracking-wide transition-colors duration-200"
+              className="w-full sm:w-auto px-8 py-4 border border-earth-200/50 text-earth-50 hover:border-earth-50 font-semibold text-base tracking-wide transition-colors duration-200"
             >
               See how it works
             </a>
