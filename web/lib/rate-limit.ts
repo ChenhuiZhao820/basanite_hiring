@@ -56,7 +56,7 @@ function allowInMemory(key: string, limit: number, windowMs: number): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Public API — async to support Upstash, backwards-compatible call sites use
+// Public API, async to support Upstash, backwards-compatible call sites use
 // await. Call sites that previously used the sync version must be updated.
 // ---------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ function allowInMemory(key: string, limit: number, windowMs: number): boolean {
 export async function allow(key: string, limit: number, windowMs: number): Promise<boolean> {
   const limiter = getLimiter(limit, windowMs)
   if (!limiter) {
-    // Dev fallback — in-memory, best-effort
+    // Dev fallback, in-memory, best-effort
     return allowInMemory(key, limit, windowMs)
   }
   const { success } = await limiter.limit(key)

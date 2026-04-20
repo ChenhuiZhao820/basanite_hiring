@@ -15,7 +15,7 @@ export function AuthErrorRedirect() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    // Also check the hash fragment — Supabase sometimes puts errors there
+    // Also check the hash fragment, Supabase sometimes puts errors there
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
 
     const errorCode = params.get('error_code') || hashParams.get('error_code')
@@ -25,7 +25,7 @@ export function AuthErrorRedirect() {
     if (!hasError) return
 
     // otp_expired means the link was already consumed (email scanner used it first)
-    // but Supabase still verified the email — treat as success
+    // but Supabase still verified the email, treat as success
     if (errorCode === 'otp_expired') {
       router.replace('/login?verified=1')
       return

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// Target length is a hint for the AI — it decides when to end based on signal.
+// Target length is a hint for the AI, it decides when to end based on signal.
 const DEFAULT_TARGET_MINUTES = 20
 const MIN_MINUTES = 5
 const MAX_MINUTES = 60
@@ -266,7 +266,7 @@ export default function NewRolePage() {
               <span className="text-sm text-basanite-500">minutes</span>
             </div>
             <p className="text-xs text-basanite-400 mt-2">
-              Just a target — the AI ends the interview when it has enough signal. Typical 15–25 min; can extend to {MAX_MINUTES} for complex candidates.
+              Just a target, the AI ends the interview when it has enough signal. Typical 15 to 25 min; can extend to {MAX_MINUTES} for complex candidates.
             </p>
           </div>
 
@@ -276,7 +276,7 @@ export default function NewRolePage() {
               Extra interview instructions <span className="text-basanite-400 normal-case">(optional)</span>
             </label>
             <p className="text-xs text-basanite-400 mb-2">
-              Anything specific you want the interviewer to ask — e.g. "Ask about salary expectations and notice period."
+              Anything specific you want the interviewer to ask, e.g. "Ask about salary expectations and notice period."
             </p>
             <textarea
               value={customInstructions}

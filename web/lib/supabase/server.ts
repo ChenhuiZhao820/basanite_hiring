@@ -16,7 +16,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Called from a Server Component — middleware handles session refresh
+            // Called from a Server Component, middleware handles session refresh
           }
         },
       },
@@ -24,7 +24,7 @@ export async function createClient() {
   )
 }
 
-/** Service-role client — bypasses RLS. Server-side only.
+/** Service-role client, bypasses RLS. Server-side only.
  *  Uses supabase-js directly (no cookie auth) so the service key
  *  is the sole credential sent to PostgREST. */
 export function createServiceClient() {

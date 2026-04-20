@@ -1,5 +1,5 @@
 """
-Dimension Recommendation Agent — recommends evaluation dimensions from a job description.
+Dimension Recommendation Agent, recommends evaluation dimensions from a job description.
 
 Given a JD, recommends 3-4 dimensions from the 8 available and calibrates technical depth.
 """
@@ -18,7 +18,7 @@ DIMENSIONS = {
     },
     "intuition_under_scarcity": {
         "name": "Intuition Under Data Scarcity",
-        "description": "Sound intuition in the absence of sufficient data — the recognition-primed judgment that distinguishes genuine experts.",
+        "description": "Sound intuition in the absence of sufficient data, the recognition-primed judgment that distinguishes genuine experts.",
     },
     "psychological_safety": {
         "name": "Psychological Safety & Collective Learning",
@@ -58,15 +58,15 @@ async def recommend_dimensions(job_description: str) -> dict:
 
     Returns:
         {
-            "dimensions": ["judgment_under_ambiguity", "technical_depth", ...],
+            "dimensions": ["judgment_under_ambiguity", "technical_depth"...],
             "technical_depth": "application" | "research_architecture",
-            "rationale": {"dimension_key": "why this dimension matters for this role", ...}
+            "rationale": {"dimension_key": "why this dimension matters for this role"...}
         }
     """
     llm = get_llm_service()
 
     dimension_list = "\n".join(
-        f"- {key}: {d['name']} — {d['description']}"
+        f"- {key}: {d['name']}, {d['description']}"
         for key, d in DIMENSIONS.items()
     )
 
@@ -75,8 +75,8 @@ async def recommend_dimensions(job_description: str) -> dict:
     prompt = f"""Analyze the following job description and recommend 3-4 evaluation dimensions from the available set. For technical roles, 'technical_depth' is mandatory.
 
 Also determine the technical depth calibration:
-- "application" — roles focused on using existing tools/frameworks to solve business problems (frontend/backend engineer, data analyst, DevOps)
-- "research_architecture" — roles focused on understanding/improving/designing underlying systems (ML researcher, systems architect, platform engineer)
+- "application", roles focused on using existing tools/frameworks to solve business problems (frontend/backend engineer, data analyst, DevOps)
+- "research_architecture", roles focused on understanding/improving/designing underlying systems (ML researcher, systems architect, platform engineer)
 
 AVAILABLE DIMENSIONS:
 {dimension_list}
@@ -86,7 +86,7 @@ JOB DESCRIPTION:
 
 Respond with JSON:
 {{
-  "dimensions": ["dimension_key_1", "dimension_key_2", ...],
+  "dimensions": ["dimension_key_1", "dimension_key_2"...],
   "technical_depth": "application" | "research_architecture",
   "rationale": {{
     "dimension_key": "one-sentence explanation of why this dimension is relevant"

@@ -194,7 +194,7 @@ export default function OnboardPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="application/pdf,.pdf"
+                accept="application/pdf.pdf"
                 className="hidden"
                 onChange={e => {
                   const f = e.target.files?.[0]
@@ -232,7 +232,7 @@ export default function OnboardPage() {
 
               {cvText && (
                 <p className="text-xs text-basanite-400 mb-4">
-                  {cvFileName ? `Loaded ${cvFileName} — ${cvText.length.toLocaleString()} characters.` : `${cvText.length.toLocaleString()} characters.`}
+                  {cvFileName ? `Loaded ${cvFileName}, ${cvText.length.toLocaleString()} characters.` : `${cvText.length.toLocaleString()} characters.`}
                 </p>
               )}
 

@@ -3,12 +3,12 @@ system: |
   data for use in personalizing a technical interview.
 
   Rules:
-  - Extract ALL work experience, education, and skills — do not summarize or omit
+  - Extract ALL work experience, education, and skills, do not summarize or omit
   - For each experience entry, determine if it is technically relevant to the target role
-  - Identify 2-4 "anchor points" — the most interview-worthy experiences that the
+  - Identify 2-4 "anchor points", the most interview-worthy experiences that the
     interviewer should use as the basis for narrative-anchored questioning
   - Determine experience path: path_a if the candidate has relevant work/project experience,
     path_b if they are a recent graduate, career changer, or lack relevant experience
-  - Be generous in determining relevance — adjacent skills and transferable experience count
+  - Be generous in determining relevance, adjacent skills and transferable experience count
 
   Respond with valid JSON only.

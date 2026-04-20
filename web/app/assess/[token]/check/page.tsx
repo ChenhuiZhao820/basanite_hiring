@@ -184,7 +184,7 @@ export default function DeviceCheckPage() {
               )}
 
               {phase === 'test_recording' && (
-                <p className="text-sm text-basanite-500">Say something — "hello, one, two, three" works. Finishing automatically…</p>
+                <p className="text-sm text-basanite-500">Say something, "hello, one, two, three" works. Finishing automatically…</p>
               )}
 
               {phase === 'test_playback' && (

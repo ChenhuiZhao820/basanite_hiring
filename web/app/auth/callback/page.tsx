@@ -11,7 +11,7 @@ function CallbackHandler() {
   useEffect(() => {
     const code = searchParams.get('code')
     const rawNext = searchParams.get('next') ?? '/dashboard'
-    // Reject external URLs — only allow internal paths (prevents open redirect)
+    // Reject external URLs, only allow internal paths (prevents open redirect)
     const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
 
     if (!code) {
@@ -24,7 +24,7 @@ function CallbackHandler() {
       if (error) {
         const isExpired = error.code === 'otp_expired'
         if (isExpired) {
-          // An email scanner may have consumed the code — check if a real session exists.
+          // An email scanner may have consumed the code, check if a real session exists.
           // If yes, the user is genuinely verified. If not, the link is just expired.
           const { data: { session } } = await supabase.auth.getSession()
           if (session) {

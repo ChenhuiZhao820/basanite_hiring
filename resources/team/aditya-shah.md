@@ -8,14 +8,14 @@
 Studying BSc Computer Science at University of Manchester
 
 ## Experience
-- **Virgin Media O2** — Data Analyst & Technology Modeller, Fixed Insights & Analytics (13-month placement)
+- **Virgin Media O2**, Data Analyst & Technology Modeller, Fixed Insights & Analytics (13-month placement)
   - Built reporting scripts, KPIs, and process-mapping projects
   - Organised intern events as FCC intern representative
   - Attended 2025 Google Summit
 - Freelance
 
 ## Education
-- **The University of Manchester** — BSc Computer Science (Sep 2022 – Jun 2026)
+- **The University of Manchester**, BSc Computer Science (Sep 2022, Jun 2026)
 
 ## Skills
 - Python, Java

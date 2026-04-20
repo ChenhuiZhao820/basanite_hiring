@@ -1,4 +1,4 @@
-# Basanite — AI-Powered Technical Assessment
+# Basanite, AI-Powered Technical Assessment
 
 Basanite conducts AI-powered technical interviews that assess genuine capability, not performed competence. Named after the dark volcanic touchstone historically used to test gold purity.
 
@@ -61,7 +61,7 @@ npm run dev
 | `RESEND_FROM` | Sender for report emails, e.g. `Basanite <reports@your-domain>` |
 | `SUPABASE_URL` | Supabase Settings -> API |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key |
-| `PIPELINE_API_SECRET` | Shared secret — generate with `openssl rand -hex 32` |
+| `PIPELINE_API_SECRET` | Shared secret, generate with `openssl rand -hex 32` |
 
 **Web (`web/.env.local`):**
 
@@ -77,11 +77,11 @@ npm run dev
 
 Run the migrations in `supabase/migrations/` in order in the Supabase SQL editor. Key Basanite tables:
 
-- `roles` — hiring positions with evaluation dimensions and interview prompt
-- `assessments` — individual candidate evaluations
-- `interview_sessions` — full conversation state
-- `dimension_scores` — per-dimension scores with quotation basis
-- `reports` — hirer and candidate feedback reports
+- `roles`, hiring positions with evaluation dimensions and interview prompt
+- `assessments`, individual candidate evaluations
+- `interview_sessions`, full conversation state
+- `dimension_scores`, per-dimension scores with quotation basis
+- `reports`, hirer and candidate feedback reports
 
 ---
 
@@ -111,11 +111,11 @@ Candidate Portal (Next.js)                     │
 
 ## The 8 Evaluation Dimensions
 
-1. **Judgment under ambiguity** — acting decisively on incomplete information
-2. **Tacit knowledge extraction** — surfacing knowledge that lives in experience
-3. **Intuition under data scarcity** — sound judgment when data is insufficient
-4. **Psychological safety & collective learning** — creating error-correcting team conditions
-5. **Creative problem reframing** — recognising when the team solves the wrong problem
-6. **Ethical reasoning** — navigating real tradeoffs with integrity
-7. **Capacity to be changed by experience** — learning from experience, not just accumulating it
-8. **Technical judgment depth** — understanding boundaries of technical decisions
+1. **Judgment under ambiguity**, acting decisively on incomplete information
+2. **Tacit knowledge extraction**, surfacing knowledge that lives in experience
+3. **Intuition under data scarcity**, sound judgment when data is insufficient
+4. **Psychological safety & collective learning**, creating error-correcting team conditions
+5. **Creative problem reframing**, recognising when the team solves the wrong problem
+6. **Ethical reasoning**, navigating real tradeoffs with integrity
+7. **Capacity to be changed by experience**, learning from experience, not just accumulating it
+8. **Technical judgment depth**, understanding boundaries of technical decisions

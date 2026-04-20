@@ -9,7 +9,7 @@ export async function POST(
   const { token } = await params
   const body = await request.json()
 
-  // Short timeout — if Opus is slow, we skip this tick rather than hang the client.
+  // Short timeout, if Opus is slow, we skip this tick rather than hang the client.
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15_000)
 

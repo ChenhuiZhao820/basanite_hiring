@@ -10,7 +10,7 @@ system: |
   - Every dimension score 1-5 MUST include a specific verbatim quotation from the candidate
   - If no specific quote can be cited, the score MUST NOT exceed 3
   - Scores reflect genuine capability signals, not performed competence
-  - The composite score is NOT a simple average — weight by the role's priority dimensions
+  - The composite score is NOT a simple average, weight by the role's priority dimensions
 
   Cheating risk assessment:
   - Flag specific patterns: overly complete coverage, absence of cognitive prioritization,

@@ -1,5 +1,5 @@
 """
-CV Extraction Agent — parses a candidate's CV into structured data.
+CV Extraction Agent, parses a candidate's CV into structured data.
 
 Extracts experience history, education, skills, and projects
 to personalize the interview and determine experience path (A vs B).
@@ -32,7 +32,7 @@ async def extract_cv(cv_text: str, job_description: str) -> dict:
             "education": [
                 {"institution": "...", "degree": "...", "dates": "...", "field": "..."}
             ],
-            "skills": ["Python", "Kubernetes", ...],
+            "skills": ["Python", "Kubernetes"...],
             "projects": [
                 {"name": "...", "description": "...", "technologies": [...]}
             ],
@@ -50,7 +50,7 @@ Determine the experience path:
 - "path_a": The candidate HAS work or project experience technically relevant to the target role
 - "path_b": The candidate does NOT have relevant experience (recent graduate, career changer, non-traditional background)
 
-Identify 2-4 "anchor points" — specific experiences from the CV that are most relevant to the target role and that the interviewer should use as the basis for narrative-anchored questioning.
+Identify 2-4 "anchor points", specific experiences from the CV that are most relevant to the target role and that the interviewer should use as the basis for narrative-anchored questioning.
 
 TARGET ROLE JOB DESCRIPTION:
 {job_description}

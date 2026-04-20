@@ -67,7 +67,7 @@ export default function CompletePage() {
           <h1 className="font-display text-3xl text-basanite-900 mb-3">Assessment Complete</h1>
           <p className="text-basanite-500 text-sm leading-relaxed max-w-md mx-auto">
             Thank you. Your responses have been recorded and your feedback report is being generated
-            {email ? <> — we'll email it to <span className="text-basanite-700 font-medium">{email}</span> as soon as it's ready.</> : '.'}
+            {email ? <>, we'll email it to <span className="text-basanite-700 font-medium">{email}</span> as soon as it's ready.</> : '.'}
           </p>
         </div>
 
@@ -147,7 +147,7 @@ export default function CompletePage() {
           <div className="bg-white border border-earth-200 p-8 text-center">
             <p className="text-basanite-500 text-sm">
               Your report is still being generated.
-              {email ? <> It will be emailed to <span className="text-basanite-700 font-medium">{email}</span> shortly — you can close this page.</> : ' Check back in a moment, or keep an eye on your inbox.'}
+              {email ? <> It will be emailed to <span className="text-basanite-700 font-medium">{email}</span> shortly, you can close this page.</> : ' Check back in a moment, or keep an eye on your inbox.'}
             </p>
           </div>
         )}

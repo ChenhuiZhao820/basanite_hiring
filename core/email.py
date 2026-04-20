@@ -34,7 +34,7 @@ def _render_report_html(candidate_name: str, role_title: str, report: dict) -> s
       <p style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#8a7a5e;margin:0 0 4px">Basanite</p>
       <h1 style="font-size:22px;margin:0 0 8px">Your feedback report</h1>
       <p style="font-size:14px;color:#555;margin:0 0 24px">
-        Hi {escape(candidate_name or "there")} — thanks for completing the {escape(role_title)} assessment.
+        Hi {escape(candidate_name or "there")}, thanks for completing the {escape(role_title)} assessment.
         Here's your feedback.
       </p>
 
@@ -44,7 +44,7 @@ def _render_report_html(candidate_name: str, role_title: str, report: dict) -> s
       {section("Overall", f"<p style='margin:0;font-style:italic;color:#444'>{overall}</p>" if overall else "")}
 
       <p style="font-size:12px;color:#8a7a5e;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
-        Keep this email — it's your personal copy of the report.
+        Keep this email, it's your personal copy of the report.
       </p>
     </div>
   </body>
@@ -60,7 +60,7 @@ def send_report_email(
 ) -> bool:
     """
     Send the candidate their feedback report. Returns True on success, False otherwise.
-    Safe to call even if Resend is unconfigured — logs and returns False.
+    Safe to call even if Resend is unconfigured, logs and returns False.
     """
     api_key = os.getenv("RESEND_API_KEY", "")
     sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
@@ -74,7 +74,7 @@ def send_report_email(
         resend.Emails.send({
             "from": sender,
             "to": [to],
-            "subject": f"Your Basanite feedback — {role_title}",
+            "subject": f"Your Basanite feedback, {role_title}",
             "html": _render_report_html(candidate_name, role_title, report),
         })
         return True

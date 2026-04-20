@@ -8,10 +8,10 @@
 BSc Artificial Intelligence at The University of Manchester
 
 ## Experience
-- **Beijing Yuanze Technology co., ltd** — AI Engineering Intern (Internship)
+- **Beijing Yuanze Technology co., ltd**, AI Engineering Intern (Internship)
 
 ## Education
-- **The University of Manchester** — BSc Artificial Intelligence (Sep 2022 – Jun 2025)
+- **The University of Manchester**, BSc Artificial Intelligence (Sep 2022, Jun 2025)
 
 ## Skills
 - Advanced Machine Learning & Deep Learning Development

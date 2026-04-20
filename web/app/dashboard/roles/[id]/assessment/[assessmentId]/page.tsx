@@ -53,7 +53,7 @@ export default async function AssessmentReportPage({
   const scores = assessment.dimension_scores ?? []
   const content = report?.content ?? {}
   // JSONB messages may come back as a string if the row was written with a stringified
-  // payload (legacy) — parse defensively so transcripts from older rows still render.
+  // payload (legacy), parse defensively so transcripts from older rows still render.
   const rawMessages = session?.messages
   const messages: any[] = Array.isArray(rawMessages)
     ? rawMessages

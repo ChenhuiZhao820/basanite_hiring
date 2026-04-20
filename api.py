@@ -1,5 +1,5 @@
 """
-Basanite FastAPI server — AI-powered technical interview and assessment platform.
+Basanite FastAPI server, AI-powered technical interview and assessment platform.
 
 Run with:
     source .venv/bin/activate
@@ -114,7 +114,7 @@ async def update_role(
     from core.db import update_role as db_update_role
 
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
-    # dimensions + eligibility_constraints are JSONB — pass the native Python
+    # dimensions + eligibility_constraints are JSONB, pass the native Python
     # value so supabase-py encodes correctly. Double-encoding here stored them
     # as a JSON *string* instead of a JSON array/object, which is what caused
     # `len(role["dimensions"])` to return 91 (char count) instead of 4.
@@ -201,7 +201,7 @@ async def get_candidates(
 
 @app.get("/assess/{token}")
 async def get_assessment_info(token: str):
-    """Public endpoint — returns role info for the assessment landing page."""
+    """Public endpoint, returns role info for the assessment landing page."""
     from core.db import get_role_by_token
     role = get_role_by_token(token)
     if not role:
@@ -400,7 +400,7 @@ async def voice_session(token: str, body: dict):
     prompt = assemble_interview_prompt(role, cv)
     candidate_name = (cv.get("name") or "there").split()[0]
     first_message = (
-        f"Hi {candidate_name}. Thanks for joining — this is a short voice "
+        f"Hi {candidate_name}. Thanks for joining, this is a short voice "
         f"interview for the {role['title']} role. It'll take about ten minutes. "
         f"I'll ask about your experience and probe a few areas. Shall we begin?"
     )
@@ -693,7 +693,7 @@ async def get_assessment_report(
     if report_type not in ("hirer", "candidate"):
         raise HTTPException(status_code=400, detail="Invalid report type")
 
-    # We need to find the assessment_id — for now, accept it as query param
+    # We need to find the assessment_id, for now, accept it as query param
     # In production, this would be derived from the authenticated user
     from fastapi import Query
     # Simplified: report lookup by assessment_id passed in body

@@ -17,10 +17,10 @@ const dmSerif = DM_Serif_Display({
 })
 
 export const metadata: Metadata = {
-  title: 'Basanite — Test Genuine Technical Capability',
+  title: 'Basanite, Test Genuine Technical Capability',
   description: 'AI-powered technical interviews that assess real capability, not performed competence. Depth over breadth. Signal over noise.',
   openGraph: {
-    title: 'Basanite — Test Genuine Technical Capability',
+    title: 'Basanite, Test Genuine Technical Capability',
     description: 'AI-powered technical interviews that assess real capability, not performed competence. Depth over breadth. Signal over noise.',
     type: 'website',
   },

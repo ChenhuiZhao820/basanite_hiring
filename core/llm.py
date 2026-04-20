@@ -1,5 +1,5 @@
 """
-LLM Service — Anthropic Claude wrapper with JSON mode, streaming, and async retry.
+LLM Service, Anthropic Claude wrapper with JSON mode, streaming, and async retry.
 
 Usage:
     from core.llm import get_llm_service

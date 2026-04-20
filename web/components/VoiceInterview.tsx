@@ -54,19 +54,19 @@ function StepDot({ active, done, pending, label }: { active?: boolean; done?: bo
 function cueForMinute(minute: number, targetMinutes: number): string | null {
   switch (minute) {
     case 5:
-      return 'SYSTEM UPDATE: 5 minutes elapsed. Plenty of time — keep probing for concrete, evidence-backed answers.'
+      return 'SYSTEM UPDATE: 5 minutes elapsed. Plenty of time, keep probing for concrete, evidence-backed answers.'
     case 10:
       return `SYSTEM UPDATE: 10 minutes elapsed. About halfway to the typical ${targetMinutes} minute mark.`
     case 15:
       return 'SYSTEM UPDATE: 15 minutes elapsed. Approaching the typical target. If your dimensions are well covered, start moving toward close.'
     case 20:
-      return 'SYSTEM UPDATE: 20 minutes elapsed — the typical target. If you have enough signal across every selected dimension, close now: deliver one brief thank-you sentence and call the end_call tool. Only continue if a dimension still has weak evidence.'
+      return 'SYSTEM UPDATE: 20 minutes elapsed, the typical target. If you have enough signal across every selected dimension, close now: deliver one brief thank-you sentence and call the end_call tool. Only continue if a dimension still has weak evidence.'
     case 30:
-      return 'SYSTEM UPDATE: 30 minutes elapsed — past typical. Wrap unless you are mid-probe on critical ambiguity. Call end_call as soon as you have what you need.'
+      return 'SYSTEM UPDATE: 30 minutes elapsed, past typical. Wrap unless you are mid-probe on critical ambiguity. Call end_call as soon as you have what you need.'
     case 45:
-      return 'SYSTEM UPDATE: 45 minutes elapsed — upper bound. Close immediately with one short thank-you sentence and call the end_call tool now.'
+      return 'SYSTEM UPDATE: 45 minutes elapsed, upper bound. Close immediately with one short thank-you sentence and call the end_call tool now.'
     case 55:
-      return 'SYSTEM DIRECTIVE: 55 minutes — final warning. Your next utterance MUST be a ≤15-word thank-you, then call end_call immediately.'
+      return 'SYSTEM DIRECTIVE: 55 minutes, final warning. Your next utterance MUST be a ≤15-word thank-you, then call end_call immediately.'
     default:
       return null
   }
@@ -301,7 +301,7 @@ export default function VoiceInterview({
           ceilingFiredRef.current = true
           try {
             conversation.sendContextualUpdate(
-              'SYSTEM DIRECTIVE: 60 minutes — absolute end. Close with a single short thank-you sentence and call end_call right now.',
+              'SYSTEM DIRECTIVE: 60 minutes, absolute end. Close with a single short thank-you sentence and call end_call right now.',
             )
           } catch {}
           requestGracefulEnd()
@@ -405,7 +405,7 @@ export default function VoiceInterview({
     error: 'Error',
   }[phase]), [phase])
 
-  // Full-screen completion takeover. Replaces the chat UI entirely — no tiny
+  // Full-screen completion takeover. Replaces the chat UI entirely, no tiny
   // "saving…" blip at the bottom of a dead camera feed.
   if (phase === 'ending' || phase === 'done') {
     const isDone = phase === 'done'
@@ -435,7 +435,7 @@ export default function VoiceInterview({
 
           <p className="text-base sm:text-lg text-earth-200/80 max-w-xl leading-relaxed mb-12">
             {isDone
-              ? `Thanks for the ${elapsedMin}-minute conversation. Your feedback report is being generated now — we'll email it to you as soon as it's ready.`
+              ? `Thanks for the ${elapsedMin}-minute conversation. Your feedback report is being generated now, we'll email it to you as soon as it's ready.`
               : 'Saving your session and generating your feedback report. One moment.'}
           </p>
 
@@ -461,7 +461,7 @@ export default function VoiceInterview({
           )}
         </div>
 
-        {/* Thin progress line at the very bottom — slowly fills during 'ending', solid when done. */}
+        {/* Thin progress line at the very bottom, slowly fills during 'ending', solid when done. */}
         <div className="relative h-0.5 bg-earth-900">
           <div
             className={`h-full bg-gold-500 transition-all ${isDone ? 'duration-500' : 'duration-[3000ms]'}`}
@@ -536,7 +536,7 @@ export default function VoiceInterview({
           </div>
           <div className="flex-1">
             <p className="text-xs text-basanite-500 mb-2">
-              {phase === 'live' && (conversation.isSpeaking ? 'The interviewer is speaking…' : "Your turn — the interviewer is listening.")}
+              {phase === 'live' && (conversation.isSpeaking ? 'The interviewer is speaking…' : "Your turn, the interviewer is listening.")}
               {phase === 'idle' && 'Connecting your call…'}
               {phase === 'error' && errMsg}
             </p>

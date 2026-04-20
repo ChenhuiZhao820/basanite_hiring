@@ -15,13 +15,13 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient()
 
-  // Verify the waitlist entry exists and the email matches — prevents inviting arbitrary addresses
+  // Verify the waitlist entry exists and the email matches, prevents inviting arbitrary addresses
   const { data: entry } = await service.from('waitlist').select('email').eq('id', id).single()
   if (!entry || entry.email !== email) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  // Invite the user — Supabase sends them a magic link to set their password
+  // Invite the user, Supabase sends them a magic link to set their password
   const { error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'}/auth/callback`,
   })

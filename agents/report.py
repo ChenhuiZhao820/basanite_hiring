@@ -1,5 +1,5 @@
 """
-Report Generation Agent — generates hirer and candidate reports from interview transcripts.
+Report Generation Agent, generates hirer and candidate reports from interview transcripts.
 
 Produces two distinct reports from the same assessment data:
 - Hirer report: scores, evidence, capability map, cheating risk
