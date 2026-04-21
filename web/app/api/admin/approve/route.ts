@@ -21,9 +21,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  // Invite the user, Supabase sends them a magic link to set their password
+  // Invite the user, Supabase sends them a magic link. After email confirmation
+  // the callback routes them to /set-password so they can pick one.
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'
   const { error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'}/auth/callback`,
+    redirectTo: `${baseUrl}/auth/callback?next=/set-password`,
   })
   if (inviteError && inviteError.message !== 'User already registered') {
     console.error('Invite error:', inviteError)
