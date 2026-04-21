@@ -48,12 +48,23 @@ export default function OnboardPage() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { data: { full_name: name, is_candidate: true } },
         })
         if (error) throw error
+        // Supabase returns a fake user with empty identities when the email
+        // already exists (does not reveal existence to clients). Detect that
+        // and tell the user to sign in or reset instead of silently proceeding.
+        const emailExists = data.user && (!data.user.identities || data.user.identities.length === 0)
+        if (emailExists) {
+          setError('That email is already registered. Sign in below, or use the reset link.')
+          setIsSignUp(false)
+          return
+        }
+        // Real new user, tag them as a candidate.
+        await fetch('/api/auth/tag-candidate', { method: 'POST' }).catch(() => {})
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
@@ -64,6 +75,21 @@ export default function OnboardPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      setError('Enter your email above, then click the reset link.')
+      return
+    }
+    setError('')
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/set-password`,
+    })
+    setLoading(false)
+    if (error) { setError(error.message); return }
+    setError('Check your inbox for a password reset link.')
   }
 
   async function handleCVSubmit() {
@@ -181,6 +207,13 @@ export default function OnboardPage() {
                   {isSignUp ? 'Sign in' : 'Sign up'}
                 </button>
               </p>
+              {!isSignUp && (
+                <p className="text-xs text-basanite-400 text-center mt-2">
+                  <button type="button" onClick={handleForgotPassword} className="text-gold-600 hover:underline">
+                    Forgot password?
+                  </button>
+                </p>
+              )}
             </div>
           )}
 

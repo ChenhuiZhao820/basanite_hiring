@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   // Invite the user, Supabase sends them a magic link. After email confirmation
   // the callback routes them to /set-password so they can pick one.
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'
-  const { error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
+  const { data: invite, error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${baseUrl}/auth/callback?next=/set-password`,
   })
   if (inviteError && inviteError.message !== 'User already registered') {
@@ -33,6 +33,19 @@ export async function POST(request: NextRequest) {
       { error: `Failed to send invite: ${inviteError.message}` },
       { status: 500 }
     )
+  }
+
+  // Tag the invited user as a hirer so middleware lets them into /dashboard.
+  const invitedUser = invite?.user
+  if (invitedUser && invitedUser.app_metadata?.role !== 'hirer') {
+    const newApp = { ...(invitedUser.app_metadata || {}), role: 'hirer' }
+    const { error: tagError } = await service.auth.admin.updateUserById(invitedUser.id, {
+      app_metadata: newApp,
+    })
+    if (tagError) {
+      console.error('Role tag error:', tagError)
+      // Non-fatal: the invite went out, just surface a warning.
+    }
   }
 
   // Mark as approved in the waitlist table

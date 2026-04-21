@@ -27,11 +27,23 @@ export async function middleware(request: NextRequest) {
   const isDashboard = path.startsWith('/dashboard')
   const isAssessProtected = /^\/assess\/[^/]+\/(onboard|interview|complete)/.test(path)
 
+  const role = user?.app_metadata?.role as string | undefined
+  const isAdmin = user?.app_metadata?.is_admin === true
+
   // Dashboard routes require auth
   if (isDashboard && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('next', path)
+    return NextResponse.redirect(url)
+  }
+
+  // Dashboard is for hirers (and admins). Candidates who stumble in
+  // get bounced to the landing page with a hint.
+  if (isDashboard && user && !isAdmin && role !== 'hirer') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    url.searchParams.set('error', 'Hirer access only.')
     return NextResponse.redirect(url)
   }
 
