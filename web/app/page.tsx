@@ -38,8 +38,49 @@ function StoneTexture() {
 
 // ─── Nav ─────────────────────────────────────────────────────────────────
 function Nav() {
+  const [banner, setBanner] = useState<{ kind: 'error' | 'info'; msg: string } | null>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const err = params.get('error')
+    const info = params.get('info')
+    if (err) setBanner({ kind: 'error', msg: err })
+    else if (info) setBanner({ kind: 'info', msg: info })
+  }, [])
+
+  function dismiss() {
+    setBanner(null)
+    // Clean the URL without triggering a reload
+    const url = new URL(window.location.href)
+    url.searchParams.delete('error')
+    url.searchParams.delete('info')
+    window.history.replaceState({}, '', url.pathname + (url.searchParams.toString() ? '?' + url.searchParams : ''))
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-earth-50/85 backdrop-blur-md border-b border-earth-200/60">
+      {banner && (
+        <div
+          className={
+            banner.kind === 'error'
+              ? 'bg-red-50 border-b border-red-200 text-red-800'
+              : 'bg-amber-50 border-b border-amber-200 text-amber-900'
+          }
+        >
+          <div className="max-w-6xl mx-auto px-6 py-2.5 flex items-center justify-between gap-4 text-sm">
+            <span className="flex-1">{banner.msg}</span>
+            <div className="flex items-center gap-4 shrink-0">
+              <a href="/logout" className="underline font-medium hover:opacity-80">
+                Sign out
+              </a>
+              <button onClick={dismiss} aria-label="Dismiss" className="text-lg leading-none hover:opacity-70">
+                &times;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2.5">
           <LogoMark size={26} dark />
