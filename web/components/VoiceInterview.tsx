@@ -38,8 +38,8 @@ function StepDot({ active, done, pending, label }: { active?: boolean; done?: bo
     ? 'bg-gold-500'
     : active
       ? 'bg-gold-500 animate-pulse'
-      : 'bg-earth-500/40'
-  const labelClass = done || active ? 'text-earth-100' : 'text-earth-200/50'
+      : 'bg-basanite-400/40'
+  const labelClass = done || active ? 'text-basanite-700' : 'text-basanite-400'
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
@@ -411,46 +411,46 @@ export default function VoiceInterview({
     const isDone = phase === 'done'
     const elapsedMin = Math.max(1, Math.round(elapsed / 60))
     return (
-      <div className="h-screen flex flex-col bg-basanite-950 text-earth-50 relative overflow-hidden">
+      <div className="h-screen flex flex-col bg-earth-50 text-basanite-900 relative overflow-hidden">
         {/* Soft radial gold glow behind the content. */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(196,154,47,0.18) 0%, rgba(196,154,47,0.04) 35%, transparent 70%)',
+            background: 'radial-gradient(ellipse at center, rgba(196,154,47,0.12) 0%, rgba(196,154,47,0.03) 35%, transparent 70%)',
           }}
         />
 
         <div className="relative flex-1 flex flex-col items-center justify-center px-6 text-center">
           <div className="mb-10 opacity-90">
-            <LogoMark size={56} />
+            <LogoMark size={56} dark />
           </div>
 
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gold-500/80 mb-5 font-medium">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gold-600 mb-5 font-semibold">
             Assessment complete
           </p>
 
-          <h1 className="font-display text-5xl sm:text-6xl text-earth-50 mb-6 max-w-2xl leading-[1.1]">
+          <h1 className="font-display text-5xl sm:text-6xl text-basanite-900 mb-6 max-w-2xl leading-[1.1]">
             {isDone ? 'All done.' : 'Wrapping up.'}
           </h1>
 
-          <p className="text-base sm:text-lg text-earth-200/80 max-w-xl leading-relaxed mb-12">
+          <p className="text-base sm:text-lg text-basanite-600 max-w-xl leading-relaxed mb-12">
             {isDone
               ? `Thanks for the ${elapsedMin}-minute conversation. Your feedback report is being generated now, we'll email it to you as soon as it's ready.`
               : 'Saving your session and generating your feedback report. One moment.'}
           </p>
 
-          <div className="flex items-center justify-center gap-3 text-xs text-earth-200/60 uppercase tracking-widest">
+          <div className="flex items-center justify-center gap-3 text-xs text-basanite-500 uppercase tracking-widest">
             <StepDot active label="Session saved" done={isDone} />
-            <span className="text-earth-200/30">·</span>
+            <span className="text-basanite-400">·</span>
             <StepDot active={isDone} label="Report generating" done={false} pending={!isDone} />
-            <span className="text-earth-200/30">·</span>
+            <span className="text-basanite-400">·</span>
             <StepDot active={false} label="Emailed to you" done={false} pending />
           </div>
 
           {isDone && (
             <button
               onClick={() => router.push(`/assess/${token}/complete`)}
-              className="mt-12 inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-400 text-basanite-950 font-medium px-6 py-3 text-sm transition-colors"
+              className="mt-12 inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-400 text-white font-semibold px-6 py-3 text-sm transition-colors"
             >
               View feedback report
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
