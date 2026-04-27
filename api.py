@@ -6,6 +6,7 @@ Run with:
     uvicorn api:app --reload --port 8000
 """
 import asyncio
+import hmac
 import json
 import os
 from datetime import datetime, timezone
@@ -13,7 +14,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 load_dotenv()
 
@@ -28,20 +29,50 @@ app.add_middleware(
         "https://basanite.co.uk",
         "https://www.basanite.co.uk",
     ],
-    allow_methods=["POST", "GET", "PATCH", "DELETE"],
+    allow_methods=["POST", "GET", "PATCH"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
 _PIPELINE_SECRET = os.getenv("PIPELINE_API_SECRET", "")
+if not _PIPELINE_SECRET:
+    # Startup-time ops warning; request handlers still return generic 401
+    # rather than leaking deployment state to callers.
+    print("  [startup] WARN: PIPELINE_API_SECRET is not set — internal endpoints will reject all requests.")
 
 
 def _verify_internal(authorization: str | None):
-    """Raise 401 if the request doesn't carry the internal pipeline secret."""
-    if not _PIPELINE_SECRET:
-        raise HTTPException(status_code=500, detail="PIPELINE_API_SECRET not configured")
-    expected = f"Bearer {_PIPELINE_SECRET}"
-    if not authorization or authorization != expected:
+    """Raise 401 if the request doesn't carry the internal pipeline secret.
+
+    Uses constant-time comparison to avoid leaking the secret byte-by-byte
+    via response-time side channels. Returns the same generic 401 whether
+    the secret is missing from the deployment or the request is malformed.
+    """
+    if not _PIPELINE_SECRET or not authorization:
         raise HTTPException(status_code=401, detail="Unauthorized")
+    expected = f"Bearer {_PIPELINE_SECRET}"
+    if not hmac.compare_digest(authorization, expected):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# ─── Upload limits ─────────────────────────────────────────────────────────
+
+_MAX_CV_BYTES = 10 * 1024 * 1024          # 10 MB — comfortably larger than any CV
+_MAX_RECORDING_BYTES = 200 * 1024 * 1024  # 200 MB — ~45 min low-bitrate webm
+
+
+async def _read_bounded(upload: UploadFile, limit: int) -> bytes:
+    """Read an upload into memory, refusing if it exceeds `limit` bytes.
+
+    Uses a one-shot bounded read so a malicious client can't exhaust worker
+    memory by streaming a multi-gigabyte body before we look at Content-Length.
+    """
+    data = await upload.read(limit + 1)
+    if len(data) > limit:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large (max {limit // (1024 * 1024)} MB)",
+        )
+    return data
 
 
 # ─── Health ────────────────────────────────────────────────────────────────
@@ -54,20 +85,20 @@ async def health():
 # ─── Roles ─────────────────────────────────────────────────────────────────
 
 class CreateRoleRequest(BaseModel):
-    user_id: str
-    title: str
-    company_name: str | None = None
-    job_description: str
+    user_id: str = Field(min_length=1, max_length=64)
+    title: str = Field(min_length=1, max_length=200)
+    company_name: str | None = Field(default=None, max_length=200)
+    job_description: str = Field(min_length=1, max_length=20000)
 
 
 class UpdateRoleRequest(BaseModel):
-    title: str | None = None
-    dimensions: list[str] | None = None
-    technical_depth: str | None = None
+    title: str | None = Field(default=None, max_length=200)
+    dimensions: list[str] | None = Field(default=None, max_length=16)
+    technical_depth: str | None = Field(default=None, max_length=64)
     eligibility_constraints: dict | None = None
-    status: str | None = None
-    interview_duration_minutes: int | None = None
-    custom_instructions: str | None = None
+    status: str | None = Field(default=None, max_length=32)
+    interview_duration_minutes: int | None = Field(default=None, ge=1, le=120)
+    custom_instructions: str | None = Field(default=None, max_length=2000)
 
 
 @app.post("/roles")
@@ -220,10 +251,10 @@ async def get_assessment_info(token: str):
 
 
 class StartAssessmentRequest(BaseModel):
-    candidate_user_id: str
-    candidate_name: str
-    candidate_email: str
-    cv_text: str
+    candidate_user_id: str = Field(min_length=1, max_length=64)
+    candidate_name: str = Field(min_length=1, max_length=200)
+    candidate_email: str = Field(min_length=3, max_length=320)
+    cv_text: str = Field(min_length=1, max_length=80000)
 
 
 @app.post("/assess/{token}/cv-upload")
@@ -241,13 +272,17 @@ async def cv_upload(
     if not role or role["status"] != "live":
         raise HTTPException(status_code=404, detail="Assessment not found or not active")
 
-    data = await file.read()
+    data = await _read_bounded(file, _MAX_CV_BYTES)
     if not data:
         raise HTTPException(status_code=400, detail="Empty file")
 
     filename = (file.filename or "").lower()
     content_type = (file.content_type or "").lower()
-    is_pdf = filename.endswith(".pdf") or "pdf" in content_type
+    is_pdf = (
+        filename.endswith(".pdf")
+        and content_type in ("application/pdf", "application/x-pdf", "")
+        and data[:4] == b"%PDF"
+    )
     if not is_pdf:
         raise HTTPException(
             status_code=415,
@@ -393,7 +428,9 @@ async def voice_session(token: str, body: dict):
             headers=_el_headers(),
         )
     if resp.status_code != 200:
-        print(f"  [voice-session] signed-url failed: {resp.status_code} {resp.text}")
+        # Never log vendor response bodies — they can echo request params,
+        # agent IDs, or partial auth headers into aggregated logs.
+        print(f"  [voice-session] signed-url failed: status={resp.status_code}")
         raise HTTPException(status_code=502, detail="Failed to obtain voice session")
     signed_url = resp.json().get("signed_url")
 
@@ -415,6 +452,12 @@ async def voice_session(token: str, body: dict):
     duration_minutes = role.get("interview_duration_minutes") or 15
     max_duration_seconds = int(duration_minutes) * 60
 
+    # NOTE: the full system prompt is returned to the candidate's browser
+    # because the @elevenlabs/react SDK injects per-session overrides from
+    # the client. This exposes `custom_instructions` and the JD to anyone
+    # inspecting the network tab. Closing this cleanly requires either
+    # ElevenLabs' agent-level config API (slow, racy under concurrent
+    # sessions) or a per-session agent — see H3 in the security audit.
     return {
         "signed_url": signed_url,
         "prompt": prompt,
@@ -473,7 +516,7 @@ async def upload_recording(
 
     role, _assessment, _cv = _load_assessment_for_token(token, assessment_id)
 
-    data = await file.read()
+    data = await _read_bounded(file, _MAX_RECORDING_BYTES)
     if not data:
         raise HTTPException(status_code=400, detail="Empty upload")
 
@@ -518,6 +561,13 @@ async def finalize_voice_session(token: str, body: dict):
 
     if not assessment_id or not conversation_id:
         raise HTTPException(status_code=400, detail="Missing assessment_id or conversation_id")
+
+    # conversation_id is interpolated into the ElevenLabs URL; constrain to the
+    # charset ElevenLabs actually uses so a malicious client can't inject
+    # path segments (e.g. "../agents/X") to reach unintended endpoints.
+    import re as _re
+    if not _re.fullmatch(r"[A-Za-z0-9_-]{1,128}", str(conversation_id)):
+        raise HTTPException(status_code=400, detail="Invalid conversation_id")
 
     role, _assessment, cv = _load_assessment_for_token(token, assessment_id)
 
@@ -646,9 +696,18 @@ async def download_assessment_report_pdf(
     report_type: str,
     assessment_id: str,
 ):
-    """Candidate-facing: download a PDF of their report. Token + assessment_id must match."""
+    """Candidate-facing: download a PDF of their report. Token + assessment_id must match.
+
+    Candidates may only download their own `candidate` report. The hirer
+    report is confidential (contains grading, quotation_basis, internal
+    notes) and must be fetched via the authenticated hirer-only route
+    `/reports/{assessment_id}/{report_type}/pdf`.
+    """
     from fastapi.responses import Response
     from core.db import get_role_by_token, get_assessment
+
+    if report_type != "candidate":
+        raise HTTPException(status_code=404, detail="Report not found")
 
     role = get_role_by_token(token)
     if not role:

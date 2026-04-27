@@ -24,6 +24,12 @@ export default function OnboardPage() {
 
   async function handleCVFile(file: File) {
     setError('')
+    const MAX_CV_BYTES = 10 * 1024 * 1024
+    if (file.size > MAX_CV_BYTES) {
+      setError('That file is too large. Please upload a PDF under 10 MB, or paste the CV text.')
+      setCvFileName(null)
+      return
+    }
     setUploading(true)
     setCvFileName(file.name)
     try {

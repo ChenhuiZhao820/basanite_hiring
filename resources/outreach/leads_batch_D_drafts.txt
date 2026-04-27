@@ -1,0 +1,2461 @@
+BASANITE OUTREACH BATCH D, generated 2026-04-23
+105 leads total. 21 confirmed Manchester alumni.
+Emails are pattern-inferred; verify with a second tool before send.
+==========================================================================================
+
+===== 0066 | Antonio Marino | CTO & Co-Founder | Emma (emma-app.com) =====
+Manchester alum: True (BSc Computer Science 2012-2016 (First Class Honours))
+Email: antonio@emma-app.com (inferred_medium)
+Source: https://www.linkedin.com/in/marinoantonio/
+Hook: Named on the 2026 Sifted UK & Ireland Leaderboard; Emma has just crossed 25 employees and raised $7.64M from Connect Ventures and Kima with a £35.3M valuation, hiring engineers in London.
+Template: short_form
+-----
+SUBJECT: Saw Emma is hiring engineers
+
+Hi Antonio,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm a Manchester CS grad too. Named on the 2026 Sifted UK & Ireland Leaderboard; Emma has just crossed 25 employees and raised $7.64M from Connect Ventures and Kima with a £35.3M valuation, hiring engineers in London.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Emma's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0067 | Edoardo Moreni | CEO & Co-Founder | Emma (emma-app.com) =====
+Manchester alum: False (-)
+Email: edoardo@emma-app.com (inferred_medium)
+Source: https://uk.linkedin.com/in/edoardomoreni
+Hook: Co-founded Emma with Antonio Marino (UoM CS); Emma grew 10x in revenue over three years, became profitable and made the 2026 Sifted UK & Ireland Leaderboard.
+Template: short_form
+-----
+SUBJECT: Saw Emma is hiring engineers
+
+Hi Edoardo,
+
+Drew Robertson here, co-founder at Basanite. Co-founded Emma with Antonio Marino (UoM CS); Emma grew 10x in revenue over three years, became profitable and made the 2026 Sifted UK & Ireland Leaderboard.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Emma's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0068 | Richard Somerfield | Chief Technology Officer | Summize (summize.com) =====
+Manchester alum: True (BSc Computer Science 1996-1999)
+Email: richard.somerfield@summize.com (inferred_medium)
+Source: https://uk.linkedin.com/in/richard-somerfield-66b20b4
+Hook: Summize closed $50M growth round Jan 2026 led by Kennet Partners for AI contract intelligence inside Word/Outlook/Teams/Slack/Salesforce; MCR HQ team is scaling engineering significantly.
+Template: short_form
+-----
+SUBJECT: Saw Summize is hiring engineers
+
+Hi Richard,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm a Manchester CS grad too. Summize closed $50M growth round Jan 2026 led by Kennet Partners for AI contract intelligence inside Word/Outlook/Teams/Slack/Salesforce; MCR HQ team is scaling engineering significantly.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Summize's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0069 | Tanvi Bhardwaj | Co-Founder & CTO | MishiPay (mishipay.com) =====
+Manchester alum: True (BEng Computer Systems Engineering (First Class Honours))
+Email: tanvi@mishipay.com (inferred_medium)
+Source: https://www.linkedin.com/in/tanvibhardwaj/
+Hook: Forbes 30 Under 30; Beauhurst #3 UK Top 10 Female Entrepreneurs Under 30; MishiPay raised £4.4M Sept 2025, deployed in 2,000+ stores with a 38-49 person team.
+Template: short_form
+-----
+SUBJECT: Saw MishiPay is hiring engineers
+
+Hi Tanvi,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm a Manchester CS grad too; saw you read Computer Systems Engineering there. Forbes 30 Under 30; Beauhurst #3 UK Top 10 Female Entrepreneurs Under 30; MishiPay raised £4.4M Sept 2025, deployed in 2,000+ stores with a 38-49 person team.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of MishiPay's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0070 | Mustafa Khanwala | Founder & CEO | MishiPay (mishipay.com) =====
+Manchester alum: True (Undergraduate at UoM then MSc Engineering with Finance at UCL)
+Email: mustafa@mishipay.com (inferred_medium)
+Source: https://uk.linkedin.com/in/mustafakhanwala
+Hook: Forbes 30 Under 30; launching modular POS (Scan & Go, kiosks, RFID) across 2,000+ stores; in Dec 2024 >2% of the UK population shopped via MishiPay and the 38-strong team is scaling on £4.4M raised in Sept 2025.
+Template: short_form
+-----
+SUBJECT: Saw MishiPay is hiring engineers
+
+Hi Mustafa,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Forbes 30 Under 30; launching modular POS (Scan & Go, kiosks, RFID) across 2,000+ stores; in Dec 2024 >2% of the UK population shopped via MishiPay and the 38-strong team is scaling on £4.4M raised in Sept 2025.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of MishiPay's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0071 | Richard Freeman | Co-Founder & CTO Data | Vamstar (vamstar.io) =====
+Manchester alum: True (MEng Computer Systems Engineering + MPhil (Self-Organising Maps for hierarchical clustering))
+Email: richard.freeman@vamstar.io (inferred_medium)
+Source: https://www.linkedin.com/in/drfreeman/
+Hook: Vamstar just launched its healthcare-native Tender AI Operating System and is presenting at the 44th JP Morgan Healthcare Conference Jan 2026; 69 employees by March 2026, hiring data/ML engineers.
+Template: short_form
+-----
+SUBJECT: Saw Vamstar is hiring ML engineers
+
+Hi Richard,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Vamstar just launched its healthcare-native Tender AI Operating System and is presenting at the 44th JP Morgan Healthcare Conference Jan 2026; 69 employees by March 2026, hiring data/ML engineers.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Vamstar's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0072 | Praful Mehta | CEO & Co-Founder | Vamstar (vamstar.io) =====
+Manchester alum: False (-)
+Email: praful.mehta@vamstar.io (inferred_low)
+Source: https://www.crunchbase.com/organization/vamstar
+Hook: Co-founded Vamstar with MCR MEng alumnus Richard Freeman; closed Series A $9.5M, scaled to 69 employees across UK/India/UAE/Netherlands/US selling AI healthcare supply chain to 86,000 buyers.
+Template: long_form
+-----
+SUBJECT: Question on how Vamstar evaluates technical hires
+
+Hi Praful,
+
+Drew Robertson, co-founder at Basanite. Co-founded Vamstar with MCR MEng alumnus Richard Freeman; closed Series A $9.5M, scaled to 69 employees across UK/India/UAE/Netherlands/US selling AI healthcare supply chain to 86,000 buyers.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Vamstar's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0073 | Matthew McGrory | CEO & Co-Founder | Arwen (arwen.ai) =====
+Manchester alum: True (University of Manchester 1994-1996)
+Email: matthew.mcgrory@arwen.ai (inferred_medium)
+Source: https://www.linkedin.com/in/mmcgrory/
+Hook: Arwen processes 580,000 comments a day protecting 500M+ followers across paid/organic social; founded after the Euro 2020 final racist abuse storm; just closed Creative Growth Finance II Fund investment to scale trust-and-safety engineering.
+Template: short_form
+-----
+SUBJECT: Saw Arwen is hiring engineers
+
+Hi Matthew,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Arwen processes 580,000 comments a day protecting 500M+ followers across paid/organic social; founded after the Euro 2020 final racist abuse storm; just closed Creative Growth Finance II Fund investment to scale trust-and-safety engineering.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Arwen's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0074 | Ben Clayton | Co-Founder & CTO | Housr (housr.app) =====
+Manchester alum: True (Undergraduate 2017-2020; Oracle Certified Associate Java SE 8)
+Email: ben@housr.app (inferred_medium)
+Source: https://uk.linkedin.com/in/ben-clayton-4a512a146
+Hook: Built Housr from a first-year UoM idea to a 26-person proptech; closed £7.5M Series A Oct 2025 (Ashta Capital + Juniper Equity) and just opened Chicago HQ for US expansion.
+Template: short_form
+-----
+SUBJECT: Saw Housr is hiring engineers
+
+Hi Ben,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Built Housr from a first-year UoM idea to a 26-person proptech; closed £7.5M Series A Oct 2025 (Ashta Capital + Juniper Equity) and just opened Chicago HQ for US expansion.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Housr's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0075 | Harry Panter | Co-Founder | Housr (housr.app) =====
+Manchester alum: True (Undergraduate at UoM (founded Housr in first year))
+Email: harry@housr.app (inferred_medium)
+Source: https://www.linkedin.com/in/harry-neil-panter-738703120/
+Hook: Relocated to Chicago to run US expansion; Housr closed £7.5M Series A Oct 2025 and revenue grew 186% YoY — the 'Tinder of student housing', now UK's second-largest student rental platform.
+Template: short_form
+-----
+SUBJECT: Saw Housr is hiring engineers
+
+Hi Harry,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Relocated to Chicago to run US expansion; Housr closed £7.5M Series A Oct 2025 and revenue grew 186% YoY — the 'Tinder of student housing', now UK's second-largest student rental platform.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Housr's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0076 | Neil Andrew | Founder | Lunio (lunio.ai) =====
+Manchester alum: True (Geology, physical geography and planetary science 2010-2013)
+Email: neil@lunio.ai (inferred_medium)
+Source: https://uk.linkedin.com/in/nmandrew
+Hook: Founded Lunio (was PPC Protect) in Manchester; raised $15M Series A led by Smedvig, hit 71 employees Feb 2026 and moved to 100-person HQ on Mosley Street; working with M&S and Hugo Boss, expanding to US.
+Template: short_form
+-----
+SUBJECT: Saw Lunio is hiring engineers
+
+Hi Neil,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm a Manchester CS grad too; saw you read Geology there. Founded Lunio (was PPC Protect) in Manchester; raised $15M Series A led by Smedvig, hit 71 employees Feb 2026 and moved to 100-person HQ on Mosley Street; working with M&S and Hugo Boss, expanding to US.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Lunio's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0077 | Gori Yahaya | Founder & CEO | UpSkill Digital (upskilldigital.com) =====
+Manchester alum: True (University of Manchester (undergrad))
+Email: gori@upskilldigital.com (inferred_medium)
+Source: https://www.linkedin.com/in/goriyahaya/
+Hook: $150K from Google Black Founders Fund and backed by Beyoncé's BEYGood; UpSkill Digital trains staff at Google, TikTok, Walmart, Santander and BT. Sunday Times 100 Fastest Growing list.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Gori,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm also a Manchester CS grad. $150K from Google Black Founders Fund and backed by Beyoncé's BEYGood; UpSkill Digital trains staff at Google, TikTok, Walmart, Santander and BT. Sunday Times 100 Fastest Growing list.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At UpSkill Digital's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0078 | Andrés Martin-Lopez | CTO | Blokur (blokur.com) =====
+Manchester alum: True (MSc Advanced Computer Science)
+Email: andres@blokur.com (inferred_medium)
+Source: https://www.crunchbase.com/person/andr%C3%A9s-martin-lopez
+Hook: Ex-UMG head of innovation (built UMG's sync licensing platform and metadata API); now CTO of Blokur, Ethereum-based music rights attribution. Hiring engineers who reason about complex rights/royalty edge cases.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Andrés,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Ex-UMG head of innovation (built UMG's sync licensing platform and metadata API); now CTO of Blokur, Ethereum-based music rights attribution. Hiring engineers who reason about complex rights/royalty edge cases.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Blokur, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0079 | Phil Barry | Founder & CEO | Blokur (blokur.com) =====
+Manchester alum: False (-)
+Email: phil@blokur.com (inferred_low)
+Source: https://blokur.com/
+Hook: Co-founded Blokur with MCR MSc Advanced CS alum Andrés Martin-Lopez, tackling missing artist royalties in music publishing — structure-heavy engineering role where structured assessment matters.
+Template: long_form
+-----
+SUBJECT: Question on how Blokur evaluates technical hires
+
+Hi Phil,
+
+Drew Robertson, co-founder at Basanite. Co-founded Blokur with MCR MSc Advanced CS alum Andrés Martin-Lopez, tackling missing artist royalties in music publishing — structure-heavy engineering role where structured assessment matters.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Blokur's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0080 | Fraser Stewart | Co-Founder & CCO | Lyfeguard (lyfeguard.com) =====
+Manchester alum: True (Global Part-time MBA, Alliance Manchester Business School)
+Email: fraser@lyfeguard.com (inferred_medium)
+Source: https://www.linkedin.com/in/fwcstewart/
+Hook: Father-son founded fintech Lyfeguard was selected for NatWest Group Accelerator and made FinTech Global's WealthTech100 2026; CTO came from 10x Future Technologies; building financial-adviser platform hires.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Fraser,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Father-son founded fintech Lyfeguard was selected for NatWest Group Accelerator and made FinTech Global's WealthTech100 2026; CTO came from 10x Future Technologies; building financial-adviser platform hires.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Lyfeguard's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0081 | Mark Allcock | Co-Founder & CTO | Lyfeguard (lyfeguard.com) =====
+Manchester alum: False (-)
+Email: mark@lyfeguard.com (inferred_low)
+Source: https://theorg.com/org/lyfeguard/org-chart/fraser-stewart
+Hook: 30+ years of platform leadership in payments and digital banking, founding role at 10x Future Technologies; now building Lyfeguard's 'life admin' platform with MCR MBA co-founder Fraser Stewart after NatWest Accelerator selection.
+Template: long_form
+-----
+SUBJECT: Question on how Lyfeguard evaluates technical hires
+
+Hi Mark,
+
+Drew Robertson, co-founder at Basanite. 30+ years of platform leadership in payments and digital banking, founding role at 10x Future Technologies; now building Lyfeguard's 'life admin' platform with MCR MBA co-founder Fraser Stewart after NatWest Accelerator selection.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Lyfeguard, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0082 | Rob Tominey | Co-Founder & CEO | Further (joinfurther.com) =====
+Manchester alum: True (BA Economics (2:1))
+Email: rob@joinfurther.com (inferred_medium)
+Source: https://www.fintechscotland.com/fintech/further/
+Hook: Third-time founder; Further is the only UK platform democratising VC fund access to retail investors from £1,000 minimums — an FCA-sensitive product that needs careful engineering hires.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Rob,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm a Manchester CS grad too; saw you read Economics there. Third-time founder; Further is the only UK platform democratising VC fund access to retail investors from £1,000 minimums — an FCA-sensitive product that needs careful engineering hires.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Further's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0083 | Seb Wallace | Co-Founder | Further (joinfurther.com) =====
+Manchester alum: True (LLB Law (First Class Honours))
+Email: seb@joinfurther.com (inferred_medium)
+Source: https://www.fintechscotland.com/fintech/further/
+Hook: Investment Director at Triple Point Ventures (Credit Kudos, Ably, Quit Genius, Learnerbly portfolio) alongside Further co-founder role; MCR Law alum with VC pattern-matching on hiring engineering teams for regulated fintech.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Seb,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm a Manchester CS grad too; saw you read Law there. Investment Director at Triple Point Ventures (Credit Kudos, Ably, Quit Genius, Learnerbly portfolio) alongside Further co-founder role; MCR Law alum with VC pattern-matching on hiring engineering teams for regulated fintech.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Further's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0084 | Daniel Dunn | CEO & Co-Founder | Paperplanes (paperplanes.co.uk) =====
+Manchester alum: True (Alliance Manchester Business School)
+Email: daniel.dunn@paperplanes.co.uk (inferred_medium)
+Source: https://www.linkedin.com/in/daniel-dunn-1a2b763a/
+Hook: Built Paperplanes into UK's first programmatic direct-mail platform, $3M annual revenue in 2026 with ~20 London staff combining data analysts, ML/dev and ops — every hire has to be full-stack across data + physical ops.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Daniel,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Built Paperplanes into UK's first programmatic direct-mail platform, $3M annual revenue in 2026 with ~20 London staff combining data analysts, ML/dev and ops — every hire has to be full-stack across data + physical ops.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Paperplanes's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0085 | Steve Kinder | CTO & Co-Founder | Paperplanes (paperplanes.co.uk) =====
+Manchester alum: False (-)
+Email: steve.kinder@paperplanes.co.uk (inferred_medium)
+Source: https://uk.linkedin.com/in/steven-kinder-42080b22
+Hook: Ex-dunnhumby data scientist now CTO of Paperplanes; blending AI/ML with one of UK's largest industrial printers — unusual hire that must understand both behavioural tags and offline print ops.
+Template: long_form
+-----
+SUBJECT: Question on how Paperplanes evaluates technical hires
+
+Hi Steve,
+
+Drew Robertson, co-founder at Basanite. Ex-dunnhumby data scientist now CTO of Paperplanes; blending AI/ML with one of UK's largest industrial printers — unusual hire that must understand both behavioural tags and offline print ops.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Paperplanes, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0086 | Jacob Mellor | Chief Technology Officer | Iron Software (ironsoftware.com) =====
+Manchester alum: True (BEng Civil Engineering (First Class Honours) 1998-2001)
+Email: jacob.mellor@ironsoftware.com (inferred_medium)
+Source: https://www.linkedin.com/in/jacob-mellor-iron-software/
+Hook: Original developer behind Iron Software's C# PDF tooling; scaled to 50+ staff serving NASA, Tesla and government agencies — technical-depth screening matters for C#/PDF edge cases.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Jacob,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm a Manchester CS grad too; saw you read Civil Engineering there. Original developer behind Iron Software's C# PDF tooling; scaled to 50+ staff serving NASA, Tesla and government agencies — technical-depth screening matters for C#/PDF edge cases.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. How does Iron Software currently decide whether an engineering hire worked out, six months in?
+2. What's the failure mode you've seen most often in interview-to-performance correlation?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0087 | Shai Schechter | Founder | Surreal (surrealapps.com) =====
+Manchester alum: True (First-Class Honours, University of Manchester)
+Email: shai@surrealapps.com (inferred_low)
+Source: https://www.linkedin.com/in/shai-schechter-88335854/
+Hook: Founded Surreal (UK web/mobile consultancy) in 2013 after a First-Class MCR degree; also co-founded Rightmessage. Services firm that hires technical contributors — warmer MCR alum intro than hiring-pain pitch.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Shai,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Founded Surreal (UK web/mobile consultancy) in 2013 after a First-Class MCR degree; also co-founded Rightmessage. Services firm that hires technical contributors — warmer MCR alum intro than hiring-pain pitch.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Surreal's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0088 | Harvey Lowe | Co-Founder & COO | Arcube (arcube.com) =====
+Manchester alum: True (Undergraduate at UoM (Masood Entrepreneurship Centre))
+Email: harvey@arcube.com (inferred_low)
+Source: https://uk.linkedin.com/in/harvey-lowe
+Hook: Won 2024 Venture Further Awards Technology category with Prithveesh Reddy before closing $1.5M seed for Arcube's post-flight ancillary platform; 8-person travel-tech team where hiring wrong costs 12% of headcount.
+Template: short_form
+-----
+SUBJECT: Saw Arcube is hiring engineers
+
+Hi Harvey,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Won 2024 Venture Further Awards Technology category with Prithveesh Reddy before closing $1.5M seed for Arcube's post-flight ancillary platform; 8-person travel-tech team where hiring wrong costs 12% of headcount.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Arcube's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0089 | Kunal Mandalia | Founder / Engineer | Desia (desia.ai) =====
+Manchester alum: True (University of Manchester 2006-2008 (2:1); Game Theory, Mathematical Finance, Optimisation)
+Email: kunal@desia.ai (inferred_low)
+Source: https://uk.linkedin.com/in/kunal-mandalia-developer
+Hook: Desia turned Vesper Infrastructure Partners' 10+ hour manual investment screening into a 15-minute workflow; London AI-for-PE fintech closed $3.3M pre-seed Sept 2024 (Dig Ventures), ~7 staff so first engineering hires are load-bearing.
+Template: short_form
+-----
+SUBJECT: Saw Desia is hiring engineers
+
+Hi Kunal,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Desia turned Vesper Infrastructure Partners' 10+ hour manual investment screening into a 15-minute workflow; London AI-for-PE fintech closed $3.3M pre-seed Sept 2024 (Dig Ventures), ~7 staff so first engineering hires are load-bearing.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Desia's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0090 | John Doyle | Founder & Chair | Voicescape (voicescape.com) =====
+Manchester alum: False (-)
+Email: john.doyle@voicescape.com (inferred_low)
+Source: https://www.voicescape.com/meet-the-team
+Hook: Salford-HQ social-housing SaaS grew from 15 to 70 staff in 5 years with £9M BGF backing; acquired Enterprise RPA Jan 2026 to build UK's first integrated AI + RPA platform for social landlords.
+Template: short_form
+-----
+SUBJECT: Saw Voicescape is hiring engineers
+
+Hi John,
+
+Drew Robertson here, co-founder at Basanite. Salford-HQ social-housing SaaS grew from 15 to 70 staff in 5 years with £9M BGF backing; acquired Enterprise RPA Jan 2026 to build UK's first integrated AI + RPA platform for social landlords.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Voicescape's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0091 | Gary Haynes | Managing Director | Voicescape (voicescape.com) =====
+Manchester alum: False (-)
+Email: gary.haynes@voicescape.com (inferred_low)
+Source: https://www.voicescape.com/meet-the-team
+Hook: Leading Voicescape's 70-strong combined team after Jan 2026 Enterprise RPA acquisition that created UK's first integrated AI+RPA platform for ~100 UK social landlords and councils.
+Template: short_form
+-----
+SUBJECT: Saw Voicescape is hiring engineers
+
+Hi Gary,
+
+Drew Robertson here, co-founder at Basanite. Leading Voicescape's 70-strong combined team after Jan 2026 Enterprise RPA acquisition that created UK's first integrated AI+RPA platform for ~100 UK social landlords and councils.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Voicescape's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0092 | Adam Ward | CEO & Co-Founder | Airtime Rewards (airtimerewards.co.uk) =====
+Manchester alum: False (-)
+Email: adam.ward@airtimerewards.co.uk (inferred_low)
+Source: https://uk.linkedin.com/in/adamwarduk
+Hook: Manchester loyalty/rewards fintech Airtime has 78 employees and partners with major UK mobile networks + retail/restaurant chains; announced ~20 new MCR engineering, product and CS roles.
+Template: short_form
+-----
+SUBJECT: Saw Airtime Rewards is hiring engineers
+
+Hi Adam,
+
+Drew Robertson here, co-founder at Basanite. Manchester loyalty/rewards fintech Airtime has 78 employees and partners with major UK mobile networks + retail/restaurant chains; announced ~20 new MCR engineering, product and CS roles.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Airtime Rewards's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0093 | Ben Armstrong | Co-Founder & CEO | Cytix (cytix.io) =====
+Manchester alum: False (-)
+Email: ben@cytix.io (inferred_medium)
+Source: https://www.linkedin.com/in/benarmstrong2/
+Hook: Manchester cybersecurity Cytix raised £1.6M from NPIF II Praetura + British Business Bank for continuous security testing; Prolific North Tech Awards 'Startup of the Year'.
+Template: short_form
+-----
+SUBJECT: Saw Cytix is hiring security engineers
+
+Hi Ben,
+
+Drew Robertson here, co-founder at Basanite. Manchester cybersecurity Cytix raised £1.6M from NPIF II Praetura + British Business Bank for continuous security testing; Prolific North Tech Awards 'Startup of the Year'.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Cytix's current security roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0094 | Thomas Ballin | Co-Founder & Director | Cytix (cytix.io) =====
+Manchester alum: False (-)
+Email: thomas@cytix.io (inferred_low)
+Source: https://www.cytix.io/
+Hook: 10+ years as a security champion building pen-testing products; co-founded MCR Cytix 2022 to turn change-detection into continuous security testing — technical-depth evaluation is what they sell.
+Template: long_form
+-----
+SUBJECT: Question on how Cytix evaluates technical hires
+
+Hi Thomas,
+
+Drew Robertson, co-founder at Basanite. 10+ years as a security champion building pen-testing products; co-founded MCR Cytix 2022 to turn change-detection into continuous security testing — technical-depth evaluation is what they sell.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Cytix, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0095 | Zeiad Idris | Founder & CEO | Algbra (algbra.com) =====
+Manchester alum: False (-)
+Email: zeiad.idris@algbra.com (inferred_low)
+Source: https://group.algbra.com/team/founders/
+Hook: MCR-HQ values-driven fintech raised £13.8M across three rounds for ethical banking for underbanked minority communities; regulated product + MCR HQ = natural warm channel.
+Template: long_form
+-----
+SUBJECT: Question on how Algbra evaluates technical hires
+
+Hi Zeiad,
+
+Drew Robertson, co-founder at Basanite. MCR-HQ values-driven fintech raised £13.8M across three rounds for ethical banking for underbanked minority communities; regulated product + MCR HQ = natural warm channel.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Algbra's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0096 | Tahir Mahmood | Co-Founder & CTO | OpenBox AI (openbox.ai) =====
+Manchester alum: False (-)
+Email: tahir@openbox.ai (inferred_low)
+Source: https://www.linkedin.com/in/tahirmahmood66/
+Hook: Ex-Microsoft Technical Lead for Operating Systems with 40+ patents; OpenBox closed $5M seed March 2026 (Tykhe Ventures) for enterprise AI trust platform; in Accenture FinTech Innovation Lab London 2026.
+Template: short_form
+-----
+SUBJECT: Saw OpenBox AI is hiring engineers
+
+Hi Tahir,
+
+Drew Robertson here, co-founder at Basanite. Ex-Microsoft Technical Lead for Operating Systems with 40+ patents; OpenBox closed $5M seed March 2026 (Tykhe Ventures) for enterprise AI trust platform; in Accenture FinTech Innovation Lab London 2026.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of OpenBox AI's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0097 | Patrick Smith | Founder & CEO | Zally (zally.com) =====
+Manchester alum: False (-)
+Email: patrick@zally.com (inferred_low)
+Source: https://thefintechtimes.com/in-profile-patrick-smith-ceo-of-zally/
+Hook: MCR cyber startup replacing text passwords with behavioural biometrics + AI; raised £1.3M of a £1.6M target with 6point6 founder David Webb as chair; works directly with University of Manchester and MMU on STEM placements.
+Template: long_form
+-----
+SUBJECT: Question on how Zally evaluates technical hires
+
+Hi Patrick,
+
+Drew Robertson, co-founder at Basanite. MCR cyber startup replacing text passwords with behavioural biometrics + AI; raised £1.3M of a £1.6M target with 6point6 founder David Webb as chair; works directly with University of Manchester and MMU on STEM placements.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Zally's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0098 | Sam Perona | CEO | Spotlight Pathology (spotlightpathology.com) =====
+Manchester alum: False (-)
+Email: sam.perona@spotlightpathology.com (inferred_low)
+Source: https://www.spotlightpathology.com/about/
+Hook: Second-time founder (Perfectus Biomed exit); leading UoM spin-out Spotlight Pathology that raised £1.4M seed March 2026 to deploy AI-powered blood-cancer image analysis into NHS clinical workflows.
+Template: long_form
+-----
+SUBJECT: Question on how Spotlight Pathology evaluates technical hires
+
+Hi Sam,
+
+Drew Robertson, co-founder at Basanite. Second-time founder (Perfectus Biomed exit); leading UoM spin-out Spotlight Pathology that raised £1.4M seed March 2026 to deploy AI-powered blood-cancer image analysis into NHS clinical workflows.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Spotlight Pathology's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0099 | Martin Fergie | Co-Founder & CTO | Spotlight Pathology (spotlightpathology.com) =====
+Manchester alum: True (PhD / Research, University of Manchester (15+ years in AI image analysis))
+Email: martin.fergie@spotlightpathology.com (inferred_low)
+Source: https://www.spotlightpathology.com/about/
+Hook: 15+ years building AI image-analysis at UoM; previously CTO at DigitalBridge (now Fixtuur). Spotlight Pathology just closed £1.4M seed to speed NHS blood-cancer diagnosis — MCR spin-out, direct warm channel.
+Template: short_form
+-----
+SUBJECT: Saw Spotlight Pathology is hiring ML engineers
+
+Hi Martin,
+
+Drew Robertson here, co-founder and CTO at Basanite. I'm also a Manchester CS grad. 15+ years building AI image-analysis at UoM; previously CTO at DigitalBridge (now Fixtuur). Spotlight Pathology just closed £1.4M seed to speed NHS blood-cancer diagnosis — MCR spin-out, direct warm channel.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Spotlight Pathology's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0100 | Zoë Blake | CEO | CareLoop Health (careloop.health) =====
+Manchester alum: False (-)
+Email: zoe.blake@careloop.health (inferred_low)
+Source: https://careloop.health/about/
+Hook: Previously delivered 10x growth at Kooth plc; CEO of UoM spin-out CareLoop Health which closed £1.8M seed Jan 2025 (Praetura/Verge) for digital therapeutics in severe mental illness.
+Template: long_form
+-----
+SUBJECT: Question on how CareLoop Health evaluates technical hires
+
+Hi Zoë,
+
+Drew Robertson, co-founder at Basanite. Previously delivered 10x growth at Kooth plc; CEO of UoM spin-out CareLoop Health which closed £1.8M seed Jan 2025 (Praetura/Verge) for digital therapeutics in severe mental illness.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At CareLoop Health's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0101 | Tom Dunlop | Founder & CEO | Summize (summize.com) =====
+Manchester alum: False (-)
+Email: tom.dunlop@summize.com (inferred_medium)
+Source: https://www.summize.com/our-team/tom-dunlop
+Hook: Summize ranked #10 on Deloitte UK Tech Fast 50 2025 and North West regional winner, with a 49% headcount expansion in 2025 after securing $50M growth investment. Moved into a new 5,100 sqft Manchester HQ to support 133% team growth.
+Template: short_form
+-----
+SUBJECT: Saw Summize is hiring engineers
+
+Hi Tom,
+
+Drew Robertson here, co-founder at Basanite. Summize ranked #10 on Deloitte UK Tech Fast 50 2025 and North West regional winner, with a 49% headcount expansion in 2025 after securing $50M growth investment. Moved into a new 5,100 sqft Manchester HQ to support 133% team growth.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Summize's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0102 | David Smith | Co-founder & Chief Development Officer | Summize (summize.com) =====
+Manchester alum: False (-)
+Email: david.smith@summize.com (inferred_low)
+Source: https://www.summize.com/about
+Hook: CDO at Summize, the Manchester legal-tech that hit #10 on Deloitte Tech Fast 50 2025; leads engineering through a period of 100% ARR growth five years running and a new 5,100 sqft MCR office.
+Template: short_form
+-----
+SUBJECT: Saw Summize is hiring engineers
+
+Hi David,
+
+Drew Robertson here, co-founder at Basanite. CDO at Summize, the Manchester legal-tech that hit #10 on Deloitte Tech Fast 50 2025; leads engineering through a period of 100% ARR growth five years running and a new 5,100 sqft MCR office.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Summize's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0103 | Ian Clarke | Chief Technology Officer | AccessPay (accesspay.com) =====
+Manchester alum: False (-)
+Email: ian.clarke@accesspay.com (inferred_medium)
+Source: https://accesspay.com/press-release/two-new-smt-appointments/
+Hook: Joined AccessPay as CTO in December 2025 after being CTO at Sage UK and Landmark; now taking ownership of Software Engineering, QA, Infrastructure and TechOps. Brand new tech leadership team building out as AccessPay scales.
+Template: short_form
+-----
+SUBJECT: Saw AccessPay is hiring engineers
+
+Hi Ian,
+
+Drew Robertson here, co-founder at Basanite. Joined AccessPay as CTO in December 2025 after being CTO at Sage UK and Landmark; now taking ownership of Software Engineering, QA, Infrastructure and TechOps. Brand new tech leadership team building out as AccessPay scales.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of AccessPay's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0104 | Nick Morley | CEO | Lunio (lunio.ai) =====
+Manchester alum: False (-)
+Email: nick.morley@lunio.ai (inferred_medium)
+Source: https://www.prolificnorth.co.uk/news/industry-veteran-switches-from-chair-to-ceo-at-manchester-adtech/
+Hook: Took over as Lunio CEO December 2024 after founder Neil Andrew moved to Chief Strategy Officer. Lunio has hit $10M ARR serving HUGO BOSS and M&S and is expanding internationally.
+Template: long_form
+-----
+SUBJECT: Question on how Lunio evaluates technical hires
+
+Hi Nick,
+
+Drew Robertson, co-founder at Basanite. Took over as Lunio CEO December 2024 after founder Neil Andrew moved to Chief Strategy Officer. Lunio has hit $10M ARR serving HUGO BOSS and M&S and is expanding internationally.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Lunio's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0105 | David Triger | Chief Technology Officer | Lunio (lunio.ai) =====
+Manchester alum: False (-)
+Email: david.triger@lunio.ai (inferred_low)
+Source: https://www.lunio.ai/about-us
+Hook: CTO at Lunio, the MCR-based ad fraud platform at $10M ARR scaling internationally with HUGO BOSS and M&S as anchors.
+Template: short_form
+-----
+SUBJECT: Saw Lunio is hiring engineers
+
+Hi David,
+
+Drew Robertson here, co-founder at Basanite. CTO at Lunio, the MCR-based ad fraud platform at $10M ARR scaling internationally with HUGO BOSS and M&S as anchors.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Lunio's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0106 | Jimmy Hosang | Founder & CEO | MOJO-CX (mojo.cx) =====
+Manchester alum: False (-)
+Email: jimmy@mojo.cx (inferred_medium)
+Source: https://www.mojo.cx/people/jimmy-hosang
+Hook: Closed a £2.25M Seed in January 2025 led by NPIF II/Praetura with GMCA and Foresight. Selling an AI team-leader 'MO' and agent assistant 'JO' into contact centres, classic post-seed hiring push.
+Template: short_form
+-----
+SUBJECT: Saw MOJO-CX is hiring engineers
+
+Hi Jimmy,
+
+Drew Robertson here, co-founder at Basanite. Closed a £2.25M Seed in January 2025 led by NPIF II/Praetura with GMCA and Foresight. Selling an AI team-leader 'MO' and agent assistant 'JO' into contact centres, classic post-seed hiring push.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of MOJO-CX's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0107 | Safe Hammad | Co-founder & CTO | Arctic Shores (arcticshores.com) =====
+Manchester alum: False (-)
+Email: safe.hammad@arcticshores.com (inferred_medium)
+Source: https://www.arcticshores.com/news/arctic-shores-appoints-estelle-mccartney-as-ceo
+Hook: Arctic Shores is a direct adjacency to Basanite, AI/gamified psychometric assessment used by 350+ orgs on 3M+ applications. New CEO Estelle McCartney stepped up in 10th-anniversary year specifically to capitalise on AI-driven recruitment trends.
+Template: long_form
+-----
+SUBJECT: Question on how Arctic Shores evaluates technical hires
+
+Hi Safe,
+
+Drew Robertson, co-founder at Basanite. Arctic Shores is a direct adjacency to Basanite, AI/gamified psychometric assessment used by 350+ orgs on 3M+ applications. New CEO Estelle McCartney stepped up in 10th-anniversary year specifically to capitalise on AI-driven recruitment trends.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Arctic Shores, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0108 | Estelle McCartney | CEO | Arctic Shores (arcticshores.com) =====
+Manchester alum: False (-)
+Email: estelle.mccartney@arcticshores.com (inferred_medium)
+Source: https://www.arcticshores.com/news/arctic-shores-appoints-estelle-mccartney-as-ceo
+Hook: Promoted from Chief Growth Officer to CEO 2024 to lead Arctic Shores into AI-driven recruitment. Competitive adjacency but most likely Basanite ally, both Manchester, both assessment science.
+Template: long_form
+-----
+SUBJECT: Question on how Arctic Shores evaluates technical hires
+
+Hi Estelle,
+
+Drew Robertson, co-founder at Basanite. Promoted from Chief Growth Officer to CEO 2024 to lead Arctic Shores into AI-driven recruitment. Competitive adjacency but most likely Basanite ally, both Manchester, both assessment science.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Arctic Shores's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0109 | Mark Hartley | Founder & CEO | BankiFi (bankifi.com) =====
+Manchester alum: False (-)
+Email: mark.hartley@bankifi.com (inferred_medium)
+Source: https://www.bankifi.com/blog/author/mark-hartley-founding-partner-ceo
+Hook: MCR-based SME business-banking platform embedded with global banks. Previously CIO at Clear2Pay; notes ~30% of product team are career-retrainers, meaning non-traditional hiring signals are already part of BankiFi's culture.
+Template: long_form
+-----
+SUBJECT: Question on how BankiFi evaluates technical hires
+
+Hi Mark,
+
+Drew Robertson, co-founder at Basanite. MCR-based SME business-banking platform embedded with global banks. Previously CIO at Clear2Pay; notes ~30% of product team are career-retrainers, meaning non-traditional hiring signals are already part of BankiFi's culture.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At BankiFi's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0110 | Gemma McCall | Co-founder & CEO | Culture Shift (culture-shift.co.uk) =====
+Manchester alum: False (-)
+Email: gemma.mccall@culture-shift.co.uk (inferred_medium)
+Source: https://theorg.com/org/culture-shift/org-chart/gemma-mccall
+Hook: Culture Shift's reporting platform is now used by 70+ UK/Irish universities and workplaces. McCall founded the business after experiencing maternity discrimination twice, deep alignment with Basanite's structure-as-fairness design principle.
+Template: long_form
+-----
+SUBJECT: Question on how Culture Shift evaluates technical hires
+
+Hi Gemma,
+
+Drew Robertson, co-founder at Basanite. Culture Shift's reporting platform is now used by 70+ UK/Irish universities and workplaces. McCall founded the business after experiencing maternity discrimination twice, deep alignment with Basanite's structure-as-fairness design principle.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Culture Shift's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0111 | Carl Sadd | Chief Technology Officer | Culture Shift (culture-shift.co.uk) =====
+Manchester alum: False (-)
+Email: carl.sadd@culture-shift.co.uk (inferred_low)
+Source: https://rocketreach.co/culture-shift-management_b45c72d5fc6eae48
+Hook: CTO of Culture Shift (MCR); company scaling platform to 70+ UK universities. Small-but-growing eng team typical of 20-30 person SaaS, candidate pipeline quality is probably a concrete pain.
+Template: short_form
+-----
+SUBJECT: Question on how Culture Shift evaluates technical hires
+
+Hi Carl,
+
+Drew Robertson here, co-founder at Basanite. CTO of Culture Shift (MCR); company scaling platform to 70+ UK universities. Small-but-growing eng team typical of 20-30 person SaaS, candidate pipeline quality is probably a concrete pain.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Culture Shift's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0112 | Matt Lovell | Co-founder & CEO | CloudGuard (cloudguard.ai) =====
+Manchester alum: False (-)
+Email: matt.lovell@cloudguard.ai (inferred_medium)
+Source: https://itchanneloxygen.com/high-growth-mssp-hails-manchester-as-uk-leader-for-cyber-talent/
+Hook: Moved HQ from London to Manchester in 2024 specifically calling MCR UK leader for cyber talent. Plans 20 new cyber hires in the next 12 months against a 17-person base.
+Template: short_form
+-----
+SUBJECT: Saw CloudGuard is hiring security engineers
+
+Hi Matt,
+
+Drew Robertson here, co-founder at Basanite. Moved HQ from London to Manchester in 2024 specifically calling MCR UK leader for cyber talent. Plans 20 new cyber hires in the next 12 months against a 17-person base.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of CloudGuard's current security roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0113 | Javid Khan | Co-founder & CTO | CloudGuard (cloudguard.ai) =====
+Manchester alum: False (-)
+Email: javid.khan@cloudguard.ai (inferred_medium)
+Source: https://cloudguard.ai/about/
+Hook: CTO at CloudGuard, now MCR-HQ and aiming to quadruple headcount in 24 months. Given ~20 incoming cyber hires against 17 current staff, interview throughput and technical-depth assessment are the exact problems Basanite is built for.
+Template: short_form
+-----
+SUBJECT: Saw CloudGuard is hiring security engineers
+
+Hi Javid,
+
+Drew Robertson here, co-founder at Basanite. CTO at CloudGuard, now MCR-HQ and aiming to quadruple headcount in 24 months. Given ~20 incoming cyber hires against 17 current staff, interview throughput and technical-depth assessment are the exact problems Basanite is built for.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of CloudGuard's current security roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0114 | Tom Staff | Co-founder | Street Group (street.co.uk) =====
+Manchester alum: False (-)
+Email: tom@street.co.uk (inferred_medium)
+Source: https://www.streetgroup.co.uk/
+Hook: Raised £3.3M from Praetura November 2024; now supporting 4,000+ UK estate agencies with Spectre and Street.co.uk, Gold Supplier of the Year at ESTAs 2024.
+Template: short_form
+-----
+SUBJECT: Saw Street Group is hiring engineers
+
+Hi Tom,
+
+Drew Robertson here, co-founder at Basanite. Raised £3.3M from Praetura November 2024; now supporting 4,000+ UK estate agencies with Spectre and Street.co.uk, Gold Supplier of the Year at ESTAs 2024.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Street Group's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0115 | Heather Staff | Co-founder | Street Group (street.co.uk) =====
+Manchester alum: False (-)
+Email: heather@street.co.uk (inferred_medium)
+Source: https://www.streetgroup.co.uk/sales
+Hook: Co-founded Street Group with her brother Tom; won Best Overall Supplier at 2024 EA Masters. Sister/brother MCR founder story.
+Template: long_form
+-----
+SUBJECT: Question on how Street Group evaluates technical hires
+
+Hi Heather,
+
+Drew Robertson, co-founder at Basanite. Co-founded Street Group with her brother Tom; won Best Overall Supplier at 2024 EA Masters. Sister/brother MCR founder story.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Street Group's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0116 | David Clee | Co-founder & CEO | MirrorWeb (mirrorweb.com) =====
+Manchester alum: False (-)
+Email: david.clee@mirrorweb.com (inferred_medium)
+Source: https://www.mirrorweb.com/team/david
+Hook: Raised $63M growth capital Sept 2024 for compliance-software expansion; ~$5.5M ARR on a 67-person team, textbook phase to professionalise technical hiring.
+Template: short_form
+-----
+SUBJECT: Saw MirrorWeb is hiring engineers
+
+Hi David,
+
+Drew Robertson here, co-founder at Basanite. Raised $63M growth capital Sept 2024 for compliance-software expansion; ~$5.5M ARR on a 67-person team, textbook phase to professionalise technical hiring.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of MirrorWeb's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0117 | Karl Stringer | Co-founder | MirrorWeb (mirrorweb.com) =====
+Manchester alum: False (-)
+Email: karl.stringer@mirrorweb.com (inferred_low)
+Source: https://www.mirrorweb.com/why-mirrorweb/about
+Hook: MirrorWeb founding technologist, Manchester-born RegTech that just banked $63M to expand; hiring compliance-focused engineers who need to understand regulated financial environments.
+Template: short_form
+-----
+SUBJECT: Saw MirrorWeb is hiring engineers
+
+Hi Karl,
+
+Drew Robertson here, co-founder at Basanite. MirrorWeb founding technologist, Manchester-born RegTech that just banked $63M to expand; hiring compliance-focused engineers who need to understand regulated financial environments.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of MirrorWeb's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0118 | Somayeh Taheri | Co-founder & CEO | UrbanChain (urbanchain.co.uk) =====
+Manchester alum: False (-)
+Email: somayeh.taheri@urbanchain.co.uk (inferred_medium)
+Source: https://www.urbanchain.co.uk/about/meet-the-team
+Hook: Won Northern Tech Awards 2025 Fastest Growing Company and top-3 on Deloitte Tech Fast 50 after scaling revenue from £2.4M to £25M in one year. Moved to Manchester Science Park HQ Sept 2024 and still hiring fast.
+Template: short_form
+-----
+SUBJECT: Saw UrbanChain is hiring engineers
+
+Hi Somayeh,
+
+Drew Robertson here, co-founder at Basanite. Won Northern Tech Awards 2025 Fastest Growing Company and top-3 on Deloitte Tech Fast 50 after scaling revenue from £2.4M to £25M in one year. Moved to Manchester Science Park HQ Sept 2024 and still hiring fast.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of UrbanChain's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0119 | Mo Hajhashem | Co-founder & CTO | UrbanChain (urbanchain.co.uk) =====
+Manchester alum: False (-)
+Email: mo.hajhashem@urbanchain.co.uk (inferred_low)
+Source: https://www.urbanchain.co.uk/about/meet-the-team
+Hook: CTO at UrbanChain after 10x revenue year and Deloitte Fast 50 top-3 finish; scaling blockchain+AI energy-trading engineering team, very specific technical-depth hiring need.
+Template: short_form
+-----
+SUBJECT: Saw UrbanChain is hiring AI engineers
+
+Hi Mo,
+
+Drew Robertson here, co-founder at Basanite. CTO at UrbanChain after 10x revenue year and Deloitte Fast 50 top-3 finish; scaling blockchain+AI energy-trading engineering team, very specific technical-depth hiring need.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of UrbanChain's current AI engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0120 | Andy Still | Co-founder & CTO | Netacea (netacea.com) =====
+Manchester alum: False (-)
+Email: andy.still@netacea.com (inferred_medium)
+Source: https://netacea.com/leadership-team/
+Hook: Co-founded Netacea, the MCR bot-management platform; Mick Bradley stepped in as CEO in late-2023 with a £4.5M Mercia-led round, so engineering is under CTO ownership during commercial scale-up.
+Template: short_form
+-----
+SUBJECT: Saw Netacea is hiring ML engineers
+
+Hi Andy,
+
+Drew Robertson here, co-founder at Basanite. Co-founded Netacea, the MCR bot-management platform; Mick Bradley stepped in as CEO in late-2023 with a £4.5M Mercia-led round, so engineering is under CTO ownership during commercial scale-up.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Netacea's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0121 | Mick Bradley | CEO | Netacea (netacea.com) =====
+Manchester alum: False (-)
+Email: mick.bradley@netacea.com (inferred_medium)
+Source: https://www.uktech.news/cybersecurity/netacea-funding-new-ceo-20231018
+Hook: Ex-Virtuozzo CRO brought in as CEO post-£4.5M Mercia round to take Netacea international. At 115 heads in Manchester on a bot-management platform, their scaling pain is real engineering + security hires.
+Template: short_form
+-----
+SUBJECT: Saw Netacea is hiring engineers
+
+Hi Mick,
+
+Drew Robertson here, co-founder at Basanite. Ex-Virtuozzo CRO brought in as CEO post-£4.5M Mercia round to take Netacea international. At 115 heads in Manchester on a bot-management platform, their scaling pain is real engineering + security hires.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Netacea's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0122 | Wing Chan | Co-founder & CEO | Sourceful (sourceful.com) =====
+Manchester alum: False (-)
+Email: wing@sourceful.com (inferred_medium)
+Source: https://supply.sourceful.com/our-story
+Hook: Raised $20M Series A led by Index Ventures (Coatue and Eka also). Executive team is 50%+ women and 85%+ from under-represented backgrounds, exactly the leadership that cares about structured, fair technical assessment.
+Template: long_form
+-----
+SUBJECT: Question on how Sourceful evaluates technical hires
+
+Hi Wing,
+
+Drew Robertson, co-founder at Basanite. Raised $20M Series A led by Index Ventures (Coatue and Eka also). Executive team is 50%+ women and 85%+ from under-represented backgrounds, exactly the leadership that cares about structured, fair technical assessment.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Sourceful's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0123 | Jason Souloglou | CEO | SeeChange Technologies (seechange.com) =====
+Manchester alum: False (-)
+Email: jason.souloglou@seechange.com (inferred_medium)
+Source: https://seechange.com/about-us/
+Hook: Won Northern Tech Awards 2025 Northern Star Award for Commercial Success. MCR computer-vision spinout from Arm (2021), 54 people, $5.6M revenue, $10M total raised, scaling self-checkout and loss-prevention AI.
+Template: short_form
+-----
+SUBJECT: Saw SeeChange Technologies is hiring AI engineers
+
+Hi Jason,
+
+Drew Robertson here, co-founder at Basanite. Won Northern Tech Awards 2025 Northern Star Award for Commercial Success. MCR computer-vision spinout from Arm (2021), 54 people, $5.6M revenue, $10M total raised, scaling self-checkout and loss-prevention AI.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of SeeChange Technologies's current AI engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0124 | Ibrahim Chadirchi | Co-founder & VP Engineering | SeeChange Technologies (seechange.com) =====
+Manchester alum: False (-)
+Email: ibrahim.chadirchi@seechange.com (inferred_low)
+Source: https://seechange.com/about-us/
+Hook: VP Engineering at SeeChange; Arm-spinout computer-vision shop in Manchester, just named Northern Tech Awards Northern Star winner. Hiring CV/ML engineers with Arm-level systems chops, extremely tight market.
+Template: short_form
+-----
+SUBJECT: Saw SeeChange Technologies is hiring ML engineers
+
+Hi Ibrahim,
+
+Drew Robertson here, co-founder at Basanite. VP Engineering at SeeChange; Arm-spinout computer-vision shop in Manchester, just named Northern Tech Awards Northern Star winner. Hiring CV/ML engineers with Arm-level systems chops, extremely tight market.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of SeeChange Technologies's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0125 | Ben Davies | Founder & CEO | VYPR (vyprclients.com) =====
+Manchester alum: False (-)
+Email: ben.davies@vyprclients.com (inferred_medium)
+Source: https://vyprclients.com/team/ben-davies-founder/
+Hook: Product-intelligence platform used by Iceland, M&S, Co-op, KFC, Leon, Ella's Kitchen. 51-100 employees, classic UK SaaS scale-up phase where interviewing volume outstrips structure.
+Template: long_form
+-----
+SUBJECT: Question on how VYPR evaluates technical hires
+
+Hi Ben,
+
+Drew Robertson, co-founder at Basanite. Product-intelligence platform used by Iceland, M&S, Co-op, KFC, Leon, Ella's Kitchen. 51-100 employees, classic UK SaaS scale-up phase where interviewing volume outstrips structure.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At VYPR's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0126 | Scott Martin | Co-founder & CEO | Re:course AI (recourseai.com) =====
+Manchester alum: False (-)
+Email: scott.martin@recourseai.com (inferred_medium)
+Source: https://www.recourseai.com/about
+Hook: Raised $4.3M from Praetura, Northern Gritstone and Par Equity for AI-avatar medical training. Clinician-founder building in Manchester, aligned with Basanite's MCR network; at 20 people now, every engineering hire is load-bearing.
+Template: short_form
+-----
+SUBJECT: Saw Re:course AI is hiring engineers
+
+Hi Scott,
+
+Drew Robertson here, co-founder at Basanite. Raised $4.3M from Praetura, Northern Gritstone and Par Equity for AI-avatar medical training. Clinician-founder building in Manchester, aligned with Basanite's MCR network; at 20 people now, every engineering hire is load-bearing.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Re:course AI's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0127 | Maksim Belousov | Co-founder & CTO | Re:course AI (recourseai.com) =====
+Manchester alum: False (-)
+Email: maksim.belousov@recourseai.com (inferred_low)
+Source: https://www.recourseai.com/about
+Hook: PhD AI lead of Re:course; $4.3M seed just closed, so recruiting is the immediate priority. As a CTO in MCR building digital-human medical training, technical-depth verification matters hugely.
+Template: short_form
+-----
+SUBJECT: Saw Re:course AI is hiring ML engineers
+
+Hi Maksim,
+
+Drew Robertson here, co-founder at Basanite. PhD AI lead of Re:course; $4.3M seed just closed, so recruiting is the immediate priority. As a CTO in MCR building digital-human medical training, technical-depth verification matters hugely.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Re:course AI's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0128 | Lindsay Fisher | Co-founder | Sparkbox (sparkbox.ai) =====
+Manchester alum: False (-)
+Email: lindsay.fisher@sparkbox.ai (inferred_medium)
+Source: https://www.sparkbox.ai/about-us
+Hook: Forbes 30 Under 30 co-founder; Manchester-based retail pricing/merchandising ML, backed by Praetura's £1.5M and with ex-Apple US retail director Colin Greene on the board.
+Template: short_form
+-----
+SUBJECT: Saw Sparkbox is hiring ML engineers
+
+Hi Lindsay,
+
+Drew Robertson here, co-founder at Basanite. Forbes 30 Under 30 co-founder; Manchester-based retail pricing/merchandising ML, backed by Praetura's £1.5M and with ex-Apple US retail director Colin Greene on the board.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Sparkbox's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0129 | Kevin Blackmore | Co-founder & Data/ML Lead | Sparkbox (sparkbox.ai) =====
+Manchester alum: False (-)
+Email: kevin.blackmore@sparkbox.ai (inferred_low)
+Source: https://www.sparkbox.ai/about-us
+Hook: Ex-Best Buy VP Customer Insights and Accenture retail-analytics partner, now ML lead at Sparkbox MCR. Directly responsible for technical hires on a small data-science team.
+Template: short_form
+-----
+SUBJECT: Saw Sparkbox is hiring ML engineers
+
+Hi Kevin,
+
+Drew Robertson here, co-founder at Basanite. Ex-Best Buy VP Customer Insights and Accenture retail-analytics partner, now ML lead at Sparkbox MCR. Directly responsible for technical hires on a small data-science team.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Sparkbox's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0130 | Martin Balaam | Founder & CEO | Pimberly (pimberly.com) =====
+Manchester alum: False (-)
+Email: martin.balaam@pimberly.com (inferred_medium)
+Source: https://pimberly.com/corporate/
+Hook: Grew Jigsaw24 from £45M to £125M before exiting and founding Pimberly. Headcount jumped 75 to 83 in mid-2025 across Manchester and New York; Series B PIM/DAM SaaS now needs structured hiring across two geographies.
+Template: short_form
+-----
+SUBJECT: Saw Pimberly is hiring engineers
+
+Hi Martin,
+
+Drew Robertson here, co-founder at Basanite. Grew Jigsaw24 from £45M to £125M before exiting and founding Pimberly. Headcount jumped 75 to 83 in mid-2025 across Manchester and New York; Series B PIM/DAM SaaS now needs structured hiring across two geographies.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Pimberly's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0131 | Amy Whitell | Co-founder & CEO | Collctiv (collctiv.com) =====
+Manchester alum: False (-)
+Email: amy@collctiv.com (inferred_medium)
+Source: https://www.collctiv.com/team-members/pete-casson
+Hook: MCR fintech expanding into the US market; hires are now split UK/US, a structured interview framework becomes essential when time-zone drift is already on the calendar.
+Template: long_form
+-----
+SUBJECT: Question on how Collctiv evaluates technical hires
+
+Hi Amy,
+
+Drew Robertson, co-founder at Basanite. MCR fintech expanding into the US market; hires are now split UK/US, a structured interview framework becomes essential when time-zone drift is already on the calendar.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Collctiv's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0132 | Pete Casson | Co-founder & CTO | Collctiv (collctiv.com) =====
+Manchester alum: False (-)
+Email: pete@collctiv.com (inferred_medium)
+Source: https://www.prolificnorth.co.uk/feature/how-i-became-pete-casson-cto-and-co-founder-collctiv/
+Hook: CTO at MCR group-payments fintech Collctiv, US launch in progress. Small team hiring abroad is exactly when ad-hoc interviewing fails and structured assessment starts to matter.
+Template: short_form
+-----
+SUBJECT: Saw Collctiv is hiring engineers
+
+Hi Pete,
+
+Drew Robertson here, co-founder at Basanite. CTO at MCR group-payments fintech Collctiv, US launch in progress. Small team hiring abroad is exactly when ad-hoc interviewing fails and structured assessment starts to matter.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Collctiv's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0133 | James Garner | Co-founder & CEO | Sticky (getsticky.io) =====
+Manchester alum: False (-)
+Email: james@getsticky.io (inferred_low)
+Source: https://businesscloud.co.uk/news/ai-startup-sparkbox-bags-1-5m-as-former-apple-star-joins-board/
+Hook: Raised £1.5M seed from Praetura for NFC retail/hospitality payments tech; Manchester-based, early-stage eng hiring is the blocker for scaling deployments.
+Template: short_form
+-----
+SUBJECT: Saw Sticky is hiring engineers
+
+Hi James,
+
+Drew Robertson here, co-founder at Basanite. Raised £1.5M seed from Praetura for NFC retail/hospitality payments tech; Manchester-based, early-stage eng hiring is the blocker for scaling deployments.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Sticky's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0134 | Graham Cornhill | Founder | wi-Q (wi-q.com) =====
+Manchester alum: False (-)
+Email: graham.cornhill@wi-q.com (inferred_low)
+Source: https://www.wi-q.com/newsroom/wi-q-integrates-with-payments-company-planet
+Hook: Manchester-based SaaS ordering/payments across bars, hotels, stadiums, theatres and airports; Series A company sub-50 people in the textbook Basanite headcount range.
+Template: long_form
+-----
+SUBJECT: Question on how wi-Q evaluates technical hires
+
+Hi Graham,
+
+Drew Robertson, co-founder at Basanite. Manchester-based SaaS ordering/payments across bars, hotels, stadiums, theatres and airports; Series A company sub-50 people in the textbook Basanite headcount range.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At wi-Q's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0135 | Elizabeth Clark | Co-founder & CEO | Dream Agility (dreamagility.com) =====
+Manchester alum: False (-)
+Email: elizabeth.clark@dreamagility.com (inferred_low)
+Source: https://www.linkedin.com/in/elizabeth-clark-da/
+Hook: Manchester Tech Trust board member and Google Premier Partner (top 3% globally). Multi-award-winning MCR AI retail business, hiring into Visual AI/ML is a rare-skill problem that plays directly to Basanite's technical-depth dimension.
+Template: long_form
+-----
+SUBJECT: Question on how Dream Agility evaluates technical hires
+
+Hi Elizabeth,
+
+Drew Robertson, co-founder at Basanite. Manchester Tech Trust board member and Google Premier Partner (top 3% globally). Multi-award-winning MCR AI retail business, hiring into Visual AI/ML is a rare-skill problem that plays directly to Basanite's technical-depth dimension.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Dream Agility's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0136 | Pavel Gertsberg | CEO & Co-founder | ClaimSorted (claimsorted.com) =====
+Manchester alum: False (-)
+Email: pavel@claimsorted.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/claimsorted
+Hook: Closed $13.3M seed led by Atomico in October 2025; hiring forward deployed engineer, founding account manager, product engineer in London.
+Template: short_form
+-----
+SUBJECT: Saw ClaimSorted is hiring forward deployed engineers
+
+Hi Pavel,
+
+Drew Robertson here, co-founder at Basanite. Closed $13.3M seed led by Atomico in October 2025; hiring forward deployed engineer, founding account manager, product engineer in London.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of ClaimSorted's current forward deployed roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0137 | German Mikulski | CTO & Co-founder | ClaimSorted (claimsorted.com) =====
+Manchester alum: False (-)
+Email: german@claimsorted.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/claimsorted
+Hook: Previously built Fluffy pet insurance, automating ~70% of back-office with AI; now the CTO evaluating engineers at ClaimSorted post-$13.3M seed.
+Template: long_form
+-----
+SUBJECT: Question on how ClaimSorted evaluates technical hires
+
+Hi German,
+
+Drew Robertson, co-founder at Basanite. Previously built Fluffy pet insurance, automating ~70% of back-office with AI; now the CTO evaluating engineers at ClaimSorted post-$13.3M seed.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at ClaimSorted, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0138 | Amal Jolly | CEO & Co-founder | Saturn (saturnos.com) =====
+Manchester alum: False (-)
+Email: amal@saturnos.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/saturn
+Hook: Raised $15M Series A led by Singular in 2025; hiring senior platform engineer, senior product engineer, and Django Python engineer across London.
+Template: short_form
+-----
+SUBJECT: Saw Saturn is hiring engineers
+
+Hi Amal,
+
+Drew Robertson here, co-founder at Basanite. Raised $15M Series A led by Singular in 2025; hiring senior platform engineer, senior product engineer, and Django Python engineer across London.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Saturn's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0139 | Michael Ettlinger | Co-founder | Saturn (saturnos.com) =====
+Manchester alum: False (-)
+Email: michael@saturnos.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/saturn
+Hook: Saturn (YC S24) just crossed 600+ advisory firms and 2,000+ advisers; hiring founding AI engineer in London after March 2026 Series A.
+Template: short_form
+-----
+SUBJECT: Saw Saturn is hiring AI engineers
+
+Hi Michael,
+
+Drew Robertson here, co-founder at Basanite. Saturn (YC S24) just crossed 600+ advisory firms and 2,000+ advisers; hiring founding AI engineer in London after March 2026 Series A.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Saturn's current AI engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0140 | Eric Landau | CEO & Co-founder | Encord (encord.com) =====
+Manchester alum: False (-)
+Email: eric@encord.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/encord
+Hook: Encord (YC W21) scaled to ~150 in London pitching itself as the data layer for physical AI; hiring forward deployed engineer and multiple growth roles.
+Template: long_form
+-----
+SUBJECT: Question on how Encord evaluates technical hires
+
+Hi Eric,
+
+Drew Robertson, co-founder at Basanite. Encord (YC W21) scaled to ~150 in London pitching itself as the data layer for physical AI; hiring forward deployed engineer and multiple growth roles.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Encord's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0141 | Ulrik Stig Hansen | President & Co-founder | Encord (encord.com) =====
+Manchester alum: False (-)
+Email: ulrik@encord.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/encord
+Hook: Co-runs Encord's London office (~150 FTE) and wrote a widely-shared Medium piece on raising a $4.5M seed with mostly American investors.
+Template: long_form
+-----
+SUBJECT: Question on how Encord evaluates technical hires
+
+Hi Ulrik,
+
+Drew Robertson, co-founder at Basanite. Co-runs Encord's London office (~150 FTE) and wrote a widely-shared Medium piece on raising a $4.5M seed with mostly American investors.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Encord's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0142 | Matthew Le Maitre | Co-founder (Software) | Seeing Systems (seeing-systems.com) =====
+Manchester alum: False (-)
+Email: matthew@seeing-systems.com (inferred_low)
+Source: https://www.ycombinator.com/companies/seeing-systems
+Hook: YC W26, brothers building modular autonomous strike drones, shipping prototypes to UK Royal Marine Commandos and four NATO forces; hiring founding software engineer.
+Template: short_form
+-----
+SUBJECT: Saw Seeing Systems is hiring founding engineers
+
+Hi Matthew,
+
+Drew Robertson here, co-founder at Basanite. YC W26, brothers building modular autonomous strike drones, shipping prototypes to UK Royal Marine Commandos and four NATO forces; hiring founding software engineer.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Seeing Systems's current founding engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0143 | Alexander Le Maitre | Co-founder (Hardware) | Seeing Systems (seeing-systems.com) =====
+Manchester alum: False (-)
+Email: alex@seeing-systems.com (inferred_low)
+Source: https://www.linkedin.com/in/alexander-le-maitre/
+Hook: YC W26, self-taught embedded/PCB engineer from Guernsey; Seeing Systems is his first funded venture after EOD hardware work for UK MoD.
+Template: short_form
+-----
+SUBJECT: Saw Seeing Systems is hiring founding engineers
+
+Hi Alexander,
+
+Drew Robertson here, co-founder at Basanite. YC W26, self-taught embedded/PCB engineer from Guernsey; Seeing Systems is his first funded venture after EOD hardware work for UK MoD.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Seeing Systems's current founding engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0144 | Alex Tkachenko | CEO & Co-founder | Fira (firaresearch.com) =====
+Manchester alum: False (-)
+Email: alex@firaresearch.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/fira
+Hook: Fira (YC W25) is a 5-person London team building an agentic AI analyst that reads UK company filings, launched March 2025 on HN.
+Template: short_form
+-----
+SUBJECT: Saw Fira is hiring engineers
+
+Hi Alex,
+
+Drew Robertson here, co-founder at Basanite. Fira (YC W25) is a 5-person London team building an agentic AI analyst that reads UK company filings, launched March 2025 on HN.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Fira's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0145 | Alexey Taktarov | CTO & Co-founder | Fira (firaresearch.com) =====
+Manchester alum: False (-)
+Email: alexey@firaresearch.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/fira
+Hook: Previously CTO of resume.io (acquired 2021); now 2nd-time CTO at Fira (YC W25) building agentic financial analyst out of London.
+Template: long_form
+-----
+SUBJECT: Question on how Fira evaluates technical hires
+
+Hi Alexey,
+
+Drew Robertson, co-founder at Basanite. Previously CTO of resume.io (acquired 2021); now 2nd-time CTO at Fira (YC W25) building agentic financial analyst out of London.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Fira, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0146 | Ahmed Abdulaal | CEO & Co-founder | Mecha Health (mecha-health.ai) =====
+Manchester alum: False (-)
+Email: ahmed@mecha-health.ai (inferred_medium)
+Source: https://www.ycombinator.com/companies/mecha-health
+Hook: Raised $4.1M seed to build foundation models for X-ray analysis; Imperial medic + Microsoft PhD scholar at UCL with 20+ ML/medicine publications.
+Template: long_form
+-----
+SUBJECT: Question on how Mecha Health evaluates technical hires
+
+Hi Ahmed,
+
+Drew Robertson, co-founder at Basanite. Raised $4.1M seed to build foundation models for X-ray analysis; Imperial medic + Microsoft PhD scholar at UCL with 20+ ML/medicine publications.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Mecha Health's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0147 | Nina Montana Brown | CTO & Co-founder | Mecha Health (mecha-health.ai) =====
+Manchester alum: False (-)
+Email: nina.brown@mecha-health.ai (inferred_low)
+Source: https://www.ycombinator.com/companies/mecha-health
+Hook: CTO of YC W25 radiology foundation-model startup; 4-person technical founding team post-$4.1M seed.
+Template: long_form
+-----
+SUBJECT: Question on how Mecha Health evaluates technical hires
+
+Hi Nina,
+
+Drew Robertson, co-founder at Basanite. CTO of YC W25 radiology foundation-model startup; 4-person technical founding team post-$4.1M seed.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Mecha Health, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0148 | James K. He | CEO & Co-founder | Artificial Societies (societies.io) =====
+Manchester alum: False (-)
+Email: james@societies.io (inferred_medium)
+Source: https://www.ycombinator.com/companies/artificial-societies
+Hook: YC W25; Cambridge psychologist, published seminal paper studying 33,000 chatbots interacting; raised EUR 4.5M seed August 2025.
+Template: short_form
+-----
+SUBJECT: Saw Artificial Societies is hiring engineers
+
+Hi James,
+
+Drew Robertson here, co-founder at Basanite. YC W25; Cambridge psychologist, published seminal paper studying 33,000 chatbots interacting; raised EUR 4.5M seed August 2025.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Artificial Societies's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0149 | Adrien Wald | CTO & Co-founder | CoLoop (coloop.ai) =====
+Manchester alum: False (-)
+Email: adrien@coloop.ai (inferred_medium)
+Source: https://www.ycombinator.com/companies/coloop
+Hook: CoLoop (YC S21) raised $3.5M and is hiring product engineer + AI product engineer in London to build qualitative-research copilot.
+Template: long_form
+-----
+SUBJECT: Question on how CoLoop evaluates technical hires
+
+Hi Adrien,
+
+Drew Robertson, co-founder at Basanite. CoLoop (YC S21) raised $3.5M and is hiring product engineer + AI product engineer in London to build qualitative-research copilot.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at CoLoop, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0150 | Alisha Fredriksson | CEO & Co-founder | Seabound (seabound.co) =====
+Manchester alum: False (-)
+Email: alisha@seabound.co (inferred_medium)
+Source: https://www.ycombinator.com/companies/seabound
+Hook: Seabound (YC W22) has 18 FTE in London and is hiring a founding engineer to scale its on-ship CO2-to-limestone carbon capture rig.
+Template: long_form
+-----
+SUBJECT: Question on how Seabound evaluates technical hires
+
+Hi Alisha,
+
+Drew Robertson, co-founder at Basanite. Seabound (YC W22) has 18 FTE in London and is hiring a founding engineer to scale its on-ship CO2-to-limestone carbon capture rig.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Seabound's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0151 | Ali Afshar | CEO & Co-founder | Mytos (mytos.bio) =====
+Manchester alum: False (-)
+Email: ali@mytos.bio (inferred_medium)
+Source: https://www.joinef.com/companies/mytos/
+Hook: Raised $19M Series A led by Buckley Ventures; Imperial founder with first manufacturing deal for Parkinson's neurons, 26-person team in London.
+Template: long_form
+-----
+SUBJECT: Question on how Mytos evaluates technical hires
+
+Hi Ali,
+
+Drew Robertson, co-founder at Basanite. Raised $19M Series A led by Buckley Ventures; Imperial founder with first manufacturing deal for Parkinson's neurons, 26-person team in London.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Mytos's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0152 | Oliver Colebourne | CTO & Co-founder | Aglide (aglide.com) =====
+Manchester alum: False (-)
+Email: oliver@aglide.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/aglide
+Hook: Imperial College graduate, co-founder of Aglide (YC S23); hiring product security engineer and forward deployed software engineer in London.
+Template: long_form
+-----
+SUBJECT: Question on how Aglide evaluates technical hires
+
+Hi Oliver,
+
+Drew Robertson, co-founder at Basanite. Imperial College graduate, co-founder of Aglide (YC S23); hiring product security engineer and forward deployed software engineer in London.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Aglide, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0153 | Patrick McGuckian | CEO & Co-founder | Aglide (aglide.com) =====
+Manchester alum: False (-)
+Email: patrick@aglide.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/aglide
+Hook: Aglide (YC S23) gives customers Okta-level SSO without the SAML tax; actively hiring 3 engineering roles in London.
+Template: short_form
+-----
+SUBJECT: Saw Aglide is hiring engineers
+
+Hi Patrick,
+
+Drew Robertson here, co-founder at Basanite. Aglide (YC S23) gives customers Okta-level SSO without the SAML tax; actively hiring 3 engineering roles in London.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Aglide's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0154 | Mitch Riley | CEO & Co-founder | Capi Money (capimoney.com) =====
+Manchester alum: False (-)
+Email: mitch@capimoney.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/capi-money
+Hook: Capi Money (YC S23) processing $1B+ yearly in Africa payments; raised EUR 17.2M Series A Feb 2025, hiring data analyst and legal counsel in London.
+Template: short_form
+-----
+SUBJECT: Saw Capi Money is hiring data engineers
+
+Hi Mitch,
+
+Drew Robertson here, co-founder at Basanite. Capi Money (YC S23) processing $1B+ yearly in Africa payments; raised EUR 17.2M Series A Feb 2025, hiring data analyst and legal counsel in London.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Capi Money's current data engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0155 | Tom Watson | CTO & Co-founder | Capi Money (capimoney.com) =====
+Manchester alum: False (-)
+Email: tom@capimoney.com (inferred_medium)
+Source: https://www.ycombinator.com/companies/capi-money
+Hook: Third-time CTO at Capi Money (YC S23); previously CTO at Hubble and P4SD, now scaling engineering after EUR 17.2M Series A.
+Template: long_form
+-----
+SUBJECT: Question on how Capi Money evaluates technical hires
+
+Hi Tom,
+
+Drew Robertson, co-founder at Basanite. Third-time CTO at Capi Money (YC S23); previously CTO at Hubble and P4SD, now scaling engineering after EUR 17.2M Series A.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Capi Money, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0156 | Dominic Kwok | CTO & Co-founder | Heron Data (herondata.io) =====
+Manchester alum: False (-)
+Email: dom@herondata.io (inferred_medium)
+Source: https://www.ycombinator.com/companies/heron-data
+Hook: Heron Data (YC S20) at $7M ARR, 150+ customers; hiring senior PM, principal backend engineer, full-stack and product engineers in London.
+Template: long_form
+-----
+SUBJECT: Question on how Heron Data evaluates technical hires
+
+Hi Dominic,
+
+Drew Robertson, co-founder at Basanite. Heron Data (YC S20) at $7M ARR, 150+ customers; hiring senior PM, principal backend engineer, full-stack and product engineers in London.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Heron Data, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0157 | Dimitrios Ilias | CTO & Co-founder | Intryc (intryc.com) =====
+Manchester alum: False (-)
+Email: dimitrios@intryc.com (inferred_medium)
+Source: https://www.linkedin.com/in/dimilias/
+Hook: Built first core banking platform at Revolut, NLU work at Amazon Alexa; now CTO of Intryc (YC S24) with London/SF/Athens offices.
+Template: long_form
+-----
+SUBJECT: Question on how Intryc evaluates technical hires
+
+Hi Dimitrios,
+
+Drew Robertson, co-founder at Basanite. Built first core banking platform at Revolut, NLU work at Amazon Alexa; now CTO of Intryc (YC S24) with London/SF/Athens offices.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Intryc, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0158 | Sid Jayakumar | Founder & CEO | Finster AI (finster.ai) =====
+Manchester alum: False (-)
+Email: sid@finster.ai (inferred_medium)
+Source: https://hoxtonventures.com/portfolio/finster-ai/
+Hook: Raised $15M Series A led by FinTech Collective October 2025; seven years at Google DeepMind before founding Finster.
+Template: long_form
+-----
+SUBJECT: Question on how Finster AI evaluates technical hires
+
+Hi Sid,
+
+Drew Robertson, co-founder at Basanite. Raised $15M Series A led by FinTech Collective October 2025; seven years at Google DeepMind before founding Finster.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Finster AI's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0159 | Eno Thereska | CEO & Co-founder | Trent AI (trent.ai) =====
+Manchester alum: False (-)
+Email: eno@trent.ai (inferred_medium)
+Source: https://trent.ai/blog/trent-ai-raises-13m-to-secure-the-agentic-age/
+Hook: Emerged from stealth April 2026 with $13M seed led by LocalGlobe + Cambridge Innovation Capital; ex-Distinguished Engineer at Confluent/AWS/Alcion.
+Template: short_form
+-----
+SUBJECT: Saw Trent AI is hiring founding engineers
+
+Hi Eno,
+
+Drew Robertson here, co-founder at Basanite. Emerged from stealth April 2026 with $13M seed led by LocalGlobe + Cambridge Innovation Capital; ex-Distinguished Engineer at Confluent/AWS/Alcion.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Trent AI's current founding engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0160 | Zhenwen Dai | CTO & Co-founder | Trent AI (trent.ai) =====
+Manchester alum: False (-)
+Email: zhenwen@trent.ai (inferred_low)
+Source: https://trent.ai/blog/trent-ai-raises-13m-to-secure-the-agentic-age/
+Hook: Ex-Spotify senior research manager and AWS ML scientist; CTO of Trent AI after $13M seed for multi-agent security.
+Template: long_form
+-----
+SUBJECT: Question on how Trent AI evaluates technical hires
+
+Hi Zhenwen,
+
+Drew Robertson, co-founder at Basanite. Ex-Spotify senior research manager and AWS ML scientist; CTO of Trent AI after $13M seed for multi-agent security.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Trent AI, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0161 | James Dewar | CEO & Co-founder | Scarlet (scarlet.cc) =====
+Manchester alum: False (-)
+Email: james@scarlet.cc (inferred_medium)
+Source: https://www.joinef.com/companies/scarlet/
+Hook: Ex-Babylon medical AI lead; founded Scarlet to help healthtechs get FDA/EU/UK medical device approvals, 57-person London team.
+Template: long_form
+-----
+SUBJECT: Question on how Scarlet evaluates technical hires
+
+Hi James,
+
+Drew Robertson, co-founder at Basanite. Ex-Babylon medical AI lead; founded Scarlet to help healthtechs get FDA/EU/UK medical device approvals, 57-person London team.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Scarlet's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0162 | Dev Amratia | CEO & Co-founder | nPlan (nplan.io) =====
+Manchester alum: False (-)
+Email: dev@nplan.io (inferred_medium)
+Source: https://www.joinef.com/companies/nplan/
+Hook: Co-author of the UK National AI Strategy, running Summer AI Day 2026 'Construction Superintelligence' event in London.
+Template: long_form
+-----
+SUBJECT: Question on how nPlan evaluates technical hires
+
+Hi Dev,
+
+Drew Robertson, co-founder at Basanite. Co-author of the UK National AI Strategy, running Summer AI Day 2026 'Construction Superintelligence' event in London.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At nPlan's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0163 | Ross Harper | CEO & Co-founder | Limbic (limbic.ai) =====
+Manchester alum: False (-)
+Email: ross@limbic.ai (inferred_medium)
+Source: https://www.joinef.com/companies/limbic/
+Hook: Computational neuroscientist; Limbic launched AI therapy assistant now used in NHS talking therapies, hiring clinical AI and product roles.
+Template: long_form
+-----
+SUBJECT: Question on how Limbic evaluates technical hires
+
+Hi Ross,
+
+Drew Robertson, co-founder at Basanite. Computational neuroscientist; Limbic launched AI therapy assistant now used in NHS talking therapies, hiring clinical AI and product roles.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Limbic's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0164 | Jamie Potter | CEO & Co-founder | Flexciton (flexciton.com) =====
+Manchester alum: False (-)
+Email: jamie@flexciton.com (inferred_medium)
+Source: https://www.joinef.com/companies/flexciton/
+Hook: Flexciton hit $3.4M revenue with 51-person team on autonomous semiconductor scheduling; hiring optimisation researchers and engineers.
+Template: short_form
+-----
+SUBJECT: Saw Flexciton is hiring engineers
+
+Hi Jamie,
+
+Drew Robertson here, co-founder at Basanite. Flexciton hit $3.4M revenue with 51-person team on autonomous semiconductor scheduling; hiring optimisation researchers and engineers.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Flexciton's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0165 | Ed Hardy | CEO & Co-founder | Tuza (trytuza.com) =====
+Manchester alum: False (-)
+Email: ed@trytuza.com (inferred_medium)
+Source: https://www.joinef.com/companies/tuza/
+Hook: Closed GBP 4M seed round led by Northzone/Connect Ventures for Tuza's SMB card payments comparison platform.
+Template: short_form
+-----
+SUBJECT: Saw Tuza is hiring engineers
+
+Hi Ed,
+
+Drew Robertson here, co-founder at Basanite. Closed GBP 4M seed round led by Northzone/Connect Ventures for Tuza's SMB card payments comparison platform.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Tuza's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0166 | Helen Murphy | CEO & Co-founder | Opply (opply.co) =====
+Manchester alum: False (-)
+Email: helen@opply.co (inferred_medium)
+Source: https://www.joinef.com/companies/opply/
+Hook: 10+ years at P&G and Bain before founding Opply; building the largest supplier database for food & beverage SMBs out of London.
+Template: long_form
+-----
+SUBJECT: Question on how Opply evaluates technical hires
+
+Hi Helen,
+
+Drew Robertson, co-founder at Basanite. 10+ years at P&G and Bain before founding Opply; building the largest supplier database for food & beverage SMBs out of London.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Opply's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0167 | Nelson Jones | CEO & Founder | Kular (kular.ai) =====
+Manchester alum: False (-)
+Email: nelson@kular.ai (inferred_medium)
+Source: https://www.ycombinator.com/companies/kular
+Hook: Kular (YC + EF alum) hit 1,000 companies on its AI lead-gen platform with a 12-person London team.
+Template: short_form
+-----
+SUBJECT: Saw Kular is hiring engineers
+
+Hi Nelson,
+
+Drew Robertson here, co-founder at Basanite. Kular (YC + EF alum) hit 1,000 companies on its AI lead-gen platform with a 12-person London team.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Kular's current engineering roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0168 | Francesco Corazza | CEO & Co-founder | Klaris (klaris.ai) =====
+Manchester alum: False (-)
+Email: francesco@klaris.ai (inferred_low)
+Source: https://www.antler.co/blog/why-we-invested-in-klaris-automating-medtech-compliance-with-ai
+Hook: Antler UK Spring 2025 cohort; closed $1M pre-seed Feb 2026 to automate medical device FDA/MDR compliance; spent 10+ years at Empatica scaling to multiple FDA clearances.
+Template: short_form
+-----
+SUBJECT: Saw Klaris is hiring ML engineers
+
+Hi Francesco,
+
+Drew Robertson here, co-founder at Basanite. Antler UK Spring 2025 cohort; closed $1M pre-seed Feb 2026 to automate medical device FDA/MDR compliance; spent 10+ years at Empatica scaling to multiple FDA clearances.
+
+We're early, currently in customer and concept validation. Basanite runs structured AI-led technical interviews end to end, so every candidate gets the same depth of questioning and you get quotable evidence per candidate rather than opaque scores.
+
+Happy to front the credits for a free run on one of Klaris's current ML roles, takes about ten minutes to set up.
+
+Open to a quick conversation either way. Honest feedback is more useful to us than a yes.
+
+Drew
+basanite.co.uk
+
+===== 0169 | Mihai-Sorin Dobre | CTO & Co-founder | Klaris (klaris.ai) =====
+Manchester alum: False (-)
+Email: mihai@klaris.ai (inferred_low)
+Source: https://www.antler.co/blog/why-we-invested-in-klaris-automating-medtech-compliance-with-ai
+Hook: PhD in multi-agent decision-making, led safe-planning research for self-driving; now CTO at Klaris (Antler UK) hiring founding ML engineer.
+Template: long_form
+-----
+SUBJECT: Question on how Klaris evaluates technical hires
+
+Hi Mihai-Sorin,
+
+Drew Robertson, co-founder at Basanite. PhD in multi-agent decision-making, led safe-planning research for self-driving; now CTO at Klaris (Antler UK) hiring founding ML engineer.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. When you screen senior engineering candidates at Klaris, what's the signal you trust least from a CV and why?
+2. If AI handles routine technical execution increasingly well, which human qualities are you now weighting higher when hiring, and how are you surfacing them?
+3. Where would a tool like ours need to prove itself before you'd trust it with first-round screening rather than just a second opinion?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk
+
+===== 0170 | Prithveesh Reddy | CEO & Co-founder | Arcube (arcube.com) =====
+Manchester alum: True (University of Manchester MEC (Masood Entrepreneurship Centre) alumnus)
+Email: prithveesh@arcube.com (inferred_medium)
+Source: https://www.manchester.ac.uk/about/news/manchester-based-tech-startup-arcube-secures-15m-in-seed-funding/
+Hook: Manchester MEC alumnus who cold-pitched Etihad at age 18; raised $1.5M seed Feb 2025 co-led by Fuel Ventures and Oxford Capital for airline loyalty AI.
+Template: long_form
+-----
+SUBJECT: Question from a fellow Manchester grad
+
+Hi Prithveesh,
+
+Drew Robertson, co-founder and CTO at Basanite. I'm also a Manchester CS grad. Manchester MEC alumnus who cold-pitched Etihad at age 18; raised $1.5M seed Feb 2025 co-led by Fuel Ventures and Oxford Capital for airline loyalty AI.
+
+We're a small team out of Manchester building an AI technical interview platform. We're early, currently in customer and concept validation rather than selling, and we're trying to be rigorous about what our product can and cannot honestly claim before we scale distribution.
+
+Three questions I'd value your take on:
+1. At Arcube's current stage, how much of first-round technical screening are you personally still doing, and what breaks first as you scale?
+2. What would it take for a structured AI interview to be a genuine upgrade on your current process, versus a cheaper version of the same thing?
+3. Where do you think AI-led assessment is most likely to produce false positives or false negatives, and how would you want that flagged?
+
+Not chasing endorsement, I'd rather have a critical or commercial read from someone closer to the problem than we are. Twenty minutes on a call would be really useful, but happy with written replies if easier.
+
+Drew
+basanite.co.uk

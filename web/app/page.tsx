@@ -5,7 +5,6 @@ import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
-const BREAK_IMAGE = 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80'
 
 // ─── Scroll reveal hook ──────────────────────────────────────────────────
 function useReveal() {
@@ -51,7 +50,6 @@ function Nav() {
 
   function dismiss() {
     setBanner(null)
-    // Clean the URL without triggering a reload
     const url = new URL(window.location.href)
     url.searchParams.delete('error')
     url.searchParams.delete('info')
@@ -88,6 +86,7 @@ function Nav() {
         </a>
         <div className="hidden sm:flex items-center gap-8 text-sm text-basanite-600">
           <a href="#how-it-works" className="hover:text-basanite-900 transition-colors">How it works</a>
+          <a href="#research" className="hover:text-basanite-900 transition-colors">Research</a>
           <a href="#philosophy" className="hover:text-basanite-900 transition-colors">Philosophy</a>
           <a href="#team" className="hover:text-basanite-900 transition-colors">Team</a>
         </div>
@@ -150,41 +149,108 @@ function Hero() {
   )
 }
 
-// ─── Stats bar ───────────────────────────────────────────────────────────
-function StatsBar() {
-  const stats = [
-    { value: '8', label: 'capability dimensions assessed' },
-    { value: '45 min', label: 'conversational AI interview' },
-    { value: '100%', label: 'scores grounded in candidate quotes' },
-    { value: '3', label: 'screening rounds replaced' },
-  ]
+// ─── Company marquee ─────────────────────────────────────────────────────
+// Per-logo visual height. All sit on the same baseline; widths vary naturally
+// by aspect ratio. Heights are tuned so wordmarks look similarly weighted.
+const COMPANIES = [
+  { name: 'The Trade Desk',     src: '/logos/the-trade-desk.svg',    h: 28 },
+  { name: 'Cisco',              src: '/logos/cisco.svg',             h: 34 },
+  { name: 'Rothschild & Co',    src: '/logos/rothschild.png',        h: 24 },
+  { name: 'Virgin Media O2',    src: '/logos/virgin-media-o2.svg',   h: 36 },
+  { name: 'Exclusive Networks', src: '/logos/exclusive-networks.svg', h: 30 },
+  { name: 'Data Annotations',   src: '/logos/dataannotation.svg',    h: 22 },
+  { name: 'Outlier AI',         src: '/logos/outlier.svg',           h: 22 },
+  { name: 'BlueDot Impact',     src: '/logos/bluedot.svg',           h: 18 },
+]
+
+function CompanyMarquee() {
   return (
-    <div className="bg-white border-b border-earth-200/80">
-      <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:flex md:flex-nowrap items-center justify-center md:justify-between gap-6 md:gap-10">
-        {stats.map(s => (
-          <div key={s.label} className="text-center">
-            <div className="font-display text-2xl sm:text-3xl text-basanite-900">{s.value}</div>
-            <div className="text-basanite-600 text-xs mt-1 uppercase tracking-wide">{s.label}</div>
+    <section
+      aria-label="Companies our team has worked at"
+      className="bg-white border-b border-earth-200/80 py-10 overflow-hidden"
+    >
+      <div className="max-w-6xl mx-auto px-6">
+        <p className="text-center text-basanite-500 text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-7">
+          Built by professionals from
+        </p>
+        <div
+          className="relative overflow-hidden
+            [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]
+            [-webkit-mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+        >
+          <div className="flex motion-safe:animate-marquee whitespace-nowrap items-center gap-16 sm:gap-20 will-change-transform">
+            {COMPANIES.map(c => (
+              <img
+                key={`a-${c.name}`}
+                src={c.src}
+                alt={c.name}
+                height={c.h}
+                className="shrink-0 w-auto select-none opacity-80"
+                style={{ height: `${c.h}px` }}
+                draggable={false}
+              />
+            ))}
+            {COMPANIES.map(c => (
+              <img
+                key={`b-${c.name}`}
+                src={c.src}
+                alt=""
+                aria-hidden="true"
+                height={c.h}
+                className="shrink-0 w-auto select-none opacity-80"
+                style={{ height: `${c.h}px` }}
+                draggable={false}
+              />
+            ))}
           </div>
-        ))}
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
 
-// ─── Manifesto Strip ─────────────────────────────────────────────────────
-function ManifestoStrip() {
+// ─── Research ────────────────────────────────────────────────────────────
+const RESEARCH_AREAS = [
+  { name: 'Tacit knowledge theory', note: 'knowledge that lives in experience, not in text' },
+  { name: 'Judgment under ambiguity', note: 'acting decisively on incomplete information' },
+  { name: 'Expert pattern recognition', note: 'how real competence reveals itself in motion' },
+  { name: 'Psychological safety research', note: 'how teams surface and correct error' },
+]
+
+function Research() {
   const ref = useReveal()
   return (
-    <section ref={ref} className="reveal relative py-20 px-6 bg-earth-50">
-      <div className="max-w-3xl mx-auto text-center">
-        <p className="font-display text-basanite-800 text-2xl sm:text-3xl md:text-4xl leading-snug">
-          Most hiring tools measure how well someone can{' '}
-          <span className="italic text-basanite-500">approximate</span> a good candidate.
-          <br />
-          Basanite measures whether they{' '}
-          <span className="text-gold-600 italic">actually are one</span>.
-        </p>
+    <section id="research" className="py-24 sm:py-32 px-6 bg-earth-50 border-b border-earth-200/80">
+      <div ref={ref} className="reveal max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-16 items-start">
+        <div className="md:col-span-3">
+          <div className="inline-flex items-center gap-2 text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+            </svg>
+            Backed by PhD research
+          </div>
+          <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-tight mb-6">
+            Grounded in the academic study of tacit expertise.
+          </h2>
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
+            Basanite&rsquo;s eight capability dimensions are drawn from peer-reviewed research into how expert judgment forms. The kind of knowledge that lives in experience, not in answers you can prepare for.
+          </p>
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
+            The interview method is grounded in the literature on tacit knowledge, intuition under scarcity, and professional expertise. Every question is shaped to probe for genuine capability rather than rehearsed fluency.
+          </p>
+        </div>
+
+        <div className="md:col-span-2 border-l-2 border-gold-500/50 pl-6 sm:pl-8 py-2">
+          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.2em] mb-5">Foundations</p>
+          <ul className="space-y-4">
+            {RESEARCH_AREAS.map(a => (
+              <li key={a.name}>
+                <div className="font-display text-basanite-900 text-base leading-snug">{a.name}</div>
+                <div className="text-basanite-500 text-sm mt-0.5 leading-snug">{a.note}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )
@@ -217,7 +283,7 @@ const STAGES = [
     number: '04',
     title: 'AI conducts the interview',
     summary: 'Experience grounded, adaptive',
-    description: 'Basanite asks questions grounded in the candidate\u2019s own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth rather than memorised answers.',
+    description: 'Basanite asks questions grounded in the candidate’s own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth rather than memorised answers.',
     tags: ['CV adaptive', 'Follow up probes', 'Consistency checks'],
   },
   {
@@ -234,7 +300,7 @@ function HowItWorks() {
   const ref = useReveal()
 
   return (
-    <section id="how-it-works" className="py-24 px-6 bg-earth-50">
+    <section id="how-it-works" className="py-24 sm:py-32 px-6 bg-white">
       <div ref={ref} className="reveal max-w-4xl mx-auto">
         <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-3">The process</p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-3">How Basanite works</h2>
@@ -277,46 +343,26 @@ function HowItWorks() {
                     <div
                       className="overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out"
                       style={{ maxHeight: isOpen ? '18rem' : '0', opacity: isOpen ? 1 : 0 }}
-                >
-                  <div className="px-5 sm:px-7 py-5">
-                    <p className="text-basanite-600 text-sm leading-relaxed mb-4">{stage.description}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {stage.tags.map(t => (
-                        <span key={t} className="text-xs px-2 py-1 border border-earth-300 text-basanite-600">
-                          {t}
-                        </span>
-                      ))}
+                    >
+                      <div className="px-5 sm:px-7 py-5">
+                        <p className="text-basanite-600 text-sm leading-relaxed mb-4">{stage.description}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {stage.tags.map(t => (
+                            <span key={t} className="text-xs px-2 py-1 border border-earth-300 text-basanite-600">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </button>
                 </div>
-              </button>
-            </div>
-            )
-          })}
+              )
+            })}
           </div>
         </div>
       </div>
     </section>
-  )
-}
-
-// ─── Image Break ─────────────────────────────────────────────────────────
-function ImageBreak() {
-  return (
-    <div className="relative w-full h-64 sm:h-80 overflow-hidden">
-      <Image
-        src={BREAK_IMAGE}
-        alt="Light across a worn surface"
-        fill
-        className="object-cover object-center"
-      />
-      <div className="absolute inset-0 bg-basanite-950/70" />
-      <div className="absolute inset-0 flex items-center justify-center px-6">
-        <p className="font-display text-2xl md:text-4xl text-earth-50 text-center max-w-3xl leading-snug">
-          &ldquo;The edges of real ability are blurry. Performed ability has no edges.&rdquo;
-        </p>
-      </div>
-    </div>
   )
 }
 
@@ -357,6 +403,11 @@ function Philosophy() {
       <StoneTexture />
       <div className="relative z-10 max-w-5xl mx-auto">
         <div ref={ref} className="reveal mb-14">
+          <p className="font-display italic text-gold-400/80 text-xl sm:text-2xl md:text-3xl mb-10 leading-snug max-w-3xl">
+            Most hiring tools measure how well someone can <span className="not-italic text-earth-200">approximate</span> a good candidate.
+            <br />
+            Basanite measures whether they <span className="not-italic text-gold-400">actually are one</span>.
+          </p>
           <p className="text-gold-500 text-xs font-semibold uppercase tracking-[0.2em] mb-3">Design philosophy</p>
           <h2 className="font-display text-earth-50 text-3xl sm:text-4xl mb-4">Assess genuine capability, not performed competence</h2>
           <p className="text-earth-300 max-w-2xl leading-relaxed">
@@ -548,7 +599,14 @@ function Team() {
   )
 }
 
-// ─── Waitlist CTA ────────────────────────────────────────────────────────
+// ─── Waitlist CTA (with inline stats recap) ──────────────────────────────
+const CTA_STATS = [
+  { value: '8', label: 'capability dimensions' },
+  { value: '45 min', label: 'conversational interview' },
+  { value: '100%', label: 'quote-grounded scores' },
+  { value: '3', label: 'screening rounds replaced' },
+]
+
 function WaitlistCTA() {
   const ref = useReveal()
   const [name, setName] = useState('')
@@ -583,61 +641,72 @@ function WaitlistCTA() {
   return (
     <section id="request-access" className="relative py-24 sm:py-32 px-6 bg-basanite-900 overflow-hidden">
       <StoneTexture />
-      <div ref={ref} className="reveal relative z-10 max-w-xl mx-auto text-center">
-        <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
-          Ready to test what matters?
-        </h2>
-        <p className="text-earth-300 text-lg mb-10 leading-relaxed">
-          Request early access. We are onboarding a small number of teams now and will be in touch.
-        </p>
+      <div ref={ref} className="reveal relative z-10 max-w-3xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 border-y border-earth-300/20 py-8 mb-16">
+          {CTA_STATS.map(s => (
+            <div key={s.label} className="text-center">
+              <div className="font-display text-2xl sm:text-3xl text-earth-50">{s.value}</div>
+              <div className="text-earth-300/70 text-[10px] sm:text-xs mt-1 uppercase tracking-wide">{s.label}</div>
+            </div>
+          ))}
+        </div>
 
-        {state === 'done' ? (
-          <div className="bg-white/10 border border-gold-500/40 px-6 py-10 text-earth-50">
-            <div className="font-display text-4xl text-gold-400 mb-3">&#10004;</div>
-            <p className="font-display text-xl mb-2">You are on the list.</p>
-            <p className="text-earth-300 text-sm">We will review your request and follow up shortly.</p>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} className="flex flex-col gap-3 text-left">
-            <input
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-              className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
-            />
-            <input
-              type="email"
-              placeholder="Work email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
-            />
-            <input
-              type="text"
-              placeholder="Company (optional)"
-              value={company}
-              onChange={e => setCompany(e.target.value)}
-              className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
-            />
-            {state === 'error' && (
-              <p className="text-xs text-red-200 bg-red-900/30 border border-red-500/30 px-3 py-2">{errMsg}</p>
-            )}
-            <button
-              type="submit"
-              disabled={state === 'loading'}
-              className="w-full bg-gold-500 hover:bg-gold-400 text-white font-semibold py-4 text-base tracking-wide transition-colors duration-200 disabled:opacity-60 mt-2"
-            >
-              {state === 'loading' ? 'Submitting...' : 'Request access'}
-            </button>
-            <p className="text-xs text-earth-300/70 text-center mt-2">
-              Already have access?{' '}
-              <a href="/login" className="text-gold-400 hover:text-gold-300 underline">Sign in</a>
-            </p>
-          </form>
-        )}
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
+            Ready to test what matters?
+          </h2>
+          <p className="text-earth-300 text-lg mb-10 leading-relaxed">
+            Request early access. We are onboarding a small number of teams now and will be in touch.
+          </p>
+
+          {state === 'done' ? (
+            <div className="bg-white/10 border border-gold-500/40 px-6 py-10 text-earth-50">
+              <div className="font-display text-4xl text-gold-400 mb-3">&#10004;</div>
+              <p className="font-display text-xl mb-2">You are on the list.</p>
+              <p className="text-earth-300 text-sm">We will review your request and follow up shortly.</p>
+            </div>
+          ) : (
+            <form onSubmit={onSubmit} className="flex flex-col gap-3 text-left">
+              <input
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
+              />
+              <input
+                type="email"
+                placeholder="Work email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
+              />
+              <input
+                type="text"
+                placeholder="Company (optional)"
+                value={company}
+                onChange={e => setCompany(e.target.value)}
+                className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
+              />
+              {state === 'error' && (
+                <p className="text-xs text-red-200 bg-red-900/30 border border-red-500/30 px-3 py-2">{errMsg}</p>
+              )}
+              <button
+                type="submit"
+                disabled={state === 'loading'}
+                className="w-full bg-gold-500 hover:bg-gold-400 text-white font-semibold py-4 text-base tracking-wide transition-colors duration-200 disabled:opacity-60 mt-2"
+              >
+                {state === 'loading' ? 'Submitting...' : 'Request access'}
+              </button>
+              <p className="text-xs text-earth-300/70 text-center mt-2">
+                Already have access?{' '}
+                <a href="/login" className="text-gold-400 hover:text-gold-300 underline">Sign in</a>
+              </p>
+            </form>
+          )}
+        </div>
       </div>
     </section>
   )
@@ -669,10 +738,9 @@ export default function HomePage() {
     <>
       <Nav />
       <Hero />
-      <StatsBar />
-      <ManifestoStrip />
+      <CompanyMarquee />
+      <Research />
       <HowItWorks />
-      <ImageBreak />
       <Philosophy />
       <ForBoth />
       <Team />

@@ -40,6 +40,7 @@ const config: Config = {
         'fade-in': 'fadeIn 0.5s ease-out forwards',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'gradient': 'gradientShift 8s ease infinite',
+        'marquee': 'marquee 45s linear infinite',
       },
       keyframes: {
         fadeUp: {
@@ -53,6 +54,10 @@ const config: Config = {
         gradientShift: {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       },
     },

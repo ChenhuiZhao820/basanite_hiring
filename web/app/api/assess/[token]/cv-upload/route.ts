@@ -1,4 +1,6 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { assertCandidateSession } from '@/lib/assess-auth'
+import { allow } from '@/lib/rate-limit'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 
@@ -7,8 +9,17 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params
-  const form = await request.formData()
 
+  const check = await assertCandidateSession(token)
+  if (check.error) return check.error
+
+  // Cap CV parses to 10/hour per signed-in candidate to limit PDF-parse abuse.
+  const allowed = await allow(`cv:${check.user.id}`, 10, 60 * 60 * 1000)
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
+  const form = await request.formData()
   const res = await fetch(`${PIPELINE_URL}/assess/${token}/cv-upload`, {
     method: 'POST',
     body: form,

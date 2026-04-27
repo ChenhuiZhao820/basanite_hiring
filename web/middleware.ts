@@ -1,8 +1,51 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function csp(nonce: string, isDev: boolean): string {
+  // Per-request nonce replaces `'unsafe-inline'` in script-src so any future
+  // reflected/stored XSS cannot execute without knowing the current nonce.
+  // Dev mode still needs `unsafe-eval` for Next.js HMR; prod does not.
+  const scriptSrc = isDev
+    ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' blob:`
+    : `script-src 'self' 'nonce-${nonce}' blob:`
+  return [
+    "default-src 'self'",
+    scriptSrc,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://images.unsplash.com",
+    "font-src 'self'",
+    "media-src 'self' blob:",
+    "connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://*.elevenlabs.io wss://*.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud",
+    "worker-src 'self' blob:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ')
+}
+
+function generateNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary)
+}
+
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+  const nonce = generateNonce()
+  const isDev = process.env.NODE_ENV === 'development'
+  const cspHeader = csp(nonce, isDev)
+
+  // Propagate the nonce into the rendering pipeline so Server Components
+  // can read it via `headers().get('x-nonce')` when they need to mark a
+  // specific inline <script> tag with the matching nonce attribute.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('Content-Security-Policy', cspHeader)
+
+  let supabaseResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +55,9 @@ export async function middleware(request: NextRequest) {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({
+            request: { headers: requestHeaders },
+          })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -64,9 +109,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  supabaseResponse.headers.set('Content-Security-Policy', cspHeader)
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/assess/:token/onboard', '/assess/:token/interview', '/assess/:token/complete'],
+  matcher: [
+    // Run on everything except static assets and image optimiser, so the CSP
+    // header is attached to every HTML document and API response.
+    '/((?!_next/static|_next/image|favicon.ico|icon.jpeg|.*\\..*).*)',
+  ],
 }

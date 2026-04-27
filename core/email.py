@@ -2,7 +2,15 @@
 Outbound email via Resend. Currently used only for candidate report delivery.
 """
 import os
+import re
 from html import escape
+
+_EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$")
+
+
+def _strip_header(value: str) -> str:
+    """Drop CR/LF and other characters that could break out of a header value."""
+    return re.sub(r"[\r\n\t]+", " ", value or "").strip()
 
 
 def _bullet_list(items: list[str]) -> str:
@@ -64,20 +72,26 @@ def send_report_email(
     """
     api_key = os.getenv("RESEND_API_KEY", "")
     sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
-    if not api_key or not to:
-        print(f"  [email] skipped (api_key={'set' if api_key else 'missing'}, to={to or 'empty'})")
+    # Do not log the recipient address — PII in server logs.
+    if not api_key:
+        print("  [email] skipped (api_key missing)")
+        return False
+    if not to or not _EMAIL_RE.match(to):
+        print("  [email] skipped (recipient missing or malformed)")
         return False
 
+    safe_role = _strip_header(role_title)[:140] or "your interview"
     try:
         import resend
         resend.api_key = api_key
         resend.Emails.send({
             "from": sender,
             "to": [to],
-            "subject": f"Your Basanite feedback, {role_title}",
-            "html": _render_report_html(candidate_name, role_title, report),
+            "subject": f"Your Basanite feedback, {safe_role}",
+            "html": _render_report_html(candidate_name, safe_role, report),
         })
         return True
     except Exception as e:
-        print(f"  [email] send failed: {e}")
+        # Exception text may include the recipient address; drop to class name.
+        print(f"  [email] send failed: {type(e).__name__}")
         return False

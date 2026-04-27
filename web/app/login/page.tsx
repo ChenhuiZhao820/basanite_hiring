@@ -4,11 +4,12 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
+import { safeNext } from '@/lib/validate'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = safeNext(searchParams.get('next'))
   const verified = searchParams.get('verified') === '1'
   const urlError = searchParams.get('error')
   const deleted = searchParams.get('deleted') === '1'

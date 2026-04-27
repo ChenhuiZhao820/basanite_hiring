@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { safeNext } from '@/lib/validate'
 
 function CallbackHandler() {
   const router = useRouter()
@@ -10,9 +11,7 @@ function CallbackHandler() {
 
   useEffect(() => {
     const code = searchParams.get('code')
-    const rawNext = searchParams.get('next') ?? '/dashboard'
-    // Reject external URLs, only allow internal paths (prevents open redirect)
-    const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
+    const next = safeNext(searchParams.get('next'))
 
     if (!code) {
       router.replace('/login?error=' + encodeURIComponent('Missing verification code. Please check your email link.'))

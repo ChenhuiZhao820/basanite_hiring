@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { assertCandidateOwnsAssessment } from '@/lib/assess-auth'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 
@@ -8,6 +9,13 @@ export async function POST(
 ) {
   const { token } = await params
   const form = await request.formData()
+  const assessmentId = form.get('assessment_id')
+
+  const check = await assertCandidateOwnsAssessment(
+    token,
+    typeof assessmentId === 'string' ? assessmentId : null,
+  )
+  if (check.error) return check.error
 
   const res = await fetch(`${PIPELINE_URL}/assess/${token}/upload-recording`, {
     method: 'POST',

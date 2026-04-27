@@ -4,14 +4,29 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 const PIPELINE_SECRET = process.env.PIPELINE_API_SECRET ?? ''
 
+async function assertRoleOwner(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+
+  const service = createServiceClient()
+  const { data: role } = await service
+    .from('roles')
+    .select('id')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single()
+  if (!role) return { error: NextResponse.json({ error: 'Role not found' }, { status: 404 }) }
+  return { user }
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const check = await assertRoleOwner(id)
+  if (check.error) return check.error
 
   const res = await fetch(`${PIPELINE_URL}/roles/${id}`, {
     headers: { 'Authorization': `Bearer ${PIPELINE_SECRET}` },
@@ -25,9 +40,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const check = await assertRoleOwner(id)
+  if (check.error) return check.error
 
   const body = await request.json()
   const res = await fetch(`${PIPELINE_URL}/roles/${id}`, {
