@@ -65,8 +65,8 @@ export default function InterviewPage() {
 
   if (!assessmentId || !config) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-earth-50">
-        <p className="text-sm text-basanite-500">Preparing your interview…</p>
+      <div className="min-h-screen flex items-center justify-center bg-basanite-950">
+        <p className="text-sm text-earth-200/60">Preparing your interview…</p>
       </div>
     )
   }

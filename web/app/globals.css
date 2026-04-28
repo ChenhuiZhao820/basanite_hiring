@@ -43,3 +43,57 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ─────────────────── Agent bubble (interview screen) ─────────────────── */
+
+.agent-bubble__svg {
+  /* Mobile takes a bigger share of viewport; tablet/desktop more reserved. */
+  width: 60vmin;
+  height: 60vmin;
+  max-width: 560px;
+  max-height: 560px;
+  overflow: visible;
+  transition: opacity 600ms ease-out;
+}
+
+.agent-bubble__group {
+  filter: drop-shadow(0 0 var(--bubble-glow, 8px) rgba(196, 154, 47, 0.55));
+  transform-origin: center center;
+}
+
+@media (min-width: 640px) {
+  .agent-bubble__svg {
+    width: 38vmin;
+    height: 38vmin;
+  }
+}
+
+.agent-bubble__path {
+  fill: url(#bubbleFill);
+}
+
+.agent-bubble[data-phase='idle'] .agent-bubble__svg {
+  opacity: 0.7;
+}
+
+.agent-bubble[data-phase='live'] .agent-bubble__svg {
+  opacity: 1;
+}
+
+.agent-bubble[data-phase='error'] .agent-bubble__svg {
+  opacity: 0.55;
+  transform: scale(0.8);
+}
+.agent-bubble[data-phase='error'] .agent-bubble__group {
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+}
+.agent-bubble[data-phase='error'] .agent-bubble__path {
+  fill: url(#bubbleFillError);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-bubble__group {
+    /* The rAF loop already skips morphing under reduce-motion; also pin glow. */
+    filter: drop-shadow(0 0 8px rgba(196, 154, 47, 0.45));
+  }
+}

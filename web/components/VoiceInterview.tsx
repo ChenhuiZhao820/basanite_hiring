@@ -1,9 +1,14 @@
 'use client'
 
 import { useConversation } from '@elevenlabs/react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/Logo'
+import AgentBubble from '@/components/AgentBubble'
+import InterviewBackground from '@/components/InterviewBackground'
+import SelfView from '@/components/SelfView'
+import EndButton from '@/components/EndButton'
+import ErrorToast from '@/components/ErrorToast'
 
 type Props = {
   token: string
@@ -96,7 +101,6 @@ export default function VoiceInterview({
   const ceilingFiredRef = useRef(false)
   const endQueuedRef = useRef(false)
   const endInFlightRef = useRef(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const phaseRef = useRef<Phase>('idle')
   // Director (background Opus supervisor)
   const bubblesRef = useRef<Bubble[]>([])
@@ -142,6 +146,26 @@ export default function VoiceInterview({
       setPhase('error')
     },
   })
+
+  // Hold a live ref to the conversation so the bubble's rAF loop can sample
+  // FFT/volume each frame without re-rendering this component on every tick.
+  const conversationRef = useRef(conversation)
+  conversationRef.current = conversation
+
+  const getFft = useCallback(() => {
+    const c = conversationRef.current
+    let freq: Uint8Array | undefined
+    let volume = 0
+    let isSpeaking = false
+    try {
+      freq = c?.getOutputByteFrequencyData?.()
+      volume = c?.getOutputVolume?.() ?? 0
+      isSpeaking = !!c?.isSpeaking
+    } catch {
+      // Pre-connect, the SDK may not have an analyser yet.
+    }
+    return { freq, volume, isSpeaking }
+  }, [])
 
   // Director: ask our backend (running Opus) for one tactical directive based
   // on the transcript so far, and forward it to the live agent. Cheap: ~6-10
@@ -203,11 +227,6 @@ export default function VoiceInterview({
     }
     // Otherwise the isSpeaking watcher below ends it on the next true→false edge.
   }
-
-  // Auto-scroll the transcript panel.
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [bubbles])
 
   // Kick off: acquire camera+mic, start the ElevenLabs session.
   useEffect(() => {
@@ -386,25 +405,6 @@ export default function VoiceInterview({
     window.setTimeout(() => router.push(`/assess/${token}/complete`), COMPLETION_HOLD_SECONDS * 1000)
   }
 
-  // Display the elapsed time, counting up from 0:00.
-  const timeLabel = useMemo(() => {
-    const m = Math.floor(elapsed / 60)
-    const s = elapsed % 60
-    return `${m}:${s.toString().padStart(2, '0')}`
-  }, [elapsed])
-
-  // Progress bar tracks elapsed against the target, capping at 100% at the target.
-  // After the target is exceeded, the bar stays at 100%.
-  const progressPct = Math.min(100, (elapsed / targetSeconds) * 100)
-
-  const phaseLabel = useMemo(() => ({
-    idle: 'Connecting…',
-    live: 'Live interview',
-    ending: 'Finalising…',
-    done: 'Complete',
-    error: 'Error',
-  }[phase]), [phase])
-
   // Full-screen completion takeover. Replaces the chat UI entirely, no tiny
   // "saving…" blip at the bottom of a dead camera feed.
   if (phase === 'ending' || phase === 'done') {
@@ -473,84 +473,12 @@ export default function VoiceInterview({
   }
 
   return (
-    <div className="h-screen flex flex-col bg-earth-50">
-      <header className="flex-shrink-0 border-b border-earth-200 bg-white">
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-display text-basanite-900 text-sm">Basanite</span>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-basanite-400">{phaseLabel}</span>
-            <span className="text-xs text-basanite-300 font-mono">
-              {timeLabel} <span className="opacity-60">· target {targetMinutes}m</span>
-            </span>
-          </div>
-        </div>
-        <div className="h-0.5 bg-earth-200">
-          <div
-            className="h-full bg-gold-500 transition-all duration-500"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-      </header>
-
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-          {phase === 'error' && (
-            <div className="bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              {errMsg}
-            </div>
-          )}
-          {bubbles.length === 0 && phase !== 'error' && (
-            <p className="text-sm text-basanite-400 italic">Waiting for the interviewer to begin speaking…</p>
-          )}
-          {bubbles.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] ${
-                m.role === 'user'
-                  ? 'bg-basanite-900 text-earth-50 px-5 py-3.5'
-                  : 'bg-white border border-earth-200 px-5 py-3.5'
-              }`}>
-                {m.role === 'assistant' && (
-                  <p className="text-[10px] text-basanite-400 uppercase tracking-widest font-medium mb-2">Interviewer</p>
-                )}
-                <p className={`text-sm leading-relaxed whitespace-pre-wrap ${
-                  m.role === 'user' ? 'text-earth-100' : 'text-basanite-700'
-                }`}>
-                  {m.content}
-                </p>
-              </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-      </div>
-
-      <div className="flex-shrink-0 border-t border-earth-200 bg-white">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
-          <div className="relative w-24 h-24 bg-basanite-900 overflow-hidden shrink-0">
-            <video ref={previewRef} muted playsInline className="w-full h-full object-cover scale-x-[-1]" />
-            {phase === 'live' && (
-              <span className="absolute top-1 left-1 flex items-center gap-1 text-[10px] text-white bg-red-600 px-1.5 py-0.5 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> REC
-              </span>
-            )}
-          </div>
-          <div className="flex-1">
-            <p className="text-xs text-basanite-500 mb-2">
-              {phase === 'live' && (conversation.isSpeaking ? 'The interviewer is speaking…' : "Your turn, the interviewer is listening.")}
-              {phase === 'idle' && 'Connecting your call…'}
-              {phase === 'error' && errMsg}
-            </p>
-            {phase === 'live' ? (
-              <button
-                onClick={() => requestGracefulEnd()}
-                className="px-4 py-2 border border-earth-300 hover:border-basanite-500 text-basanite-700 text-sm font-medium transition-colors"
-              >
-                End interview early
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </div>
+    <div className="fixed inset-0 overflow-hidden bg-basanite-950 text-earth-100">
+      <InterviewBackground />
+      <AgentBubble getFft={getFft} phase={phase} />
+      <SelfView ref={previewRef} phase={phase} />
+      <EndButton onClick={() => requestGracefulEnd()} visible={phase === 'live'} />
+      <ErrorToast message={phase === 'error' ? errMsg : ''} />
     </div>
   )
 }
