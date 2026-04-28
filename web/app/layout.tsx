@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Fraunces, DM_Serif_Display } from 'next/font/google'
+import { headers } from 'next/headers'
 import { AuthErrorRedirect } from '@/components/AuthErrorRedirect'
 import './globals.css'
 
@@ -26,7 +27,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Reading the per-request nonce from middleware opts the tree into dynamic
+  // rendering, which is required for Next.js to attach the matching nonce to
+  // its framework inline scripts. Without this, hydration scripts ship without
+  // a nonce and the strict CSP blocks them.
+  await headers()
   return (
     <html lang="en" className={`${fraunces.variable} ${dmSerif.variable}`}>
       <body>
