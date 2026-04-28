@@ -135,7 +135,7 @@ export default function AgentBubble({ getFft, phase }: Props) {
       if (g) {
         const scale = 1 + volRef.current * 0.04
         g.setAttribute('transform', `scale(${scale.toFixed(4)})`)
-        const glow = (8 + volRef.current * 28).toFixed(1)
+        const glow = (18 + volRef.current * 60).toFixed(1)
         g.style.setProperty('--bubble-glow', `${glow}px`)
       }
 

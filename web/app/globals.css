@@ -57,7 +57,10 @@ body {
 }
 
 .agent-bubble__group {
-  filter: drop-shadow(0 0 var(--bubble-glow, 8px) rgba(196, 154, 47, 0.55));
+  /* Layered drop-shadows: tight hot core + wide soft halo. */
+  filter:
+    drop-shadow(0 0 var(--bubble-glow, 18px) rgba(212, 168, 67, 0.85))
+    drop-shadow(0 0 calc(var(--bubble-glow, 18px) * 2.6) rgba(196, 154, 47, 0.45));
   transform-origin: center center;
 }
 
@@ -94,6 +97,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .agent-bubble__group {
     /* The rAF loop already skips morphing under reduce-motion; also pin glow. */
-    filter: drop-shadow(0 0 8px rgba(196, 154, 47, 0.45));
+    filter:
+      drop-shadow(0 0 18px rgba(212, 168, 67, 0.75))
+      drop-shadow(0 0 48px rgba(196, 154, 47, 0.4));
   }
 }
