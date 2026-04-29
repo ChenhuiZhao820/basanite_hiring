@@ -7,10 +7,9 @@
 // Delete before merging if it gets pushed.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import AgentBubble from '@/components/AgentBubble'
-import InterviewBackground from '@/components/InterviewBackground'
-import SelfView from '@/components/SelfView'
-import EndButton from '@/components/EndButton'
+import InterviewHeader from '@/components/InterviewHeader'
+import SelfPane from '@/components/SelfPane'
+import AgentPane from '@/components/AgentPane'
 import ErrorToast from '@/components/ErrorToast'
 
 type Phase = 'idle' | 'live' | 'ending' | 'done' | 'error'
@@ -134,15 +133,30 @@ export default function BubbleDebugPage() {
     }
   }, [source])
 
+  // Synthetic elapsed counter so the header shows a moving timer in the demo
+  // (parallel of VoiceInterview's `elapsed` state).
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    if (phase !== 'live') return
+    const id = window.setInterval(() => setElapsed(s => s + 1), 1000)
+    return () => window.clearInterval(id)
+  }, [phase])
+
   return (
-    <div className="fixed inset-0 overflow-hidden bg-basanite-950 text-earth-100">
-      <InterviewBackground />
-      <AgentBubble getFft={getFft} phase={phase} />
-      <SelfView ref={previewRef} phase={phase} />
-      <EndButton onClick={() => setPhase('error')} visible={phase === 'live'} />
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-basanite-950 text-earth-100">
+      <InterviewHeader
+        title="Technical Screening with Baz"
+        phase={phase}
+        elapsedSeconds={elapsed}
+        onEnd={() => setPhase('error')}
+      />
+      <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/10 min-h-0">
+        <SelfPane ref={previewRef} phase={phase} label="You" />
+        <AgentPane getFft={getFft} phase={phase} label="Baz" />
+      </main>
       <ErrorToast message={phase === 'error' ? 'Test error toast.' : (micErr || '')} />
 
-      <div className="fixed top-4 left-4 z-30 bg-basanite-900/80 backdrop-blur-sm text-earth-100 text-xs p-3 space-y-2 border border-earth-200/15">
+      <div className="fixed top-20 left-4 z-30 bg-basanite-900/80 backdrop-blur-sm text-earth-100 text-xs p-3 space-y-2 border border-earth-200/15">
         <div className="uppercase tracking-widest text-gold-400 font-semibold">Debug</div>
         <div className="flex gap-1">
           {(['idle', 'live', 'error'] as Phase[]).map(p => (

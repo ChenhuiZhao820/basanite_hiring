@@ -47,8 +47,10 @@ const X_URI = `url("data:image/svg+xml;utf8,${encodeURIComponent(X_SVG)}")`
 
 export default function InterviewBackground() {
   return (
+    // Now scoped to its parent (the agent pane) rather than the viewport, so
+    // the X-pattern + warm vignette only show behind the bubble.
     <div
-      className="fixed inset-0 -z-10 overflow-hidden"
+      className="absolute inset-0 -z-10 overflow-hidden"
       aria-hidden
     >
       <div

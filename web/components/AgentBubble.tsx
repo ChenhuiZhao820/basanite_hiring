@@ -186,10 +186,16 @@ export default function AgentBubble({ getFft, phase }: Props) {
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
+    // The canvas is sized to fit its *parent element* (a pane in the Meet-style
+    // layout), not the viewport. ResizeObserver keeps it in sync as the pane
+    // grows/shrinks (window resize, mobile orientation change, layout shifts).
     function fitCanvas() {
+      const parent = canvas!.parentElement
+      if (!parent) return
+      const rect = parent.getBoundingClientRect()
+      const cw = Math.max(1, Math.floor(rect.width))
+      const ch = Math.max(1, Math.floor(rect.height))
       dpr = Math.min(window.devicePixelRatio || 1, 2)
-      const cw = window.innerWidth
-      const ch = window.innerHeight
       if (cw === lastW && ch === lastH && canvas!.width === Math.floor(cw * dpr)) return
       lastW = cw
       lastH = ch
@@ -375,20 +381,24 @@ export default function AgentBubble({ getFft, phase }: Props) {
 
     raf = requestAnimationFrame(frame)
 
-    function onResize() { fitCanvas() }
-    window.addEventListener('resize', onResize)
+    // ResizeObserver tracks the canvas's parent pane (works for any container
+    // size change, not just viewport resize).
+    const ro = canvas.parentElement
+      ? new ResizeObserver(() => { fitCanvas() })
+      : null
+    if (canvas.parentElement && ro) ro.observe(canvas.parentElement)
 
     return () => {
       alive = false
       cancelAnimationFrame(raf)
-      window.removeEventListener('resize', onResize)
+      ro?.disconnect()
     }
   }, [getFft, phase])
 
   return (
     <div
       data-phase={phase}
-      className="agent-bubble pointer-events-none fixed inset-0"
+      className="agent-bubble pointer-events-none absolute inset-0"
       aria-hidden
     >
       <canvas

@@ -4,10 +4,9 @@ import { useConversation } from '@elevenlabs/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/Logo'
-import AgentBubble from '@/components/AgentBubble'
-import InterviewBackground from '@/components/InterviewBackground'
-import SelfView from '@/components/SelfView'
-import EndButton from '@/components/EndButton'
+import InterviewHeader from '@/components/InterviewHeader'
+import SelfPane from '@/components/SelfPane'
+import AgentPane from '@/components/AgentPane'
 import ErrorToast from '@/components/ErrorToast'
 
 type Props = {
@@ -17,6 +16,8 @@ type Props = {
   prompt: string
   firstMessage: string
   targetSeconds: number
+  /** Header title; defaults to "Technical Screening with Baz". */
+  screeningTitle?: string
 }
 
 type Bubble = { role: 'user' | 'assistant'; content: string }
@@ -84,6 +85,7 @@ export default function VoiceInterview({
   prompt,
   firstMessage,
   targetSeconds,
+  screeningTitle = 'Technical Screening with Baz',
 }: Props) {
   const router = useRouter()
   const [bubbles, setBubbles] = useState<Bubble[]>([])
@@ -473,11 +475,17 @@ export default function VoiceInterview({
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-basanite-950 text-earth-100">
-      <InterviewBackground />
-      <AgentBubble getFft={getFft} phase={phase} />
-      <SelfView ref={previewRef} phase={phase} />
-      <EndButton onClick={() => requestGracefulEnd()} visible={phase === 'live'} />
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-basanite-950 text-earth-100">
+      <InterviewHeader
+        title={screeningTitle}
+        phase={phase}
+        elapsedSeconds={elapsed}
+        onEnd={() => requestGracefulEnd()}
+      />
+      <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/10 min-h-0">
+        <SelfPane ref={previewRef} phase={phase} label="You" />
+        <AgentPane getFft={getFft} phase={phase} label="Baz" />
+      </main>
       <ErrorToast message={phase === 'error' ? errMsg : ''} />
     </div>
   )
