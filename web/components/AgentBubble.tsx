@@ -26,7 +26,7 @@ type Props = {
   phase: Phase
 }
 
-const NUM_PARTICLES = 10400             // 4× the previous 2600
+const NUM_PARTICLES = 20800             // 2× the previous 10400
 const BASE_RADIUS_VMIN = 0.19            // smaller overall
 const FEATHER = 0.10                     // thinner shell → more hollow centre
 // Power < 1 biases the radial sampling toward the outer edge of the shell, so
@@ -59,15 +59,25 @@ const SPIKE_THRESHOLD = 0.04             // ignore high-band changes below this
 const SPIKE_GAIN = 2.0                   // multiplier on the (above-threshold) delta
 const SPIKE_DECAY = 0.93                 // per-frame decay (~0.25s residual)
 const SPIKE_TARGET_BOOST = 0.30          // how much spike adds to the audio-volume term
-// Particle palette: each particle picks one entry at init. Mixing the warm
-// tones gives the cloud chromatic depth instead of a flat monochrome.
+// Particle palette: each particle picks one entry at init. Wider warm-tone
+// range — pale ivory through gold to amber, plus a few "off" cooler/warmer
+// outliers — for visible chromatic depth.
 const PARTICLE_PALETTE: Array<[number, number, number]> = [
-  [232, 197, 85],   // gold-300  #e8c555
-  [212, 168, 67],   // gold-400  #d4a843
-  [196, 154, 47],   // gold-500  #c49a2f
-  [240, 210, 105],  // pale gold #f0d269
-  [224, 144, 72],   // warm amber #e09048
-  [232, 178, 90],   // honey     #e8b25a
+  [232, 197, 85],   // gold-300       #e8c555
+  [212, 168, 67],   // gold-400       #d4a843
+  [196, 154, 47],   // gold-500       #c49a2f
+  [240, 210, 105],  // pale gold      #f0d269
+  [224, 144, 72],   // warm amber     #e09048
+  [232, 178, 90],   // honey          #e8b25a
+  // Slightly off-palette additions for chromatic variety:
+  [248, 226, 158],  // ivory          #f8e29e
+  [255, 220, 130],  // pale yellow    #ffdc82
+  [205, 134, 60],   // deep amber     #cd863c
+  [180, 116, 40],   // bronze         #b47428
+  [220, 200, 110],  // sand           #dcc86e
+  [232, 168, 105],  // peach gold     #e8a869
+  [170, 130, 50],   // antique gold   #aa8232
+  [248, 200, 96],   // butter         #f8c860
 ]
 // Error tint (when phase is 'error') — desaturated basanite.
 const ERROR_RGB: [number, number, number] = [80, 76, 70]
