@@ -49,8 +49,10 @@ export default function BubbleDebugPage() {
   const audioCtxRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const synthBufRef = useRef<Uint8Array>(new Uint8Array(128))
-  const micBufRef = useRef<Uint8Array | null>(null)
+  // Generic args pin these to the narrow ArrayBuffer-backed type the
+  // AnalyserNode API expects (TS 5.7+ stricter typing on typed arrays).
+  const synthBufRef = useRef<Uint8Array<ArrayBuffer>>(new Uint8Array(new ArrayBuffer(128)))
+  const micBufRef = useRef<Uint8Array<ArrayBuffer> | null>(null)
 
   // Bring up / tear down the mic on toggle.
   useEffect(() => {
@@ -94,7 +96,7 @@ export default function BubbleDebugPage() {
         analyser.smoothingTimeConstant = 0.55
         src.connect(analyser)
         analyserRef.current = analyser
-        micBufRef.current = new Uint8Array(analyser.frequencyBinCount)
+        micBufRef.current = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount))
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : 'Mic access failed'
         setMicErr(msg)
