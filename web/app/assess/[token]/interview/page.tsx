@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import VoiceInterview from '@/components/VoiceInterview'
 import { LogoMark } from '@/components/Logo'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 type SessionConfig = {
   signed_url: string
@@ -13,6 +14,7 @@ type SessionConfig = {
 }
 
 export default function InterviewPage() {
+  useDocumentTitle('Interview')
   const { token } = useParams<{ token: string }>()
   const router = useRouter()
   const [assessmentId, setAssessmentId] = useState<string | null>(null)

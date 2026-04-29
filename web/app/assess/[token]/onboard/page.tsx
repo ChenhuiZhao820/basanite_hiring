@@ -4,8 +4,10 @@ import { useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 export default function OnboardPage() {
+  useDocumentTitle('Onboarding')
   const router = useRouter()
   const { token } = useParams<{ token: string }>()
   const supabase = createClient()

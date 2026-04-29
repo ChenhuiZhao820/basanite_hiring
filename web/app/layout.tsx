@@ -18,7 +18,12 @@ const dmSerif = DM_Serif_Display({
 })
 
 export const metadata: Metadata = {
-  title: 'Basanite, Test Genuine Technical Capability',
+  title: {
+    // Server pages set `title: 'X'` and the rendered title becomes "Basanite - X".
+    // Client pages set `useDocumentTitle('X')` from `lib/useDocumentTitle.ts`.
+    template: 'Basanite - %s',
+    default: 'Basanite, Test Genuine Technical Capability',
+  },
   description: 'AI powered technical interviews that assess real capability, not performed competence. Depth over breadth. Signal over noise.',
   openGraph: {
     title: 'Basanite, Test Genuine Technical Capability',

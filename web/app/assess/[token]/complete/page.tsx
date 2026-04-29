@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 export default function CompletePage() {
+  useDocumentTitle('Assessment complete')
   const { token } = useParams<{ token: string }>()
   const [report, setReport] = useState<any>(null)
   const [loading, setLoading] = useState(true)

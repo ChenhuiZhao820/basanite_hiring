@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 // Target length is a hint for the AI, it decides when to end based on signal.
 const DEFAULT_TARGET_MINUTES = 20
@@ -21,6 +22,7 @@ const ALL_DIMENSIONS = [
 ]
 
 export default function NewRolePage() {
+  useDocumentTitle('New role')
   const router = useRouter()
   const supabase = createClient()
   const [step, setStep] = useState(0)

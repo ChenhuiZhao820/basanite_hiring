@@ -5,6 +5,8 @@ import { CopyButton } from '@/components/CopyButton'
 import { AssessmentRowMenu } from '@/components/AssessmentRowMenu'
 import { RoleMenu } from '@/components/RoleMenu'
 
+export const metadata = { title: 'Role' }
+
 export default async function RoleDetailPage({
   params,
 }: {

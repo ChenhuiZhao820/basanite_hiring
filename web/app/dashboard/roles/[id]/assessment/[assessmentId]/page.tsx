@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatDimensionKey } from '@/lib/format'
 
+export const metadata = { title: 'Assessment report' }
+
 export default async function AssessmentReportPage({
   params,
 }: {

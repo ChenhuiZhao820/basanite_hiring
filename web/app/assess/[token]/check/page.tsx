@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/Logo'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 type Phase = 'requesting' | 'preview' | 'test_recording' | 'test_playback' | 'denied'
 
 const TEST_SECONDS = 5
 
 export default function DeviceCheckPage() {
+  useDocumentTitle('Device check')
   const { token } = useParams<{ token: string }>()
   const router = useRouter()
   const [phase, setPhase] = useState<Phase>('requesting')

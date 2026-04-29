@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 export default function SetPasswordPage() {
+  useDocumentTitle('Set password')
   const router = useRouter()
   const supabase = createClient()
   const [password, setPassword] = useState('')

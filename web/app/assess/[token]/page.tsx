@@ -3,6 +3,8 @@ import Link from 'next/link'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 
+export const metadata = { title: 'Assessment' }
+
 export default async function AssessmentLandingPage({
   params,
 }: {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 type WaitlistEntry = {
   id: string
@@ -12,6 +13,7 @@ type WaitlistEntry = {
 }
 
 export default function AdminPage() {
+  useDocumentTitle('Admin')
   const [entries, setEntries] = useState<WaitlistEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [approving, setApproving] = useState<string | null>(null)

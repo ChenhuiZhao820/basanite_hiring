@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
 import { safeNext } from '@/lib/validate'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 function LoginForm() {
+  useDocumentTitle('Sign in')
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = safeNext(searchParams.get('next'))

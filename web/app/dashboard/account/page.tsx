@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 type Section = 'profile' | 'password' | 'danger'
 
@@ -244,6 +245,7 @@ function DangerZone() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AccountPage() {
+  useDocumentTitle('Account')
   const { email, name } = useUser()
 
   return (
