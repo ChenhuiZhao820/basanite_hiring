@@ -42,11 +42,25 @@ from typing import Optional
 class AtsConfig:
     """Snapshot of the ATS-related env at import time. Read once, reuse."""
 
-    merge_api_key: str
-    merge_env: str  # "production" | "sandbox"
+    merge_api_key_prod: str
+    merge_api_key_test: str
+    merge_env: str  # "production" | "test"
     merge_webhook_secret: str
     token_enc_key_b64: str
     public_report_signing_key: str
+
+    @property
+    def merge_api_key(self) -> str:
+        """The Merge API key for the active environment.
+
+        MERGE_ENV='test' picks MERGE_TEST_API_KEY (test linked-accounts only,
+        with synthetic data); anything else (default 'production') picks
+        MERGE_API_KEY. The whole app uses one or the other at a time so
+        production keeps shipping with a single env-var flip.
+        """
+        if self.merge_env == "test":
+            return self.merge_api_key_test
+        return self.merge_api_key_prod
 
     @property
     def is_configured(self) -> bool:
@@ -56,8 +70,9 @@ class AtsConfig:
 
 def load_config() -> AtsConfig:
     return AtsConfig(
-        merge_api_key=os.getenv("MERGE_API_KEY", ""),
-        merge_env=os.getenv("MERGE_ENV", "production"),
+        merge_api_key_prod=os.getenv("MERGE_API_KEY", ""),
+        merge_api_key_test=os.getenv("MERGE_TEST_API_KEY", ""),
+        merge_env=os.getenv("MERGE_ENV", "production").lower(),
         merge_webhook_secret=os.getenv("MERGE_WEBHOOK_SECRET", ""),
         token_enc_key_b64=os.getenv("ATS_TOKEN_ENC_KEY", ""),
         public_report_signing_key=os.getenv("PUBLIC_REPORT_SIGNING_KEY", ""),
@@ -128,7 +143,10 @@ def merge_client(account_token: Optional[str] = None):
 
     cfg = load_config()
     if not cfg.merge_api_key:
-        raise RuntimeError("MERGE_API_KEY not configured")
+        # Make the failure mode obvious — distinguish "MERGE_TEST_API_KEY missing
+        # in test env" from "MERGE_API_KEY missing in prod env".
+        var_name = "MERGE_TEST_API_KEY" if cfg.merge_env == "test" else "MERGE_API_KEY"
+        raise RuntimeError(f"{var_name} not configured (MERGE_ENV={cfg.merge_env!r})")
     return Merge(api_key=cfg.merge_api_key, account_token=account_token)
 
 
