@@ -437,9 +437,8 @@ async def voice_session(token: str, body: dict):
     prompt = assemble_interview_prompt(role, cv)
     candidate_name = (cv.get("name") or "there").split()[0]
     first_message = (
-        f"Hi {candidate_name}. Thanks for joining, this is a short voice "
-        f"interview for the {role['title']} role. It'll take about ten minutes. "
-        f"I'll ask about your experience and probe a few areas. Shall we begin?"
+        f"Hi {candidate_name}, I'm Baz, I'll be your interviewer today. "
+        f"Can you let me know if you can hear me clearly?"
     )
 
     if assessment.get("status") == "cv_uploaded":
@@ -758,3 +757,155 @@ async def get_assessment_report(
     # Simplified: report lookup by assessment_id passed in body
     # TODO: proper auth-based lookup
     return {"error": "Use the Next.js API routes with proper auth for report access"}
+
+
+# ─── ATS integration (Merge.dev) ───────────────────────────────────────────
+# These routes are called by the Next.js dashboard on the hirer's behalf.
+# Auth is the same internal pipeline secret as everywhere else; the user
+# identity is forwarded in the request body (the Next.js side has resolved
+# it from the Supabase session before calling here).
+
+
+class _AtsLinkTokenRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    user_email: str = Field(min_length=3, max_length=320)
+    name_hint: str | None = Field(default=None, max_length=200)
+
+
+@app.post("/ats/link-token")
+async def ats_create_link_token(
+    body: _AtsLinkTokenRequest,
+    authorization: str | None = Header(default=None),
+):
+    """
+    Mint a Merge Link Token for the calling hirer's org. The Next.js side
+    feeds this into Merge's React component (or hosted Magic Link page) to
+    let the hirer pick + auth their ATS. Returns the link_token plus the
+    org_id we resolved for it (so the frontend can show which workspace
+    the connection belongs to).
+    """
+    _verify_internal(authorization)
+    from core import db, ats
+
+    org_id = db.get_or_create_personal_org(body.user_id, body.name_hint)
+    if not org_id:
+        raise HTTPException(status_code=500, detail="Failed to resolve org")
+
+    try:
+        client = ats.merge_client()
+        result = client.ats.link_token.create(
+            end_user_email_address=body.user_email,
+            end_user_organization_name=(body.name_hint or "Basanite hirer")[:200],
+            end_user_origin_id=org_id,
+            categories=["ats"],
+        )
+    except Exception as e:
+        print(f"  [ats] link_token.create failed: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=502, detail="Merge link-token request failed")
+
+    return {
+        "link_token": getattr(result, "link_token", None),
+        "magic_link_url": getattr(result, "magic_link_url", None),
+        "org_id": org_id,
+    }
+
+
+class _AtsExchangeRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    user_email: str = Field(min_length=3, max_length=320)
+    public_token: str = Field(min_length=10, max_length=500)
+
+
+@app.post("/ats/exchange")
+async def ats_exchange(
+    body: _AtsExchangeRequest,
+    authorization: str | None = Header(default=None),
+):
+    """
+    Exchange the short-lived public_token (handed to us by Merge after the
+    hirer completes the Magic Link flow) for the long-lived account_token,
+    encrypt it, and persist as an ats_connections row for the hirer's org.
+    """
+    _verify_internal(authorization)
+    from core import db, ats
+
+    org_id = db.get_or_create_personal_org(body.user_id)
+    if not org_id:
+        raise HTTPException(status_code=500, detail="Failed to resolve org")
+
+    try:
+        client = ats.merge_client()
+        token_resp = client.ats.account_token.retrieve(public_token=body.public_token)
+        account_token = getattr(token_resp, "account_token", None)
+        if not account_token:
+            raise RuntimeError("Merge returned no account_token")
+
+        # Identify the integration so we can show it in the UI.
+        scoped = ats.merge_client(account_token=account_token)
+        details = scoped.ats.account_details.retrieve()
+        integration = getattr(details, "integration", None)
+        provider_slug = getattr(integration, "slug", None) or "unknown"
+    except Exception as e:
+        print(f"  [ats] exchange failed: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=502, detail="Merge token exchange failed")
+
+    encrypted = ats.encrypt_token(account_token)
+    saved = db.upsert_ats_connection(
+        org_id=org_id,
+        account_token_encrypted=encrypted,
+        provider=provider_slug,
+        end_user_origin_id=org_id,
+        end_user_email=body.user_email,
+    )
+    if not saved:
+        raise HTTPException(status_code=500, detail="Failed to persist connection")
+
+    return {
+        "connection_id": saved["id"],
+        "provider": provider_slug,
+        "org_id": org_id,
+    }
+
+
+@app.get("/ats/connections")
+async def ats_list_connections(
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """List the calling hirer's org's ATS connections (no token values)."""
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        return {"connections": [], "org_id": None}
+    return {
+        "connections": db.get_ats_connections_for_org(org_id),
+        "org_id": org_id,
+    }
+
+
+@app.delete("/ats/connections/{connection_id}")
+async def ats_delete_connection(
+    connection_id: str,
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """
+    Mark a connection 'disconnected'. We don't hard-delete the row so we
+    keep an audit trail (and so the unique partial index lets a fresh
+    connection be created right after). The Merge linked-account itself
+    stays — call client.ats.linked_accounts.delete on it if you want to
+    revoke server-side too (out of scope for v1).
+    """
+    _verify_internal(authorization)
+    from core import db
+
+    # Verify the connection belongs to the caller's org before nuking it.
+    org_id = db.get_or_create_personal_org(user_id)
+    conn = db.get_ats_connection(connection_id)
+    if not conn or conn.get("org_id") != org_id:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    ok = db.mark_ats_connection_disconnected(connection_id)
+    return {"ok": ok}

@@ -16,9 +16,21 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
   }
 
   const isAccount = pathname === '/dashboard/account'
+  const isIntegrations = pathname === '/dashboard/integrations'
 
   return (
     <div className="flex items-center gap-1">
+      <Link
+        href="/dashboard/integrations"
+        className={`text-xs px-3 py-1.5 transition-colors ${
+          isIntegrations
+            ? 'text-[#1a1a18] font-medium'
+            : 'text-slate-400 hover:text-[#1a1a18]'
+        }`}
+      >
+        Integrations
+      </Link>
+      <span className="text-slate-200 text-xs">|</span>
       <Link
         href="/dashboard/account"
         className={`text-xs px-3 py-1.5 transition-colors ${
