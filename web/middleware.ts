@@ -5,9 +5,18 @@ function csp(nonce: string, isDev: boolean): string {
   // Per-request nonce replaces `'unsafe-inline'` in script-src so any future
   // reflected/stored XSS cannot execute without knowing the current nonce.
   // Dev mode still needs `unsafe-eval` for Next.js HMR; prod does not.
+  //
+  // Merge.dev: their React Link SDK injects their CDN script + iframe + their
+  // dialog script tags inline at runtime, so we have to allow their domain
+  // explicitly. They publish an allowlist guide at
+  // https://docs.merge.dev/integrations/security/csp/ — these are the
+  // entries that match.
+  const mergeScript = "https://cdn.merge.dev https://merge-link-cdn-prod.s3.amazonaws.com"
+  const mergeFrame = "https://link.merge.dev"
+  const mergeApi = "https://api.merge.dev https://link-api.merge.dev"
   const scriptSrc = isDev
-    ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' blob:`
-    : `script-src 'self' 'nonce-${nonce}' blob:`
+    ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' blob: ${mergeScript}`
+    : `script-src 'self' 'nonce-${nonce}' blob: ${mergeScript}`
   return [
     "default-src 'self'",
     scriptSrc,
@@ -15,7 +24,8 @@ function csp(nonce: string, isDev: boolean): string {
     "img-src 'self' data: blob: https://images.unsplash.com",
     "font-src 'self'",
     "media-src 'self' blob:",
-    "connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://*.elevenlabs.io wss://*.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud",
+    `connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://*.elevenlabs.io wss://*.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud ${mergeApi}`,
+    `frame-src 'self' ${mergeFrame}`,
     "worker-src 'self' blob:",
     "frame-ancestors 'none'",
     "base-uri 'self'",
