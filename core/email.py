@@ -60,6 +60,16 @@ def _render_report_html(candidate_name: str, role_title: str, report: dict) -> s
 """.strip()
 
 
+_SANDBOX_SENDERS = ("onboarding@resend.dev",)
+
+
+def _scrub_recipient(text: str, recipient: str) -> str:
+    """Replace any occurrence of the recipient address in a log string."""
+    if not text or not recipient:
+        return text or ""
+    return text.replace(recipient, "<recipient>")
+
+
 def send_report_email(
     to: str,
     candidate_name: str,
@@ -74,24 +84,42 @@ def send_report_email(
     sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
     # Do not log the recipient address — PII in server logs.
     if not api_key:
-        print("  [email] skipped (api_key missing)")
+        print("  [email] skipped (RESEND_API_KEY missing)")
         return False
     if not to or not _EMAIL_RE.match(to):
         print("  [email] skipped (recipient missing or malformed)")
         return False
 
+    # Sandbox sender (onboarding@resend.dev) only delivers to the email address
+    # registered to the Resend account — every other address silently fails.
+    # Warn loudly so this misconfig is obvious in production logs.
+    if any(s in sender for s in _SANDBOX_SENDERS):
+        print(
+            "  [email] WARNING: using Resend sandbox sender "
+            f"({sender!r}); deliveries to anyone other than the Resend "
+            "account email will fail. Set RESEND_FROM to a verified domain."
+        )
+
     safe_role = _strip_header(role_title)[:140] or "your interview"
     try:
         import resend
         resend.api_key = api_key
-        resend.Emails.send({
+        resp = resend.Emails.send({
             "from": sender,
             "to": [to],
             "subject": f"Your Basanite feedback, {safe_role}",
             "html": _render_report_html(candidate_name, safe_role, report),
         })
-        return True
+        # Resend returns a dict like {"id": "uuid"} on success.
+        msg_id = (resp or {}).get("id") if isinstance(resp, dict) else None
+        if msg_id:
+            print(f"  [email] sent (resend id={msg_id})")
+            return True
+        # No id → Resend may have returned an error envelope rather than raising.
+        print(f"  [email] send returned no id; payload type={type(resp).__name__}")
+        return False
     except Exception as e:
-        # Exception text may include the recipient address; drop to class name.
-        print(f"  [email] send failed: {type(e).__name__}")
+        # Exception text from Resend can include the recipient address; scrub it.
+        msg = _scrub_recipient(str(e), to)[:240]
+        print(f"  [email] send failed: {type(e).__name__}: {msg}")
         return False

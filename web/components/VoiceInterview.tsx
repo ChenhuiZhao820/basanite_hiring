@@ -92,6 +92,12 @@ export default function VoiceInterview({
   const [phase, setPhase] = useState<Phase>('idle')
   const [errMsg, setErrMsg] = useState('')
   const [elapsed, setElapsed] = useState(0)
+  // Agent mode from the SDK's onModeChange. 'listening' = agent is waiting on
+  // the candidate; 'speaking' = agent is talking. Drives the header badge.
+  const [agentMode, setAgentMode] = useState<'listening' | 'speaking' | null>(null)
+  // Throttled user-VAD signal so we can show "You're speaking" without thrashing.
+  const [userIsSpeaking, setUserIsSpeaking] = useState(false)
+  const vadHighSinceRef = useRef(0)
 
   const captureStreamRef = useRef<MediaStream | null>(null)
   const previewRef = useRef<HTMLVideoElement>(null)
@@ -146,6 +152,28 @@ export default function VoiceInterview({
       console.error('ElevenLabs error', message)
       setErrMsg('The voice connection failed. Please refresh and try again.')
       setPhase('error')
+    },
+    onModeChange: ({ mode }) => {
+      // 'speaking' = Baz is speaking, 'listening' = Baz is waiting for the
+      // candidate. Drives the "Listening… / Baz speaking" badge.
+      setAgentMode(mode)
+    },
+    onVadScore: ({ vadScore }) => {
+      // Hysteresis on raw VAD score so brief spikes don't flicker the label.
+      // Score is 0..1; treat >0.55 as user speaking, <0.35 as not, dead band
+      // in the middle counts as "stay where we are". Functional setter so we
+      // never rely on a stale closure value of `userIsSpeaking`.
+      const now = performance.now()
+      setUserIsSpeaking(prev => {
+        if (vadScore > 0.55 && !prev) {
+          vadHighSinceRef.current = now
+          return true
+        }
+        if (vadScore < 0.35 && prev && now - vadHighSinceRef.current > 250) {
+          return false
+        }
+        return prev
+      })
     },
   })
 
@@ -474,6 +502,20 @@ export default function VoiceInterview({
     )
   }
 
+  // Compose the status label shown in the header. Priority:
+  //   1) phase 'idle' → connection isn't fully up yet
+  //   2) Baz speaking
+  //   3) Candidate speaking
+  //   4) Otherwise: listening (Baz waiting on the candidate)
+  const callStatus: 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' =
+    phase === 'idle'
+      ? 'connecting'
+      : conversation.isSpeaking || agentMode === 'speaking'
+        ? 'agent-speaking'
+        : userIsSpeaking
+          ? 'user-speaking'
+          : 'listening'
+
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-basanite-950 text-earth-100">
       <InterviewHeader
@@ -481,6 +523,7 @@ export default function VoiceInterview({
         phase={phase}
         elapsedSeconds={elapsed}
         onEnd={() => requestGracefulEnd()}
+        callStatus={callStatus}
       />
       <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/10 min-h-0">
         <SelfPane ref={previewRef} phase={phase} label="You" />
