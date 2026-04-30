@@ -6,6 +6,9 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Class-based dark mode so we can scope it to specific subtrees
+  // (the candidate-screening flow) instead of the whole app.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

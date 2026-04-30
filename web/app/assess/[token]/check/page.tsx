@@ -119,29 +119,29 @@ export default function DeviceCheckPage() {
   const isPlayback = phase === 'test_playback'
 
   return (
-    <div className="min-h-screen bg-earth-50 flex flex-col">
-      <nav className="border-b border-earth-200 bg-white">
+    <div className="min-h-screen bg-earth-50 dark:bg-basanite-950 flex flex-col">
+      <nav className="border-b border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-900">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center">
           <LogoMark size={24} dark />
-          <span className="font-display text-basanite-900 text-sm ml-2">Basanite</span>
+          <span className="font-display text-basanite-900 dark:text-earth-100 text-sm ml-2">Basanite</span>
         </div>
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="max-w-lg w-full bg-white border border-earth-200 p-8">
-          <h1 className="font-display text-2xl text-basanite-900 mb-2">Check your camera and mic</h1>
-          <p className="text-basanite-500 text-sm mb-6">
+        <div className="max-w-lg w-full bg-white dark:bg-basanite-900 border border-earth-200 dark:border-basanite-700 p-8">
+          <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">Check your camera and mic</h1>
+          <p className="text-basanite-500 dark:text-earth-200/60 text-sm mb-6">
             This interview is conducted by voice. Please make sure your camera and microphone work before starting.
           </p>
 
           {phase === 'denied' ? (
             <div>
-              <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3 mb-4">
+              <p className="text-sm text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/40 px-4 py-3 mb-4">
                 We couldn't access your camera or microphone. Check your browser's site permissions and reload this page.
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-basanite-900 hover:bg-gold-600 text-white font-medium py-2.5 text-sm transition-colors"
+                className="w-full bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-2.5 text-sm transition-colors"
               >
                 Retry
               </button>
@@ -166,18 +166,18 @@ export default function DeviceCheckPage() {
               </div>
 
               {phase === 'requesting' && (
-                <p className="text-sm text-basanite-500">Requesting camera access…</p>
+                <p className="text-sm text-basanite-500 dark:text-earth-200/60">Requesting camera access…</p>
               )}
 
               {phase === 'preview' && (
                 <>
-                  <p className="text-xs text-basanite-500 mb-3">
+                  <p className="text-xs text-basanite-500 dark:text-earth-200/60 mb-3">
                     You should see yourself above. Press the button to record a {TEST_SECONDS}-second test so you can check your mic too.
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={startTestRecording}
-                      className="flex-1 bg-basanite-900 hover:bg-gold-600 text-white font-medium py-2.5 text-sm transition-colors"
+                      className="flex-1 bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-2.5 text-sm transition-colors"
                     >
                       Record {TEST_SECONDS}-second test
                     </button>
@@ -186,18 +186,18 @@ export default function DeviceCheckPage() {
               )}
 
               {phase === 'test_recording' && (
-                <p className="text-sm text-basanite-500">Say something, "hello, one, two, three" works. Finishing automatically…</p>
+                <p className="text-sm text-basanite-500 dark:text-earth-200/60">Say something, "hello, one, two, three" works. Finishing automatically…</p>
               )}
 
               {phase === 'test_playback' && (
                 <>
-                  <p className="text-xs text-basanite-500 mb-3">
+                  <p className="text-xs text-basanite-500 dark:text-earth-200/60 mb-3">
                     Could you see and hear yourself clearly? If yes, start the interview. If not, record another test.
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={redoTest}
-                      className="flex-1 border border-earth-300 hover:border-basanite-500 text-basanite-700 font-medium py-2.5 text-sm transition-colors"
+                      className="flex-1 border border-earth-300 dark:border-basanite-700 hover:border-basanite-500 dark:hover:border-gold-500 text-basanite-700 dark:text-earth-200 font-medium py-2.5 text-sm transition-colors"
                     >
                       Record again
                     </button>

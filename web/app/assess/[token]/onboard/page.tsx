@@ -140,84 +140,84 @@ export default function OnboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-earth-50 flex flex-col">
-      <nav className="border-b border-earth-200 bg-white">
+    <div className="min-h-screen bg-earth-50 dark:bg-basanite-950 flex flex-col">
+      <nav className="border-b border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-900">
         <div className="max-w-3xl mx-auto px-6 h-14 flex items-center">
           <LogoMark size={24} dark />
-          <span className="font-display text-basanite-900 text-sm ml-2">Basanite</span>
+          <span className="font-display text-basanite-900 dark:text-earth-100 text-sm ml-2">Basanite</span>
         </div>
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-lg w-full">
           {error && (
-            <div className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3 mb-6">{error}</div>
+            <div className="text-sm text-red-700 dark:text-red-200 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/40 px-4 py-3 mb-6">{error}</div>
           )}
 
           {step === 'auth' && (
-            <div className="bg-white border border-earth-200 p-8">
-              <h1 className="font-display text-2xl text-basanite-900 mb-2">
+            <div className="bg-white dark:bg-basanite-900 border border-earth-200 dark:border-basanite-700 p-8">
+              <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">
                 {isSignUp ? 'Create your account' : 'Sign in'}
               </h1>
-              <p className="text-basanite-500 text-sm mb-6">
+              <p className="text-basanite-500 dark:text-earth-200/60 text-sm mb-6">
                 {isSignUp ? 'To begin the assessment, create a Basanite account.' : 'Sign in to continue your assessment.'}
               </p>
 
               <form onSubmit={handleAuth} className="space-y-4">
                 {isSignUp && (
                   <div>
-                    <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">Full Name</label>
+                    <label className="block text-xs font-medium text-basanite-600 dark:text-earth-200/80 mb-1.5 uppercase tracking-wide">Full Name</label>
                     <input
                       type="text"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       required={isSignUp}
-                      className="w-full border border-earth-300 px-4 py-2.5 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+                      className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-4 py-2.5 text-sm text-basanite-900 dark:text-earth-100 placeholder-basanite-400 dark:placeholder-earth-200/40 outline-none focus:border-gold-500 dark:focus:border-gold-500 transition-colors"
                       placeholder="Jane Smith"
                     />
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">Email</label>
+                  <label className="block text-xs font-medium text-basanite-600 dark:text-earth-200/80 mb-1.5 uppercase tracking-wide">Email</label>
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    className="w-full border border-earth-300 px-4 py-2.5 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+                    className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-4 py-2.5 text-sm text-basanite-900 dark:text-earth-100 placeholder-basanite-400 dark:placeholder-earth-200/40 outline-none focus:border-gold-500 dark:focus:border-gold-500 transition-colors"
                     placeholder="jane@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">Password</label>
+                  <label className="block text-xs font-medium text-basanite-600 dark:text-earth-200/80 mb-1.5 uppercase tracking-wide">Password</label>
                   <input
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full border border-earth-300 px-4 py-2.5 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+                    className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-4 py-2.5 text-sm text-basanite-900 dark:text-earth-100 placeholder-basanite-400 dark:placeholder-earth-200/40 outline-none focus:border-gold-500 dark:focus:border-gold-500 transition-colors"
                     placeholder="••••••••"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-basanite-900 hover:bg-gold-600 text-white font-medium py-2.5 text-sm transition-colors disabled:opacity-60"
+                  className="w-full bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-2.5 text-sm transition-colors disabled:opacity-60"
                 >
                   {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
                 </button>
               </form>
 
-              <p className="text-xs text-basanite-400 text-center mt-4">
+              <p className="text-xs text-basanite-400 dark:text-earth-200/40 text-center mt-4">
                 {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
-                <button onClick={() => setIsSignUp(!isSignUp)} className="text-gold-600 hover:underline">
+                <button onClick={() => setIsSignUp(!isSignUp)} className="text-gold-600 dark:text-gold-400 hover:underline">
                   {isSignUp ? 'Sign in' : 'Sign up'}
                 </button>
               </p>
               {!isSignUp && (
-                <p className="text-xs text-basanite-400 text-center mt-2">
-                  <button type="button" onClick={handleForgotPassword} className="text-gold-600 hover:underline">
+                <p className="text-xs text-basanite-400 dark:text-earth-200/40 text-center mt-2">
+                  <button type="button" onClick={handleForgotPassword} className="text-gold-600 dark:text-gold-400 hover:underline">
                     Forgot password?
                   </button>
                 </p>
@@ -226,9 +226,9 @@ export default function OnboardPage() {
           )}
 
           {step === 'cv' && (
-            <div className="bg-white border border-earth-200 p-8">
-              <h1 className="font-display text-2xl text-basanite-900 mb-2">Upload your CV</h1>
-              <p className="text-basanite-500 text-sm mb-6">
+            <div className="bg-white dark:bg-basanite-900 border border-earth-200 dark:border-basanite-700 p-8">
+              <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">Upload your CV</h1>
+              <p className="text-basanite-500 dark:text-earth-200/60 text-sm mb-6">
                 Upload a PDF or paste the text below. We use this to personalise your interview.
               </p>
 
@@ -248,7 +248,7 @@ export default function OnboardPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="w-full border border-earth-300 hover:border-gold-500 text-basanite-700 text-sm py-3 transition-colors mb-3 disabled:opacity-60"
+                className="w-full border border-earth-300 dark:border-basanite-700 hover:border-gold-500 dark:hover:border-gold-500 text-basanite-700 dark:text-earth-200 text-sm py-3 transition-colors mb-3 disabled:opacity-60"
               >
                 {uploading
                   ? 'Reading your PDF…'
@@ -258,21 +258,21 @@ export default function OnboardPage() {
               </button>
 
               <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-earth-200" />
-                <span className="text-xs text-basanite-400 uppercase tracking-wide">or paste text</span>
-                <div className="flex-1 h-px bg-earth-200" />
+                <div className="flex-1 h-px bg-earth-200 dark:bg-basanite-700" />
+                <span className="text-xs text-basanite-400 dark:text-earth-200/40 uppercase tracking-wide">or paste text</span>
+                <div className="flex-1 h-px bg-earth-200 dark:bg-basanite-700" />
               </div>
 
               <textarea
                 value={cvText}
                 onChange={e => { setCvText(e.target.value); if (cvFileName) setCvFileName(null) }}
                 rows={10}
-                className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-y mb-4"
+                className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 placeholder-basanite-400 dark:placeholder-earth-200/40 outline-none focus:border-gold-500 dark:focus:border-gold-500 transition-colors resize-y mb-4"
                 placeholder="Paste your CV content here…"
               />
 
               {cvText && (
-                <p className="text-xs text-basanite-400 mb-4">
+                <p className="text-xs text-basanite-400 dark:text-earth-200/40 mb-4">
                   {cvFileName ? `Loaded ${cvFileName}, ${cvText.length.toLocaleString()} characters.` : `${cvText.length.toLocaleString()} characters.`}
                 </p>
               )}
@@ -280,7 +280,7 @@ export default function OnboardPage() {
               <button
                 onClick={handleCVSubmit}
                 disabled={loading || uploading || !cvText.trim()}
-                className="w-full bg-basanite-900 hover:bg-gold-600 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
+                className="w-full bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-3 text-sm transition-colors disabled:opacity-60"
               >
                 {loading ? 'Processing your CV…' : 'Continue to Interview'}
               </button>
