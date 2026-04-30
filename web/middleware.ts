@@ -11,9 +11,14 @@ function csp(nonce: string, isDev: boolean): string {
   // explicitly. They publish an allowlist guide at
   // https://docs.merge.dev/integrations/security/csp/ — these are the
   // entries that match.
-  const mergeScript = "https://cdn.merge.dev https://merge-link-cdn-prod.s3.amazonaws.com"
-  const mergeFrame = "https://link.merge.dev"
-  const mergeApi = "https://api.merge.dev https://link-api.merge.dev"
+  // Wildcard *.merge.dev because the SDK distributes its dialog as an iframe
+  // off the same origin it loaded the script from (cdn.merge.dev/index.html),
+  // and they may rotate hostnames per environment. Confirmed via DevTools
+  // that the iframe src is https://cdn.merge.dev/index.html, not the
+  // link.merge.dev I originally guessed.
+  const mergeScript = "https://*.merge.dev https://merge-link-cdn-prod.s3.amazonaws.com"
+  const mergeFrame = "https://*.merge.dev"
+  const mergeApi = "https://*.merge.dev"
   const scriptSrc = isDev
     ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' blob: ${mergeScript}`
     : `script-src 'self' 'nonce-${nonce}' blob: ${mergeScript}`
