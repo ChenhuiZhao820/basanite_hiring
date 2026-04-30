@@ -137,12 +137,52 @@ function Hero() {
               Start hiring with Basanite
             </a>
             <a
-              href="#how-it-works"
+              href="#demo"
               className="w-full sm:w-auto px-8 py-4 border border-earth-200/50 text-earth-50 hover:border-earth-50 font-semibold text-base tracking-wide transition-colors duration-200"
             >
-              See how it works
+              Watch the demo
             </a>
           </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Product demo video ─────────────────────────────────────────────────
+function DemoVideo() {
+  const ref = useReveal()
+  return (
+    <section
+      id="demo"
+      ref={ref}
+      className="reveal py-20 sm:py-28 px-6 bg-earth-50"
+    >
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-10">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold mb-3">
+            Watch the demo
+          </p>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-basanite-900 leading-[1.15]">
+            Four and a half minutes inside Basanite.
+          </h2>
+        </div>
+        <div className="relative aspect-video bg-basanite-950 ring-1 ring-basanite-200/40 shadow-[0_30px_80px_-20px_rgba(15,15,14,0.35)] overflow-hidden">
+          {/* Native HTML5 video — same-origin, no third-party player chrome.
+              `preload="none"` skips byte-zero fetching until the user clicks
+              play; the poster carries first-paint. faststart MOOV atom in the
+              MP4 means seek-anywhere playback once buffering begins. */}
+          <video
+            controls
+            preload="none"
+            poster="/demo-poster.jpg"
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src="/demo.mp4" type="video/mp4" />
+            Your browser doesn&apos;t support embedded video. Download the demo:&nbsp;
+            <a href="/demo.mp4">demo.mp4</a>
+          </video>
         </div>
       </div>
     </section>
@@ -738,6 +778,7 @@ export default function HomePage() {
     <>
       <Nav />
       <Hero />
+      <DemoVideo />
       <CompanyMarquee />
       <Research />
       <HowItWorks />
