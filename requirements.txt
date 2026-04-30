@@ -9,3 +9,8 @@ pyyaml>=6.0.0
 fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
 python-multipart>=0.0.9
+# ATS integration (PR2). MergeAPIClient is the official Python SDK for the
+# Merge Unified API. cryptography backs AES-GCM encryption of per-org Merge
+# linked-account tokens at rest.
+MergePythonClient>=2.0.0
+cryptography>=43.0.0
