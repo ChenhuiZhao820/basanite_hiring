@@ -127,7 +127,7 @@ function Hero() {
             <span className="text-gold-400">not performed competence.</span>
           </h1>
           <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            Basanite conducts AI conversational interviews that go deeper than any standardised test. We find the signal that matters: judgment, intuition, and the knowledge that only real experience produces.
+            There&apos;s a measurement gap in technical hiring: today&apos;s tools reward interview preparedness, not real capability. Basanite closes it with adaptive interviews that probe how candidates actually think — judgment under ambiguity, intuition from real experience, and the knowledge that can&apos;t be rehearsed.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
@@ -211,7 +211,7 @@ function CompanyMarquee() {
     >
       <div className="max-w-6xl mx-auto px-6">
         <p className="text-center text-basanite-500 text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-7">
-          Built by professionals from
+          Team experience spans
         </p>
         <div
           className="relative overflow-hidden
@@ -275,8 +275,11 @@ function Research() {
           <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
             Basanite&rsquo;s eight capability dimensions are drawn from peer-reviewed research into how expert judgment forms. The kind of knowledge that lives in experience, not in answers you can prepare for.
           </p>
-          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
             The interview method is grounded in the literature on tacit knowledge, intuition under scarcity, and professional expertise. Every question is shaped to probe for genuine capability rather than rehearsed fluency.
+          </p>
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
+            We call the methodology <span className="font-semibold text-basanite-900">Construct-Templated Adaptive Interviewing</span>, or CTAI. Every candidate is asked different questions, drawn from their own CV — but the underlying constructs and scoring rubrics are identical. A self-taught engineer is evaluated against the same evidence bar as a Cambridge graduate.
           </p>
         </div>
 
@@ -316,7 +319,7 @@ const STAGES = [
     number: '03',
     title: 'Share the assessment link',
     summary: 'Candidates take the interview on their time',
-    description: 'Candidates receive a link, upload their CV, and enter a 45 minute conversational interview with Basanite. No scheduling overhead on your side.',
+    description: 'Candidates receive a link, upload their CV, and enter an adaptive 25–60 minute interview with Basanite. Length is signal-driven, not timer-driven. No scheduling overhead on your side.',
     tags: ['Asynchronous', 'CV upload', 'Mobile friendly'],
   },
   {
@@ -642,7 +645,7 @@ function Team() {
 // ─── Waitlist CTA (with inline stats recap) ──────────────────────────────
 const CTA_STATS = [
   { value: '8', label: 'capability dimensions' },
-  { value: '45 min', label: 'conversational interview' },
+  { value: '25–60 min', label: 'adaptive interview' },
   { value: '100%', label: 'quote-grounded scores' },
   { value: '3', label: 'screening rounds replaced' },
 ]
@@ -778,8 +781,8 @@ export default function HomePage() {
     <>
       <Nav />
       <Hero />
-      <DemoVideo />
       <CompanyMarquee />
+      <DemoVideo />
       <Research />
       <HowItWorks />
       <Philosophy />
