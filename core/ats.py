@@ -122,7 +122,9 @@ def merge_client(account_token: Optional[str] = None):
     Lazy import so the dependency is only required when this is actually
     called (avoids breaking dev without the SDK installed).
     """
-    from MergePythonClient import Merge
+    # The PyPI distribution is `MergePythonClient`; the importable module is
+    # `merge.client` per Merge's official docs.
+    from merge.client import Merge
 
     cfg = load_config()
     if not cfg.merge_api_key:
