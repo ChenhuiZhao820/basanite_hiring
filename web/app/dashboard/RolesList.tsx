@@ -1,0 +1,134 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+
+type Role = {
+  id: string
+  title: string
+  company_name: string | null
+  status: 'draft' | 'live' | 'paused' | 'closed' | string
+  dimensions: unknown
+  created_at: string
+}
+
+type Counts = { total: number; completed: number }
+
+const STATUS_FILTERS: Array<{ key: 'all' | 'live' | 'draft' | 'paused' | 'closed'; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'live', label: 'Live' },
+  { key: 'draft', label: 'Draft' },
+  { key: 'paused', label: 'Paused' },
+  { key: 'closed', label: 'Closed' },
+]
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: 'bg-earth-200 text-basanite-600',
+  live: 'bg-green-100 text-green-700',
+  paused: 'bg-yellow-100 text-yellow-700',
+  closed: 'bg-slate-200 text-slate-600',
+}
+
+export default function RolesList({
+  roles,
+  counts,
+}: {
+  roles: Role[]
+  counts: Record<string, Counts>
+}) {
+  const [query, setQuery] = useState('')
+  const [status, setStatus] = useState<typeof STATUS_FILTERS[number]['key']>('all')
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return roles.filter(r => {
+      if (status !== 'all' && r.status !== status) return false
+      if (!q) return true
+      const t = r.title?.toLowerCase() ?? ''
+      const c = r.company_name?.toLowerCase() ?? ''
+      return t.includes(q) || c.includes(q)
+    })
+  }, [roles, query, status])
+
+  const statusCounts = useMemo(() => {
+    const m: Record<string, number> = { all: roles.length }
+    for (const r of roles) m[r.status] = (m[r.status] ?? 0) + 1
+    return m
+  }, [roles])
+
+  return (
+    <div>
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <input
+          type="search"
+          placeholder="Search roles or companies..."
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          className="flex-1 min-w-0 border border-earth-200 bg-white text-sm px-3 py-2 text-basanite-900 placeholder:text-basanite-400 focus:outline-none focus:border-basanite-900"
+        />
+        <div className="flex flex-wrap gap-1 border border-earth-200 bg-white p-1 shrink-0">
+          {STATUS_FILTERS.map(f => {
+            const active = status === f.key
+            const count = statusCounts[f.key] ?? 0
+            return (
+              <button
+                key={f.key}
+                onClick={() => setStatus(f.key)}
+                className={
+                  'text-xs px-3 py-1.5 transition-colors ' +
+                  (active
+                    ? 'bg-basanite-900 text-white'
+                    : 'text-basanite-600 hover:text-basanite-900 hover:bg-earth-100')
+                }
+              >
+                {f.label}
+                <span className={'ml-1.5 ' + (active ? 'text-earth-200' : 'text-basanite-400')}>{count}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="border border-earth-200 bg-white p-12 text-center">
+          <p className="text-basanite-500 text-sm">
+            {query || status !== 'all' ? 'No roles match those filters.' : 'No roles yet.'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(role => (
+            <RoleCard key={role.id} role={role} counts={counts[role.id] || { total: 0, completed: 0 }} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RoleCard({ role, counts }: { role: Role; counts: Counts }) {
+  const dimensions = Array.isArray(role.dimensions) ? role.dimensions : []
+
+  return (
+    <Link
+      href={`/dashboard/roles/${role.id}`}
+      className="block border border-earth-200 bg-white p-6 card-hover transition-all hover:shadow-sm"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="font-display text-lg text-basanite-900 leading-tight">{role.title}</h3>
+        <span className={`text-xs px-2 py-0.5 font-medium ${STATUS_COLORS[role.status] ?? STATUS_COLORS.draft}`}>
+          {role.status}
+        </span>
+      </div>
+      {role.company_name && <p className="text-sm text-basanite-500 mb-3">{role.company_name}</p>}
+      <div className="flex items-center gap-4 text-xs text-basanite-500 mb-3">
+        <span>{counts.total} assessment{counts.total !== 1 ? 's' : ''}</span>
+        <span>{counts.completed} completed</span>
+        <span>{dimensions.length} dimension{dimensions.length !== 1 ? 's' : ''}</span>
+      </div>
+      <p className="text-xs text-basanite-400">
+        Created {new Date(role.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+      </p>
+    </Link>
+  )
+}

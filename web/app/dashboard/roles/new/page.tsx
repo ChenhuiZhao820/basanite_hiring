@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
@@ -133,6 +134,9 @@ export default function NewRolePage() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <Link href="/dashboard" className="text-xs text-basanite-400 hover:text-basanite-600 transition-colors mb-4 inline-block">
+        &larr; Back to dashboard
+      </Link>
       {/* Step indicator */}
       <div className="flex items-center gap-3 mb-8">
         {steps.map((s, i) => (

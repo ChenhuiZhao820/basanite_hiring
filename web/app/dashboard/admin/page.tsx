@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 type WaitlistEntry = {
@@ -67,6 +68,9 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6">
+      <Link href="/dashboard" className="text-xs text-slate-400 hover:text-[#0b1f3d] transition-colors mb-2 inline-block">
+        &larr; Back to dashboard
+      </Link>
       <h1 className="font-display text-2xl font-bold text-[#0b1f3d] mb-1">Waitlist</h1>
       <p className="text-slate-500 text-sm mb-8">Approve requests to send an invite email.</p>
 

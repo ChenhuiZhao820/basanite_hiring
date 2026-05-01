@@ -6,6 +6,7 @@
 //      and email candidates when they apply on the customer's ATS.
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useMergeLink } from '@mergeapi/react-merge-link'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { createClient } from '@/lib/supabase/client'
@@ -249,6 +250,9 @@ export default function IntegrationsPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
+        <Link href="/dashboard" className="text-xs text-basanite-400 hover:text-basanite-600 transition-colors mb-2 inline-block">
+          &larr; Back to dashboard
+        </Link>
         <h1 className="font-display text-2xl text-basanite-900 mb-1">Integrations</h1>
         <p className="text-sm text-slate-500">
           Connect your applicant tracking system to send candidates into Basanite assessments

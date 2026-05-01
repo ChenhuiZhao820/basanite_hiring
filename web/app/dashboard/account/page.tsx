@@ -258,7 +258,7 @@ export default function AccountPage() {
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Searches
+          Back to dashboard
         </Link>
         <h1 className="font-display text-2xl font-bold text-[#0b1f3d]">Account</h1>
         <p className="text-slate-500 text-sm mt-1">Manage your profile and account settings.</p>
