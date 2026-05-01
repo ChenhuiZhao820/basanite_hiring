@@ -25,7 +25,7 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
         className={`text-xs px-3 py-1.5 transition-colors ${
           isIntegrations
             ? 'text-[#1a1a18] font-medium'
-            : 'text-slate-400 hover:text-[#1a1a18]'
+            : 'text-slate-400 dark:text-earth-500 hover:text-[#1a1a18]'
         }`}
       >
         Integrations
@@ -36,7 +36,7 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
         className={`text-xs px-3 py-1.5 transition-colors ${
           isAccount
             ? 'text-[#1a1a18] font-medium'
-            : 'text-slate-400 hover:text-[#1a1a18]'
+            : 'text-slate-400 dark:text-earth-500 hover:text-[#1a1a18]'
         }`}
       >
         {email}
@@ -46,7 +46,7 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
           <span className="text-slate-200 text-xs">|</span>
           <Link
             href="/dashboard/admin"
-            className="text-xs text-slate-400 hover:text-[#1a1a18] px-3 py-1.5 transition-colors"
+            className="text-xs text-slate-400 dark:text-earth-500 hover:text-[#1a1a18] px-3 py-1.5 transition-colors"
           >
             Admin
           </Link>
@@ -55,7 +55,7 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
       <span className="text-slate-200 text-xs">|</span>
       <button
         onClick={signOut}
-        className="text-xs text-slate-400 hover:text-[#1a1a18] px-3 py-1.5 transition-colors"
+        className="text-xs text-slate-400 dark:text-earth-500 hover:text-[#1a1a18] px-3 py-1.5 transition-colors"
       >
         Sign out
       </button>

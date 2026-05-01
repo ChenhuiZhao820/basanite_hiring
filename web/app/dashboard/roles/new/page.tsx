@@ -134,7 +134,7 @@ export default function NewRolePage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Link href="/dashboard" className="text-xs text-basanite-400 hover:text-basanite-600 transition-colors mb-4 inline-block">
+      <Link href="/dashboard" className="text-xs text-basanite-400 dark:text-earth-500 hover:text-basanite-600 dark:hover:text-earth-300 transition-colors mb-4 inline-block">
         &larr; Back to dashboard
       </Link>
       {/* Step indicator */}
@@ -142,11 +142,11 @@ export default function NewRolePage() {
         {steps.map((s, i) => (
           <div key={i} className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-              i <= step ? 'bg-basanite-900 text-white' : 'bg-earth-200 text-basanite-500'
+              i <= step ? 'bg-basanite-900 text-white' : 'bg-earth-200 text-basanite-500 dark:text-earth-400'
             }`}>
               {i + 1}
             </div>
-            <span className={`text-sm ${i <= step ? 'text-basanite-900 font-medium' : 'text-basanite-400'}`}>
+            <span className={`text-sm ${i <= step ? 'text-basanite-900 dark:text-earth-100 font-medium' : 'text-basanite-400 dark:text-earth-500'}`}>
               {s}
             </span>
             {i < steps.length - 1 && <div className="w-12 h-px bg-earth-300" />}
@@ -161,41 +161,41 @@ export default function NewRolePage() {
       {/* Step 1: Job Description */}
       {step === 0 && (
         <div>
-          <h1 className="font-display text-2xl text-basanite-900 mb-2">Create a new role</h1>
-          <p className="text-basanite-500 text-sm mb-8">
+          <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">Create a new role</h1>
+          <p className="text-basanite-500 dark:text-earth-400 text-sm mb-8">
             Paste the job description as-is. Basanite will analyse it and recommend evaluation dimensions.
           </p>
 
           <div className="space-y-5">
             <div>
-              <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">Role Title</label>
+              <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">Role Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+                className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
                 placeholder="Senior Backend Engineer"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">Company Name (optional)</label>
+              <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">Company Name (optional)</label>
               <input
                 type="text"
                 value={companyName}
                 onChange={e => setCompanyName(e.target.value)}
-                className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+                className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
                 placeholder="Acme Corp"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">Job Description</label>
+              <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">Job Description</label>
               <textarea
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
                 rows={12}
-                className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-y"
+                className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
                 placeholder="Paste the full job description here..."
               />
             </div>
@@ -214,8 +214,8 @@ export default function NewRolePage() {
       {/* Step 2: Dimension Selection */}
       {step === 1 && (
         <div>
-          <h1 className="font-display text-2xl text-basanite-900 mb-2">Configure evaluation dimensions</h1>
-          <p className="text-basanite-500 text-sm mb-8">
+          <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">Configure evaluation dimensions</h1>
+          <p className="text-basanite-500 dark:text-earth-400 text-sm mb-8">
             {recommendLoading
               ? 'Analysing your job description...'
               : 'We recommend the highlighted dimensions for this role. Toggle to adjust.'}
@@ -223,14 +223,14 @@ export default function NewRolePage() {
 
           {/* Technical depth toggle */}
           <div className="mb-8">
-            <label className="block text-xs font-medium text-basanite-600 mb-3 uppercase tracking-wide">Technical Depth</label>
+            <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-3 uppercase tracking-wide">Technical Depth</label>
             <div className="flex gap-3">
               <button
                 onClick={() => setTechnicalDepth('application')}
                 className={`flex-1 px-4 py-3 text-sm border transition-colors ${
                   technicalDepth === 'application'
-                    ? 'border-gold-500 bg-gold-500/10 text-basanite-900'
-                    : 'border-earth-300 text-basanite-500 hover:border-earth-300'
+                    ? 'border-gold-500 bg-gold-500/10 text-basanite-900 dark:text-earth-100'
+                    : 'border-earth-300 dark:border-basanite-700 text-basanite-500 dark:text-earth-400 hover:border-earth-300 dark:hover:border-basanite-700'
                 }`}
               >
                 <span className="font-medium block mb-0.5">Application-oriented</span>
@@ -240,8 +240,8 @@ export default function NewRolePage() {
                 onClick={() => setTechnicalDepth('research_architecture')}
                 className={`flex-1 px-4 py-3 text-sm border transition-colors ${
                   technicalDepth === 'research_architecture'
-                    ? 'border-gold-500 bg-gold-500/10 text-basanite-900'
-                    : 'border-earth-300 text-basanite-500 hover:border-earth-300'
+                    ? 'border-gold-500 bg-gold-500/10 text-basanite-900 dark:text-earth-100'
+                    : 'border-earth-300 dark:border-basanite-700 text-basanite-500 dark:text-earth-400 hover:border-earth-300 dark:hover:border-basanite-700'
                 }`}
               >
                 <span className="font-medium block mb-0.5">Research / Architecture</span>
@@ -252,7 +252,7 @@ export default function NewRolePage() {
 
           {/* Target length */}
           <div className="mb-8">
-            <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">
+            <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">
               Target length
             </label>
             <div className="flex items-center gap-3">
@@ -267,28 +267,28 @@ export default function NewRolePage() {
                     Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, Number(e.target.value) || DEFAULT_TARGET_MINUTES)),
                   )
                 }
-                className="w-24 border border-earth-300 px-3 py-2.5 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors"
+                className="w-24 border border-earth-300 dark:border-basanite-700 px-3 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
               />
-              <span className="text-sm text-basanite-500">minutes</span>
+              <span className="text-sm text-basanite-500 dark:text-earth-400">minutes</span>
             </div>
-            <p className="text-xs text-basanite-400 mt-2">
+            <p className="text-xs text-basanite-400 dark:text-earth-500 mt-2">
               Just a target, the AI ends the interview when it has enough signal. Typical 15 to 25 min; can extend to {MAX_MINUTES} for complex candidates.
             </p>
           </div>
 
           {/* Custom instructions */}
           <div className="mb-8">
-            <label className="block text-xs font-medium text-basanite-600 mb-1.5 uppercase tracking-wide">
-              Extra interview instructions <span className="text-basanite-400 normal-case">(optional)</span>
+            <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">
+              Extra interview instructions <span className="text-basanite-400 dark:text-earth-500 normal-case">(optional)</span>
             </label>
-            <p className="text-xs text-basanite-400 mb-2">
+            <p className="text-xs text-basanite-400 dark:text-earth-500 mb-2">
               Anything specific you want the interviewer to ask, e.g. "Ask about salary expectations and notice period."
             </p>
             <textarea
               value={customInstructions}
               onChange={e => setCustomInstructions(e.target.value)}
               rows={4}
-              className="w-full border border-earth-300 px-4 py-3 text-sm text-basanite-900 outline-none focus:border-gold-500 transition-colors resize-y"
+              className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
               placeholder="Ask about their salary expectations and availability. Confirm they understand what our company does."
             />
           </div>
@@ -302,13 +302,13 @@ export default function NewRolePage() {
                 className={`w-full text-left px-5 py-4 border transition-all ${
                   dimensions.includes(d.key)
                     ? 'border-gold-500 bg-gold-500/5'
-                    : 'border-earth-200 hover:border-earth-300'
+                    : 'border-earth-200 dark:border-basanite-800 hover:border-earth-300 dark:hover:border-basanite-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm text-basanite-900">{d.name}</span>
+                  <span className="font-medium text-sm text-basanite-900 dark:text-earth-100">{d.name}</span>
                   <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors ${
-                    dimensions.includes(d.key) ? 'border-gold-500 bg-gold-500' : 'border-earth-300'
+                    dimensions.includes(d.key) ? 'border-gold-500 bg-gold-500' : 'border-earth-300 dark:border-basanite-700'
                   }`}>
                     {dimensions.includes(d.key) && (
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -317,7 +317,7 @@ export default function NewRolePage() {
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-basanite-500 mt-1">{d.description}</p>
+                <p className="text-xs text-basanite-500 dark:text-earth-400 mt-1">{d.description}</p>
               </button>
             ))}
           </div>
@@ -325,7 +325,7 @@ export default function NewRolePage() {
           <div className="flex gap-3">
             <button
               onClick={() => setStep(0)}
-              className="px-6 py-3 border border-earth-300 text-basanite-600 text-sm font-medium hover:bg-earth-100 transition-colors"
+              className="px-6 py-3 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 text-sm font-medium hover:bg-earth-100 dark:hover:bg-basanite-800 transition-colors"
             >
               Back
             </button>

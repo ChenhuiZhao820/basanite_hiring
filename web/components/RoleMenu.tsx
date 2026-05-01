@@ -120,7 +120,7 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
           setConfirming(null)
           setError(null)
         }}
-        className="flex items-center justify-center w-8 h-8 text-basanite-400 hover:text-basanite-900 hover:bg-earth-100 transition-colors"
+        className="flex items-center justify-center w-8 h-8 text-basanite-400 dark:text-earth-500 hover:text-basanite-900 dark:hover:text-earth-100 hover:bg-earth-100 dark:hover:bg-basanite-800 transition-colors"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="12" cy="5" r="1.7" />
@@ -132,7 +132,7 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-10 z-20 min-w-[260px] border border-earth-200 bg-white shadow-lg"
+          className="absolute right-0 top-10 z-20 min-w-[260px] border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 shadow-lg"
         >
           {confirming === null && (
             <div className="py-1">
@@ -149,12 +149,12 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
                     }
                   }}
                   disabled={busy}
-                  className="w-full text-left px-4 py-2 text-xs text-basanite-700 hover:bg-earth-50 transition-colors disabled:opacity-60"
+                  className="w-full text-left px-4 py-2 text-xs text-basanite-700 dark:text-earth-200 hover:bg-earth-50 dark:hover:bg-basanite-800 transition-colors disabled:opacity-60"
                 >
                   {a.label}
                 </button>
               ))}
-              {actions.length > 0 && <div className="border-t border-earth-200 my-1" />}
+              {actions.length > 0 && <div className="border-t border-earth-200 dark:border-basanite-800 my-1" />}
               <button
                 type="button"
                 role="menuitem"
@@ -170,7 +170,7 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
 
           {confirming === 'delete' && (
             <div className="p-3">
-              <p className="text-xs text-basanite-700 mb-2">
+              <p className="text-xs text-basanite-700 dark:text-earth-200 mb-2">
                 Delete <span className="font-medium">{roleTitle}</span>? This removes all candidates, scores, reports, transcripts, and recordings for this role.
               </p>
               {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
@@ -179,7 +179,7 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
                   type="button"
                   onClick={() => setConfirming(null)}
                   disabled={busy}
-                  className="text-xs px-3 py-1.5 border border-earth-300 text-basanite-600 hover:bg-earth-50 transition-colors"
+                  className="text-xs px-3 py-1.5 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 transition-colors"
                 >
                   Cancel
                 </button>
@@ -197,7 +197,7 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
 
           {confirming && typeof confirming === 'object' && (
             <div className="p-3">
-              <p className="text-xs text-basanite-700 mb-2">
+              <p className="text-xs text-basanite-700 dark:text-earth-200 mb-2">
                 {confirming.key === 'pause' ? (
                   <>Pause <span className="font-medium">{roleTitle}</span>? The assessment link will return &ldquo;not accepting candidates&rdquo;. In-flight assessments keep running. You can resume later.</>
                 ) : (
@@ -210,7 +210,7 @@ export function RoleMenu({ roleId, roleTitle, status }: Props) {
                   type="button"
                   onClick={() => setConfirming(null)}
                   disabled={busy}
-                  className="text-xs px-3 py-1.5 border border-earth-300 text-basanite-600 hover:bg-earth-50 transition-colors"
+                  className="text-xs px-3 py-1.5 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 transition-colors"
                 >
                   Cancel
                 </button>

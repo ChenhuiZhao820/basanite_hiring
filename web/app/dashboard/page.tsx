@@ -45,7 +45,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-2xl font-bold text-basanite-900">Dashboard</h1>
+        <h1 className="font-display text-2xl font-bold text-basanite-900 dark:text-earth-100">Dashboard</h1>
         <Link
           href="/dashboard/roles/new"
           className="bg-basanite-900 hover:bg-gold-600 text-white text-sm font-medium px-5 py-2.5 transition-colors duration-150"
@@ -62,8 +62,8 @@ export default async function DashboardPage() {
       </div>
 
       {(!roles || roles.length === 0) ? (
-        <div className="border border-earth-200 bg-white p-12 text-center">
-          <p className="text-basanite-600 mb-4">No roles yet. Create your first role to start assessing candidates.</p>
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-12 text-center">
+          <p className="text-basanite-600 dark:text-earth-300 mb-4">No roles yet. Create your first role to start assessing candidates.</p>
           <Link
             href="/dashboard/roles/new"
             className="inline-block bg-basanite-900 hover:bg-gold-600 text-white text-sm font-medium px-6 py-2.5 transition-colors"
@@ -80,9 +80,9 @@ export default async function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-earth-200 bg-white p-5">
-      <p className="text-xs text-basanite-500 uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-display text-basanite-900">{value}</p>
+    <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+      <p className="text-xs text-basanite-500 dark:text-earth-400 uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-2xl font-display text-basanite-900 dark:text-earth-100">{value}</p>
     </div>
   )
 }

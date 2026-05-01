@@ -38,10 +38,10 @@ export default async function RoleDetailPage({
   const assessmentLink = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'}/assess/${role.assessment_link_token}`
 
   const statusColors: Record<string, string> = {
-    draft: 'bg-earth-200 text-basanite-600',
+    draft: 'bg-earth-200 text-basanite-600 dark:text-earth-300',
     live: 'bg-green-100 text-green-700',
     paused: 'bg-yellow-100 text-yellow-700',
-    closed: 'bg-slate-200 text-slate-600',
+    closed: 'bg-slate-200 text-slate-600 dark:text-earth-300',
   }
 
   return (
@@ -49,11 +49,11 @@ export default async function RoleDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <Link href="/dashboard" className="text-xs text-basanite-400 hover:text-basanite-600 transition-colors mb-2 inline-block">
+          <Link href="/dashboard" className="text-xs text-basanite-400 dark:text-earth-500 hover:text-basanite-600 dark:hover:text-earth-300 transition-colors mb-2 inline-block">
             &larr; Back to dashboard
           </Link>
-          <h1 className="font-display text-2xl text-basanite-900">{role.title}</h1>
-          {role.company_name && <p className="text-sm text-basanite-500 mt-1">{role.company_name}</p>}
+          <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100">{role.title}</h1>
+          {role.company_name && <p className="text-sm text-basanite-500 dark:text-earth-400 mt-1">{role.company_name}</p>}
         </div>
         <div className="flex items-center gap-2">
           <span className={`text-xs px-3 py-1 font-medium ${statusColors[role.status] ?? statusColors.draft}`}>
@@ -66,51 +66,51 @@ export default async function RoleDetailPage({
       {/* Assessment Link */}
       {role.status === 'live' && (
         <div className="border border-gold-500/30 bg-gold-500/5 p-5 mb-8">
-          <p className="text-xs text-basanite-600 font-medium uppercase tracking-wide mb-2">Assessment Link</p>
+          <p className="text-xs text-basanite-600 dark:text-earth-300 font-medium uppercase tracking-wide mb-2">Assessment Link</p>
           <div className="flex items-center gap-3">
-            <code className="flex-1 text-sm text-basanite-800 bg-white border border-earth-200 px-3 py-2 font-mono truncate">
+            <code className="flex-1 text-sm text-basanite-800 dark:text-earth-100 bg-white dark:bg-basanite-900 border border-earth-200 dark:border-basanite-800 px-3 py-2 font-mono truncate">
               {assessmentLink}
             </code>
             <CopyButton text={assessmentLink} />
           </div>
-          <p className="text-xs text-basanite-400 mt-2">Share this link with candidates to start their assessment.</p>
+          <p className="text-xs text-basanite-400 dark:text-earth-500 mt-2">Share this link with candidates to start their assessment.</p>
         </div>
       )}
 
       {/* Role Config Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="border border-earth-200 bg-white p-4">
-          <p className="text-xs text-basanite-400 uppercase tracking-wide mb-1">Dimensions</p>
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4">
+          <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Dimensions</p>
           <div className="flex flex-wrap gap-1.5">
             {dimensions.map((d: string) => (
-              <span key={d} className="text-xs bg-earth-100 text-basanite-600 px-2 py-0.5">
+              <span key={d} className="text-xs bg-earth-100 dark:bg-basanite-800 text-basanite-600 dark:text-earth-300 px-2 py-0.5">
                 {d.replace(/_/g, ' ')}
               </span>
             ))}
           </div>
         </div>
-        <div className="border border-earth-200 bg-white p-4">
-          <p className="text-xs text-basanite-400 uppercase tracking-wide mb-1">Technical Depth</p>
-          <p className="text-sm text-basanite-900 capitalize">{(role.technical_depth ?? 'application').replace('_', ' / ')}</p>
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4">
+          <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Technical Depth</p>
+          <p className="text-sm text-basanite-900 dark:text-earth-100 capitalize">{(role.technical_depth ?? 'application').replace('_', ' / ')}</p>
         </div>
-        <div className="border border-earth-200 bg-white p-4">
-          <p className="text-xs text-basanite-400 uppercase tracking-wide mb-1">Assessments</p>
-          <p className="text-sm text-basanite-900">{assessments?.length ?? 0} total</p>
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4">
+          <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Assessments</p>
+          <p className="text-sm text-basanite-900 dark:text-earth-100">{assessments?.length ?? 0} total</p>
         </div>
       </div>
 
       {/* Candidate Queue */}
-      <h2 className="font-display text-lg text-basanite-900 mb-4">Candidate Queue</h2>
+      <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Candidate Queue</h2>
 
       {(!assessments || assessments.length === 0) ? (
-        <div className="border border-earth-200 bg-white p-10 text-center">
-          <p className="text-basanite-500 text-sm">No candidates have taken this assessment yet.</p>
-          <p className="text-basanite-400 text-xs mt-2">Share the assessment link to get started.</p>
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-10 text-center">
+          <p className="text-basanite-500 dark:text-earth-400 text-sm">No candidates have taken this assessment yet.</p>
+          <p className="text-basanite-400 dark:text-earth-500 text-xs mt-2">Share the assessment link to get started.</p>
         </div>
       ) : (
-        <div className="border border-earth-200 bg-white divide-y divide-earth-200">
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 divide-y divide-earth-200 dark:divide-basanite-800">
           {/* Header */}
-          <div className="flex items-stretch text-xs text-basanite-400 uppercase tracking-wide font-medium">
+          <div className="flex items-stretch text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide font-medium">
             <div className="flex-1 grid grid-cols-12 gap-4 px-5 py-3">
               <div className="col-span-3">Candidate</div>
               <div className="col-span-2">Status</div>
@@ -130,7 +130,7 @@ export default async function RoleDetailPage({
             const hirerReport = (a.reports ?? []).find((r: any) => r.report_type === 'hirer')
 
             const assessmentStatusColors: Record<string, string> = {
-              pending: 'text-basanite-400',
+              pending: 'text-basanite-400 dark:text-earth-500',
               cv_uploaded: 'text-blue-600',
               in_progress: 'text-yellow-600',
               completed: 'text-green-600',
@@ -140,18 +140,18 @@ export default async function RoleDetailPage({
             return (
               <div
                 key={a.id}
-                className="flex items-stretch hover:bg-earth-50 transition-colors"
+                className="flex items-stretch hover:bg-earth-50 dark:hover:bg-basanite-800 transition-colors"
               >
                 <Link
                   href={`/dashboard/roles/${id}/assessment/${a.id}`}
                   className="flex-1 grid grid-cols-12 gap-4 px-5 py-4 items-center"
                 >
                   <div className="col-span-3">
-                    <p className="text-sm text-basanite-900 font-medium">{a.candidate_name ?? 'Unknown'}</p>
-                    <p className="text-xs text-basanite-400">{a.candidate_email}</p>
+                    <p className="text-sm text-basanite-900 dark:text-earth-100 font-medium">{a.candidate_name ?? 'Unknown'}</p>
+                    <p className="text-xs text-basanite-400 dark:text-earth-500">{a.candidate_email}</p>
                   </div>
                   <div className="col-span-2">
-                    <span className={`text-xs font-medium ${assessmentStatusColors[a.status] ?? 'text-basanite-400'}`}>
+                    <span className={`text-xs font-medium ${assessmentStatusColors[a.status] ?? 'text-basanite-400 dark:text-earth-500'}`}>
                       {a.status}
                     </span>
                   </div>
@@ -159,18 +159,18 @@ export default async function RoleDetailPage({
                     {scores.map((s: any) => (
                       <div
                         key={s.dimension_key}
-                        className="flex items-center gap-1 bg-earth-100 px-1.5 py-0.5 text-xs"
+                        className="flex items-center gap-1 bg-earth-100 dark:bg-basanite-800 px-1.5 py-0.5 text-xs"
                         title={`${s.dimension_key}: ${s.score}/5`}
                       >
-                        <span className="text-basanite-400 truncate max-w-[60px]">{s.dimension_key.split('_')[0]}</span>
-                        <span className="font-medium text-basanite-700">{s.score}</span>
+                        <span className="text-basanite-400 dark:text-earth-500 truncate max-w-[60px]">{s.dimension_key.split('_')[0]}</span>
+                        <span className="font-medium text-basanite-700 dark:text-earth-200">{s.score}</span>
                       </div>
                     ))}
                   </div>
                   <div className="col-span-1">
                     <span className="text-sm font-display text-gold-600">{avgScore}</span>
                   </div>
-                  <div className="col-span-2 text-xs text-basanite-400">
+                  <div className="col-span-2 text-xs text-basanite-400 dark:text-earth-500">
                     {new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </div>
                 </Link>

@@ -79,7 +79,7 @@ export function AssessmentRowMenu({ roleId, assessmentId, candidateLabel }: Prop
           setConfirming(false)
           setError(null)
         }}
-        className="flex items-center justify-center w-7 h-7 text-basanite-400 hover:text-basanite-900 hover:bg-earth-100 transition-colors"
+        className="flex items-center justify-center w-7 h-7 text-basanite-400 dark:text-earth-500 hover:text-basanite-900 dark:hover:text-earth-100 hover:bg-earth-100 dark:hover:bg-basanite-800 transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="12" cy="5" r="1.6" />
@@ -92,7 +92,7 @@ export function AssessmentRowMenu({ roleId, assessmentId, candidateLabel }: Prop
         <div
           role="menu"
           onClick={stop}
-          className="absolute right-0 top-8 z-20 min-w-[220px] border border-earth-200 bg-white shadow-lg"
+          className="absolute right-0 top-8 z-20 min-w-[220px] border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 shadow-lg"
         >
           {!confirming ? (
             <button
@@ -108,7 +108,7 @@ export function AssessmentRowMenu({ roleId, assessmentId, candidateLabel }: Prop
             </button>
           ) : (
             <div className="p-3">
-              <p className="text-xs text-basanite-700 mb-2">
+              <p className="text-xs text-basanite-700 dark:text-earth-200 mb-2">
                 Delete assessment for <span className="font-medium">{candidateLabel}</span>? This removes scores, reports, transcript, and recording.
               </p>
               {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
@@ -120,7 +120,7 @@ export function AssessmentRowMenu({ roleId, assessmentId, candidateLabel }: Prop
                     setConfirming(false)
                   }}
                   disabled={deleting}
-                  className="text-xs px-3 py-1.5 border border-earth-300 text-basanite-600 hover:bg-earth-50 transition-colors"
+                  className="text-xs px-3 py-1.5 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 transition-colors"
                 >
                   Cancel
                 </button>

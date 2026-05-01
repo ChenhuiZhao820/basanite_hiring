@@ -250,11 +250,11 @@ export default function IntegrationsPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
-        <Link href="/dashboard" className="text-xs text-basanite-400 hover:text-basanite-600 transition-colors mb-2 inline-block">
+        <Link href="/dashboard" className="text-xs text-basanite-400 dark:text-earth-500 hover:text-basanite-600 dark:hover:text-earth-300 transition-colors mb-2 inline-block">
           &larr; Back to dashboard
         </Link>
-        <h1 className="font-display text-2xl text-basanite-900 mb-1">Integrations</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-1">Integrations</h1>
+        <p className="text-sm text-slate-500 dark:text-earth-400">
           Connect your applicant tracking system to send candidates into Basanite assessments
           automatically. Greenhouse, Lever, Ashby and 50+ others via Merge.dev.
         </p>
@@ -266,11 +266,11 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      <section className="bg-white border border-slate-200 p-6 mb-6">
+      <section className="bg-white dark:bg-basanite-900 border border-slate-200 dark:border-basanite-800 p-6 mb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-medium text-basanite-900 text-base mb-1">Applicant Tracking System</h2>
-            <p className="text-xs text-slate-500">
+            <h2 className="font-medium text-basanite-900 dark:text-earth-100 text-base mb-1">Applicant Tracking System</h2>
+            <p className="text-xs text-slate-500 dark:text-earth-400">
               {connectedRows.length === 0
                 ? 'No ATS connected yet. Connect one to start syncing candidates.'
                 : `${connectedRows.length} ATS connected.`}
@@ -286,14 +286,14 @@ export default function IntegrationsPage() {
         </div>
 
         {connections === null ? (
-          <p className="text-xs text-slate-400 mt-6">Loading connections…</p>
+          <p className="text-xs text-slate-400 dark:text-earth-500 mt-6">Loading connections…</p>
         ) : connectedRows.length > 0 ? (
-          <div className="mt-6 border-t border-slate-100 pt-4 space-y-3">
+          <div className="mt-6 border-t border-slate-100 dark:border-basanite-800 pt-4 space-y-3">
             {connectedRows.map(c => (
               <div key={c.id} className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm text-basanite-900 font-medium">{prettyProvider(c.provider)}</div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-sm text-basanite-900 dark:text-earth-100 font-medium">{prettyProvider(c.provider)}</div>
+                  <div className="text-xs text-slate-400 dark:text-earth-500">
                     {c.end_user_email ?? 'connected'}
                     {c.connected_at && ' · ' + new Date(c.connected_at).toLocaleDateString()}
                   </div>
@@ -301,7 +301,7 @@ export default function IntegrationsPage() {
                 <button
                   onClick={() => disconnect(c.id)}
                   disabled={busy}
-                  className="text-xs text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-300 px-3 py-1.5 transition-colors disabled:opacity-60"
+                  className="text-xs text-slate-500 dark:text-earth-400 hover:text-red-600 border border-slate-200 dark:border-basanite-800 hover:border-red-300 px-3 py-1.5 transition-colors disabled:opacity-60"
                 >
                   Disconnect
                 </button>
@@ -312,11 +312,11 @@ export default function IntegrationsPage() {
       </section>
 
       {hasConnection && (
-        <section className="bg-white border border-slate-200 p-6 mb-6">
+        <section className="bg-white dark:bg-basanite-900 border border-slate-200 dark:border-basanite-800 p-6 mb-6">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <h2 className="font-medium text-basanite-900 text-base mb-1">Map jobs → Basanite roles</h2>
-              <p className="text-xs text-slate-500 max-w-xl">
+              <h2 className="font-medium text-basanite-900 dark:text-earth-100 text-base mb-1">Map jobs → Basanite roles</h2>
+              <p className="text-xs text-slate-500 dark:text-earth-400 max-w-xl">
                 Pick which jobs in your ATS should send candidates to which Basanite role.
                 When a candidate applies, we&apos;ll auto-create their assessment with the
                 CV pulled from your ATS, and email them an interview link.
@@ -325,7 +325,7 @@ export default function IntegrationsPage() {
             <button
               onClick={() => void refreshJobs()}
               disabled={jobsLoading || busy}
-              className="text-xs text-slate-500 border border-slate-200 px-3 py-1.5 hover:text-basanite-900 hover:border-slate-300 disabled:opacity-60"
+              className="text-xs text-slate-500 dark:text-earth-400 border border-slate-200 dark:border-basanite-800 px-3 py-1.5 hover:text-basanite-900 dark:hover:text-earth-100 hover:border-slate-300 disabled:opacity-60"
             >
               {jobsLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -338,13 +338,13 @@ export default function IntegrationsPage() {
           )}
 
           {jobs === null ? (
-            <p className="text-xs text-slate-400">Loading ATS jobs…</p>
+            <p className="text-xs text-slate-400 dark:text-earth-500">Loading ATS jobs…</p>
           ) : jobs.length === 0 ? (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 dark:text-earth-500">
               No open jobs found in your ATS. (Closed/archived jobs are hidden.)
             </p>
           ) : (
-            <div className="border-t border-slate-100">
+            <div className="border-t border-slate-100 dark:border-basanite-800">
               {jobs.map(job => {
                 const mapping = mappingByMergeJobId.get(job.merge_job_id)
                 const roleTitle = mapping ? roles.find(r => r.id === mapping.role_id)?.title : undefined
@@ -364,7 +364,7 @@ export default function IntegrationsPage() {
             </div>
           )}
 
-          <p className="text-xs text-slate-400 mt-4">
+          <p className="text-xs text-slate-400 dark:text-earth-500 mt-4">
             Outbound results (interview score + report PDF) push back to the candidate&apos;s ATS
             application after the interview completes. This is currently in dark-launch mode for
             safety; ask Basanite support to enable it for your org once you&apos;re ready.
@@ -397,10 +397,10 @@ function JobRow({
   const [draftAutoInvite, setDraftAutoInvite] = useState<boolean>(mapping?.auto_invite ?? true)
 
   return (
-    <div className="border-b border-slate-100 py-3 flex items-center justify-between gap-4">
+    <div className="border-b border-slate-100 dark:border-basanite-800 py-3 flex items-center justify-between gap-4">
       <div className="min-w-0 flex-1">
-        <div className="text-sm text-basanite-900 truncate">{job.name ?? 'Untitled job'}</div>
-        <div className="text-xs text-slate-400 truncate">
+        <div className="text-sm text-basanite-900 dark:text-earth-100 truncate">{job.name ?? 'Untitled job'}</div>
+        <div className="text-xs text-slate-400 dark:text-earth-500 truncate">
           {job.departments.filter(Boolean).join(' · ') || 'No department'}
           {job.status && ' · ' + job.status.toLowerCase()}
         </div>
@@ -415,14 +415,14 @@ function JobRow({
             <button
               onClick={() => { setDraftRoleId(mapping.role_id); setDraftAutoInvite(mapping.auto_invite); setEditing(true) }}
               disabled={busy}
-              className="text-xs text-slate-500 hover:text-basanite-900 border border-slate-200 px-2 py-1 disabled:opacity-60"
+              className="text-xs text-slate-500 dark:text-earth-400 hover:text-basanite-900 dark:hover:text-earth-100 border border-slate-200 dark:border-basanite-800 px-2 py-1 disabled:opacity-60"
             >
               Edit
             </button>
             <button
               onClick={onDelete}
               disabled={busy}
-              className="text-xs text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-300 px-2 py-1 disabled:opacity-60"
+              className="text-xs text-slate-400 dark:text-earth-500 hover:text-red-600 border border-slate-200 dark:border-basanite-800 hover:border-red-300 px-2 py-1 disabled:opacity-60"
             >
               Unmap
             </button>
@@ -431,7 +431,7 @@ function JobRow({
           <button
             onClick={() => { setDraftRoleId(roles[0]?.id ?? ''); setDraftAutoInvite(true); setEditing(true) }}
             disabled={busy || roles.length === 0}
-            className="text-xs text-basanite-900 border border-basanite-900 hover:bg-basanite-900 hover:text-white px-2 py-1 disabled:opacity-60"
+            className="text-xs text-basanite-900 dark:text-earth-100 border border-basanite-900 hover:bg-basanite-900 hover:text-white px-2 py-1 disabled:opacity-60"
           >
             Map to role
           </button>
@@ -440,14 +440,14 @@ function JobRow({
             <select
               value={draftRoleId}
               onChange={e => setDraftRoleId(e.target.value)}
-              className="text-xs border border-slate-200 px-2 py-1 max-w-[180px]"
+              className="text-xs border border-slate-200 dark:border-basanite-800 px-2 py-1 max-w-[180px]"
             >
               <option value="" disabled>Pick a role…</option>
               {roles.map(r => (
                 <option key={r.id} value={r.id}>{r.title}</option>
               ))}
             </select>
-            <label className="text-xs text-slate-500 flex items-center gap-1">
+            <label className="text-xs text-slate-500 dark:text-earth-400 flex items-center gap-1">
               <input
                 type="checkbox"
                 checked={draftAutoInvite}
@@ -464,7 +464,7 @@ function JobRow({
             </button>
             <button
               onClick={() => setEditing(false)}
-              className="text-xs text-slate-500 px-2 py-1"
+              className="text-xs text-slate-500 dark:text-earth-400 px-2 py-1"
             >
               Cancel
             </button>

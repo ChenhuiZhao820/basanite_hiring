@@ -25,10 +25,10 @@ const STATUS_FILTERS: Array<{ key: 'all' | 'live' | 'draft' | 'paused' | 'closed
 ]
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-earth-200 text-basanite-600',
+  draft: 'bg-earth-200 text-basanite-600 dark:text-earth-300',
   live: 'bg-green-100 text-green-700',
   paused: 'bg-yellow-100 text-yellow-700',
-  closed: 'bg-slate-200 text-slate-600',
+  closed: 'bg-slate-200 text-slate-600 dark:text-earth-300',
 }
 
 export default function RolesList({
@@ -79,9 +79,9 @@ export default function RolesList({
           placeholder="Search roles or companies..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="flex-1 min-w-0 border border-earth-200 bg-white text-sm px-3 py-2 text-basanite-900 placeholder:text-basanite-400 focus:outline-none focus:border-basanite-900"
+          className="flex-1 min-w-0 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 text-sm px-3 py-2 text-basanite-900 dark:text-earth-100 placeholder:text-basanite-400 focus:outline-none focus:border-basanite-900"
         />
-        <div className="flex flex-wrap gap-1 border border-earth-200 bg-white p-1 shrink-0">
+        <div className="flex flex-wrap gap-1 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-1 shrink-0">
           {STATUS_FILTERS.map(f => {
             const active = status === f.key
             const count = statusCounts[f.key] ?? 0
@@ -93,11 +93,11 @@ export default function RolesList({
                   'text-xs px-3 py-1.5 transition-colors ' +
                   (active
                     ? 'bg-basanite-900 text-white'
-                    : 'text-basanite-600 hover:text-basanite-900 hover:bg-earth-100')
+                    : 'text-basanite-600 dark:text-earth-300 hover:text-basanite-900 dark:hover:text-earth-100 hover:bg-earth-100 dark:hover:bg-basanite-800')
                 }
               >
                 {f.label}
-                <span className={'ml-1.5 ' + (active ? 'text-earth-200' : 'text-basanite-400')}>{count}</span>
+                <span className={'ml-1.5 ' + (active ? 'text-earth-200' : 'text-basanite-400 dark:text-earth-500')}>{count}</span>
               </button>
             )
           })}
@@ -105,8 +105,8 @@ export default function RolesList({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="border border-earth-200 bg-white p-12 text-center">
-          <p className="text-basanite-500 text-sm">
+        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-12 text-center">
+          <p className="text-basanite-500 dark:text-earth-400 text-sm">
             {query || status !== 'all' ? 'No roles match those filters.' : 'No roles yet.'}
           </p>
         </div>
@@ -120,24 +120,24 @@ export default function RolesList({
 
           {filtered.length > PAGE_SIZE && (
             <div className="flex items-center justify-between mt-6 text-xs">
-              <p className="text-basanite-400">
+              <p className="text-basanite-400 dark:text-earth-500">
                 Showing {showingFrom}-{showingTo} of {filtered.length}
               </p>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="px-3 py-1.5 border border-earth-200 bg-white text-basanite-600 hover:bg-earth-50 hover:border-earth-300 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
+                  className="px-3 py-1.5 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 hover:border-earth-300 dark:hover:border-basanite-700 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
                 >
                   ← Previous
                 </button>
-                <span className="px-3 py-1.5 text-basanite-500">
+                <span className="px-3 py-1.5 text-basanite-500 dark:text-earth-400">
                   Page {safePage} of {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="px-3 py-1.5 border border-earth-200 bg-white text-basanite-600 hover:bg-earth-50 hover:border-earth-300 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
+                  className="px-3 py-1.5 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 hover:border-earth-300 dark:hover:border-basanite-700 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
                 >
                   Next →
                 </button>
@@ -156,21 +156,21 @@ function RoleCard({ role, counts }: { role: Role; counts: Counts }) {
   return (
     <Link
       href={`/dashboard/roles/${role.id}`}
-      className="block border border-earth-200 bg-white p-6 card-hover transition-all hover:shadow-sm"
+      className="block border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-6 card-hover transition-all hover:shadow-sm"
     >
       <div className="flex items-start justify-between mb-3">
-        <h3 className="font-display text-lg text-basanite-900 leading-tight">{role.title}</h3>
+        <h3 className="font-display text-lg text-basanite-900 dark:text-earth-100 leading-tight">{role.title}</h3>
         <span className={`text-xs px-2 py-0.5 font-medium ${STATUS_COLORS[role.status] ?? STATUS_COLORS.draft}`}>
           {role.status}
         </span>
       </div>
-      {role.company_name && <p className="text-sm text-basanite-500 mb-3">{role.company_name}</p>}
-      <div className="flex items-center gap-4 text-xs text-basanite-500 mb-3">
+      {role.company_name && <p className="text-sm text-basanite-500 dark:text-earth-400 mb-3">{role.company_name}</p>}
+      <div className="flex items-center gap-4 text-xs text-basanite-500 dark:text-earth-400 mb-3">
         <span>{counts.total} assessment{counts.total !== 1 ? 's' : ''}</span>
         <span>{counts.completed} completed</span>
         <span>{dimensions.length} dimension{dimensions.length !== 1 ? 's' : ''}</span>
       </div>
-      <p className="text-xs text-basanite-400">
+      <p className="text-xs text-basanite-400 dark:text-earth-500">
         Created {new Date(role.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
       </p>
     </Link>
