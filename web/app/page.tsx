@@ -115,19 +115,22 @@ function Hero() {
         />
         <div className="absolute inset-0 bg-basanite-950/70" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <svg width="40" height="54" viewBox="0 0 40 54" fill="none" aria-hidden="true" className="mb-10">
+          <svg width="40" height="54" viewBox="0 0 40 54" fill="none" aria-hidden="true" className="mb-8">
             <path d="M20 0 L0 18 L20 18 Z" fill="#e8c555" />
             <path d="M20 0 L40 18 L20 18 Z" fill="#d4a843" />
             <path d="M0 18 L20 18 L20 54 Z" fill="#c49a2f" />
             <path d="M40 18 L20 18 L20 54 Z" fill="#a87f24" />
             <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
           </svg>
+          <p className="text-gold-400 text-[10px] sm:text-xs uppercase tracking-[0.28em] font-semibold mb-6">
+            The technical layer of the interview, rebuilt for the AI era
+          </p>
           <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
             Test genuine capability,<br />
             <span className="text-gold-400">not performed competence.</span>
           </h1>
           <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            There&apos;s a measurement gap in technical hiring: today&apos;s tools reward interview preparedness, not real capability. Basanite closes it with adaptive interviews that probe how candidates actually think — judgment under ambiguity, intuition from real experience, and the knowledge that can&apos;t be rehearsed.
+            The technical interview is broken. Coding tests have collapsed into a cheating arms race, and the capability that actually matters — engineering effectiveness in an AI-augmented workflow — is not measured anywhere. Basanite is the technical layer rebuilt for the AI era.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
@@ -250,11 +253,18 @@ function CompanyMarquee() {
 }
 
 // ─── Research ────────────────────────────────────────────────────────────
+// Eight metacognitive dimensions, V2.1 §4. Listed in the order V2.1 lists
+// them. We surface all eight on the page now that the V2.1 product overview
+// formalises them with literature anchors — no longer just four pillars.
 const RESEARCH_AREAS = [
-  { name: 'Tacit knowledge theory', note: 'knowledge that lives in experience, not in text' },
-  { name: 'Judgment under ambiguity', note: 'acting decisively on incomplete information' },
-  { name: 'Expert pattern recognition', note: 'how real competence reveals itself in motion' },
-  { name: 'Psychological safety research', note: 'how teams surface and correct error' },
+  { name: 'Judgment Under Ambiguity', note: 'committing to a defensible course of action when information is incomplete' },
+  { name: 'Tacit-Knowledge Articulation', note: 'surfacing knowledge that lives in practice rather than in text' },
+  { name: 'Intuition Under Data Scarcity', note: 'recognition-primed judgment that distinguishes real expertise from vocabulary' },
+  { name: 'Psychological Safety & Collective Learning', note: 'creating conditions where errors surface and dissent is voiced' },
+  { name: 'Creative Problem Reframing', note: 'recognising when the team is solving the wrong problem' },
+  { name: 'Ethical Reasoning in Practice', note: 'feeling the weight of real tradeoffs and navigating them with integrity' },
+  { name: 'Transformative Learning From Experience', note: 'updating prior beliefs in proportion to disconfirming evidence' },
+  { name: 'Human–AI Collaboration Intelligence', note: 'fluent, calibrated orchestration of AI tooling — the dimension no other interview measures' },
 ]
 
 function Research() {
@@ -273,10 +283,10 @@ function Research() {
             Grounded in the academic study of tacit expertise.
           </h2>
           <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
-            Basanite&rsquo;s eight capability dimensions are drawn from peer-reviewed research into how expert judgment forms. The kind of knowledge that lives in experience, not in answers you can prepare for.
+            Basanite operationalises eight metacognitive dimensions drawn from cognitive science, philosophy of knowledge, and the emerging literature on human–AI collaboration. Each has a formal construct definition, intellectual provenance, and an empirical reference list.
           </p>
           <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
-            The interview method is grounded in the literature on tacit knowledge, intuition under scarcity, and professional expertise. Every question is shaped to probe for genuine capability rather than rehearsed fluency.
+            These are the qualities that distinguish high performers in complex, AI-era engineering work — and the ones that conventional technical-interview instruments cannot detect. They cannot be retrieved from a knowledge base. They are forged through real experience and legible only to evaluators who know what to look for.
           </p>
           <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
             We call the methodology <span className="font-semibold text-basanite-900">Construct-Templated Adaptive Interviewing</span>, or CTAI. Every candidate is asked different questions, drawn from their own CV — but the underlying constructs and scoring rubrics are identical. A self-taught engineer is evaluated against the same evidence bar as a Cambridge graduate.
@@ -284,7 +294,7 @@ function Research() {
         </div>
 
         <div className="md:col-span-2 border-l-2 border-gold-500/50 pl-6 sm:pl-8 py-2">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.2em] mb-5">Foundations</p>
+          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.2em] mb-5">The eight dimensions</p>
           <ul className="space-y-4">
             {RESEARCH_AREAS.map(a => (
               <li key={a.name}>
@@ -311,9 +321,9 @@ const STAGES = [
   {
     number: '02',
     title: 'Configure evaluation dimensions',
-    summary: 'Eight capability dimensions',
-    description: 'The system recommends which capability dimensions to weight for this role. You can adjust, add, or remove dimensions before going live.',
-    tags: ['Judgment', 'Tacit knowledge', 'Ethical reasoning', 'Technical depth'],
+    summary: 'Eight metacognitive dimensions',
+    description: 'The system recommends which dimensions to weight for this role and seniority — calibrated against our Tech-Industry Map of verticals, roles, and bands. You can adjust, add, or remove before going live.',
+    tags: ['Judgment', 'Tacit knowledge', 'Human–AI collaboration'],
   },
   {
     number: '03',
@@ -324,17 +334,24 @@ const STAGES = [
   },
   {
     number: '04',
-    title: 'AI conducts the interview',
-    summary: 'Experience grounded, adaptive',
-    description: 'Basanite asks questions grounded in the candidate’s own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth rather than memorised answers.',
-    tags: ['CV adaptive', 'Follow up probes', 'Consistency checks'],
+    title: 'Round 1 — Structured Conversational Assessment',
+    summary: 'Reveals what the candidate thinks',
+    description: 'Basanite asks questions grounded in the candidate’s own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth. This round generates signal across the cognitive, judgmental, and tacit-knowledge dimensions.',
+    tags: ['Adaptive', 'Follow-up probes', '20–30 min'],
   },
   {
     number: '05',
+    title: 'Round 2 — AI Collaboration Workbench',
+    summary: 'Reveals what the candidate does',
+    description: 'A sandboxed VS Code environment with a role-matched codebase, a real ticket, and the candidate’s choice of AI coding agent (Claude Code, Cursor, Copilot, Aider). We test engineers WITH AI rather than against it — the dimension no other interview measures.',
+    tags: ['VS Code sandbox', 'Real codebase', 'Any AI agent'],
+  },
+  {
+    number: '06',
     title: 'Review ranked candidates',
-    summary: 'Dimension by dimension scoring',
-    description: 'Each candidate receives dimension scores grounded in specific candidate quotes. You see a ranked queue with a briefing document for the final human interview.',
-    tags: ['Ranked', 'Quote grounded', 'Briefing report'],
+    summary: 'Two rounds, one composite report',
+    description: 'Each candidate receives dimension scores grounded in specific quotes from Round 1 and observed work patterns from Round 2. You see a ranked queue with a briefing document for the final human interview.',
+    tags: ['Ranked', 'Quote-grounded', 'Briefing report'],
   },
 ]
 
@@ -348,7 +365,7 @@ function HowItWorks() {
         <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-3">The process</p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-3">How Basanite works</h2>
         <p className="text-basanite-600 text-base mb-16 max-w-xl">
-          Five steps from job description to a ranked shortlist of technically verified candidates.
+          A two-round assessment: a conversational round that reveals what a candidate thinks, and an AI Collaboration Workbench round that reveals what they actually do.
         </p>
 
         <div className="relative">
@@ -644,8 +661,8 @@ function Team() {
 
 // ─── Waitlist CTA (with inline stats recap) ──────────────────────────────
 const CTA_STATS = [
-  { value: '8', label: 'capability dimensions' },
-  { value: '25–60 min', label: 'adaptive interview' },
+  { value: '8', label: 'metacognitive dimensions' },
+  { value: '2', label: 'rounds: think + do' },
   { value: '100%', label: 'quote-grounded scores' },
   { value: '3', label: 'screening rounds replaced' },
 ]
