@@ -1,7 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+
+const PAGE_SIZE = 20
 
 type Role = {
   id: string
@@ -38,6 +40,7 @@ export default function RolesList({
 }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<typeof STATUS_FILTERS[number]['key']>('all')
+  const [page, setPage] = useState(1)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -55,6 +58,18 @@ export default function RolesList({
     for (const r of roles) m[r.status] = (m[r.status] ?? 0) + 1
     return m
   }, [roles])
+
+  // Reset to page 1 whenever the filtered set changes shape.
+  useEffect(() => {
+    setPage(1)
+  }, [query, status])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const pageStart = (safePage - 1) * PAGE_SIZE
+  const visible = filtered.slice(pageStart, pageStart + PAGE_SIZE)
+  const showingFrom = filtered.length === 0 ? 0 : pageStart + 1
+  const showingTo = Math.min(pageStart + PAGE_SIZE, filtered.length)
 
   return (
     <div>
@@ -96,11 +111,40 @@ export default function RolesList({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(role => (
-            <RoleCard key={role.id} role={role} counts={counts[role.id] || { total: 0, completed: 0 }} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visible.map(role => (
+              <RoleCard key={role.id} role={role} counts={counts[role.id] || { total: 0, completed: 0 }} />
+            ))}
+          </div>
+
+          {filtered.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between mt-6 text-xs">
+              <p className="text-basanite-400">
+                Showing {showingFrom}-{showingTo} of {filtered.length}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                  className="px-3 py-1.5 border border-earth-200 bg-white text-basanite-600 hover:bg-earth-50 hover:border-earth-300 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
+                >
+                  ← Previous
+                </button>
+                <span className="px-3 py-1.5 text-basanite-500">
+                  Page {safePage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={safePage === totalPages}
+                  className="px-3 py-1.5 border border-earth-200 bg-white text-basanite-600 hover:bg-earth-50 hover:border-earth-300 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
