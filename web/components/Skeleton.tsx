@@ -1,5 +1,5 @@
 export function Pulse({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded bg-earth-200 ${className}`} />
+  return <div className={`animate-pulse rounded bg-earth-200 dark:bg-basanite-700 ${className}`} />
 }
 
 export function DashboardSkeleton() {
