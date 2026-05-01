@@ -60,7 +60,7 @@ export default async function RoleDetailPage({
           <span className={`text-xs px-3 py-1 font-medium ${statusColors[role.status] ?? statusColors.draft}`}>
             {role.status}
           </span>
-          <RoleMenu roleId={role.id} roleTitle={role.title} />
+          <RoleMenu roleId={role.id} roleTitle={role.title} status={role.status} />
         </div>
       </div>
 
