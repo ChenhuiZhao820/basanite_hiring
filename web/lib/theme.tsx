@@ -1,9 +1,10 @@
 'use client'
 
-// Scoped theme provider for the candidate-screening flow. Adds/removes a
-// `dark` class on its own wrapper element (NOT <html>), so dark mode is
-// isolated to wherever this provider is mounted — the rest of the app
-// (dashboard, marketing) stays unaffected.
+// Scoped theme provider. Adds/removes a `dark` class on its own wrapper
+// element (NOT <html>), so dark mode stays scoped to wherever this is
+// mounted. We use it both in the candidate-screening flow and in the
+// hirer dashboard, with separate localStorage keys so the two surfaces
+// can hold independent preferences.
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
@@ -16,39 +17,39 @@ type ThemeContextValue = {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'dark',
+  theme: 'light',
   toggle: () => {},
   setTheme: () => {},
 })
 
-const STORAGE_KEY = 'basanite-screening-theme'
-
 type Props = {
   children: React.ReactNode
+  /** localStorage key — surface-specific so screening + dashboard don't fight. */
+  storageKey?: string
   defaultTheme?: Theme
 }
 
-export function ThemeProvider({ children, defaultTheme = 'dark' }: Props) {
+export function ThemeProvider({
+  children,
+  storageKey = 'basanite-screening-theme',
+  defaultTheme = 'dark',
+}: Props) {
   const [theme, setTheme] = useState<Theme>(defaultTheme)
 
-  // Hydrate from localStorage on mount.
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
+      const saved = localStorage.getItem(storageKey)
       if (saved === 'light' || saved === 'dark') setTheme(saved)
     } catch {
-      // localStorage may be blocked (private mode); fall back to default.
+      // localStorage blocked — fall back to default.
     }
-  }, [])
+  }, [storageKey])
 
-  // Persist on change.
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, theme)
-    } catch {
-      // Same as above — silently ignore.
-    }
-  }, [theme])
+      localStorage.setItem(storageKey, theme)
+    } catch { /* ignore */ }
+  }, [theme, storageKey])
 
   const toggle = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
 

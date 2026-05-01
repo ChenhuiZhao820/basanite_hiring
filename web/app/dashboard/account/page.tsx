@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { useTheme } from '@/lib/theme'
 
 type Section = 'profile' | 'password' | 'danger'
 
@@ -242,6 +243,47 @@ function DangerZone() {
   )
 }
 
+// ─── Appearance ───────────────────────────────────────────────────────────────
+
+function AppearanceSection() {
+  const { theme, setTheme } = useTheme()
+
+  return (
+    <SectionCard title="Appearance" description="Choose how the dashboard looks. Saved per-browser.">
+      <div className="grid grid-cols-2 gap-2">
+        {(['light', 'dark'] as const).map(opt => {
+          const active = theme === opt
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => setTheme(opt)}
+              className={
+                'flex items-center justify-center gap-2 border px-3 py-3 text-xs font-medium transition-colors ' +
+                (active
+                  ? 'border-[#0b1f3d] bg-[#0b1f3d] text-white'
+                  : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:text-[#0b1f3d]')
+              }
+            >
+              {opt === 'light' ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+              {opt === 'light' ? 'Light' : 'Dark'}
+            </button>
+          )
+        })}
+      </div>
+    </SectionCard>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AccountPage() {
@@ -266,6 +308,7 @@ export default function AccountPage() {
 
       <div className="space-y-4">
         <ProfileSection initialEmail={email} initialName={name} />
+        <AppearanceSection />
         <PasswordSection />
         <DangerZone />
       </div>
