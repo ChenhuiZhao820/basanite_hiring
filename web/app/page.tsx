@@ -89,6 +89,7 @@ function Nav() {
           <a href="#research" className="hover:text-basanite-900 transition-colors">Research</a>
           <a href="#philosophy" className="hover:text-basanite-900 transition-colors">Philosophy</a>
           <a href="#team" className="hover:text-basanite-900 transition-colors">Team</a>
+          <a href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</a>
         </div>
         <a
           href="/login"
@@ -715,8 +716,11 @@ function WaitlistCTA() {
           <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
             Ready to test what matters?
           </h2>
-          <p className="text-earth-300 text-lg mb-10 leading-relaxed">
+          <p className="text-earth-300 text-lg mb-3 leading-relaxed">
             Request early access. We are onboarding a small number of teams now and will be in touch.
+          </p>
+          <p className="text-earth-300/70 text-sm mb-10">
+            More questions first? <a href="/faq" className="text-gold-400 hover:text-gold-300 underline-offset-4 hover:underline">See the FAQ</a>.
           </p>
 
           {state === 'done' ? (
