@@ -1319,7 +1319,7 @@ async def _handle_application_event(payload: dict, linked_account_id: str | None
         "candidate_user_id": f"ats:{merge_candidate_id or merge_application_id}",
         "candidate_name": candidate_name,
         "candidate_email": candidate_email,
-        "status": "invited",
+        "status": "pending",
         "source": "ats",
         "connection_id": connection["id"],
         "merge_application_id": merge_application_id,
