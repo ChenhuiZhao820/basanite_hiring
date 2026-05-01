@@ -203,7 +203,7 @@ export default function NewRolePage() {
             <button
               onClick={handleJDSubmit}
               disabled={loading}
-              className="w-full bg-basanite-900 hover:bg-gold-600 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
+              className="w-full bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
             >
               {loading ? 'Analysing...' : 'Analyse & Recommend Dimensions'}
             </button>
@@ -332,7 +332,7 @@ export default function NewRolePage() {
             <button
               onClick={handleGoLive}
               disabled={loading || dimensions.length < 2}
-              className="flex-1 bg-basanite-900 hover:bg-gold-600 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
+              className="flex-1 bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
             >
               {loading ? 'Going live...' : `Go Live with ${dimensions.length} Dimensions`}
             </button>

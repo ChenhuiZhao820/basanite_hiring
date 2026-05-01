@@ -279,7 +279,7 @@ export default function IntegrationsPage() {
           <button
             onClick={startConnect}
             disabled={loadingLink || busy}
-            className="bg-basanite-900 hover:bg-gold-600 text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-60 whitespace-nowrap"
+            className="bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-60 whitespace-nowrap"
           >
             {loadingLink ? 'Starting…' : busy ? 'Working…' : connectedRows.length === 0 ? 'Connect ATS' : 'Connect another'}
           </button>
@@ -458,7 +458,7 @@ function JobRow({
             <button
               onClick={() => { if (draftRoleId) onSave(draftRoleId, draftAutoInvite); setEditing(false) }}
               disabled={busy || !draftRoleId}
-              className="text-xs bg-basanite-900 hover:bg-gold-600 text-white px-2 py-1 disabled:opacity-60"
+              className="text-xs bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white px-2 py-1 disabled:opacity-60"
             >
               Save
             </button>

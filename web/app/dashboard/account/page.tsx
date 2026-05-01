@@ -62,7 +62,7 @@ function SaveButton({ loading, label = 'Save changes' }: { loading: boolean; lab
     <button
       type="submit"
       disabled={loading}
-      className="bg-[#0b1f3d] hover:bg-[#1d4ed8] active:scale-95 text-white text-xs font-semibold px-5 py-2.5 transition-all duration-150 disabled:opacity-50"
+      className="bg-[#0b1f3d] hover:bg-[#1d4ed8] dark:bg-[#1d4ed8] dark:hover:bg-[#3b82f6] active:scale-95 text-white text-xs font-semibold px-5 py-2.5 transition-all duration-150 disabled:opacity-50"
     >
       {loading ? 'Saving…' : label}
     </button>

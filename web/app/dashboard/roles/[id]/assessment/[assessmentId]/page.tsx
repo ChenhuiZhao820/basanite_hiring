@@ -92,7 +92,7 @@ export default async function AssessmentReportPage({
         <div className="flex flex-wrap gap-2 mb-8">
           <a
             href={`/api/roles/${id}/assessment/${assessmentId}/report/hirer/pdf`}
-            className="inline-flex items-center gap-2 bg-basanite-900 hover:bg-gold-600 text-white text-xs font-medium px-4 py-2 transition-colors"
+            className="inline-flex items-center gap-2 bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white text-xs font-medium px-4 py-2 transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

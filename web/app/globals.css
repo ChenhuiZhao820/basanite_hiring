@@ -25,12 +25,17 @@ body {
   font-family: var(--font-display);
 }
 
-/* Card hover */
+/* Card hover — gold border in light mode; in dark mode also lift the
+   surface slightly so the user gets a stronger affordance against the
+   dark background where gold borders alone read too subtle. */
 .card-hover {
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 .card-hover:hover {
   border-color: var(--gold);
+}
+.dark .card-hover:hover {
+  background-color: #2d2b28; /* basanite-800 */
 }
 
 /* Scroll reveal utility */

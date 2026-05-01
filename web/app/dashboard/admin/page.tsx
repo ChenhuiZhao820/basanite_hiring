@@ -104,7 +104,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => approve(entry)}
                   disabled={approving === entry.id || rejecting === entry.id}
-                  className="bg-[#0b1f3d] hover:bg-[#1d4ed8] text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-50"
+                  className="bg-[#0b1f3d] hover:bg-[#1d4ed8] dark:bg-[#1d4ed8] dark:hover:bg-[#3b82f6] text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-50"
                 >
                   {approving === entry.id ? 'Sending…' : 'Approve'}
                 </button>

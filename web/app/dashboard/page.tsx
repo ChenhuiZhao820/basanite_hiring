@@ -48,7 +48,7 @@ export default async function DashboardPage() {
         <h1 className="font-display text-2xl font-bold text-basanite-900 dark:text-earth-100">Dashboard</h1>
         <Link
           href="/dashboard/roles/new"
-          className="bg-basanite-900 hover:bg-gold-600 text-white text-sm font-medium px-5 py-2.5 transition-colors duration-150"
+          className="bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white text-sm font-medium px-5 py-2.5 transition-colors duration-150"
         >
           + New Role
         </Link>
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
           <p className="text-basanite-600 dark:text-earth-300 mb-4">No roles yet. Create your first role to start assessing candidates.</p>
           <Link
             href="/dashboard/roles/new"
-            className="inline-block bg-basanite-900 hover:bg-gold-600 text-white text-sm font-medium px-6 py-2.5 transition-colors"
+            className="inline-block bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white text-sm font-medium px-6 py-2.5 transition-colors"
           >
             Create a role
           </Link>
