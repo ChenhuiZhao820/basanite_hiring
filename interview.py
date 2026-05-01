@@ -404,6 +404,15 @@ async def generate_reports(assessment_id: str, role_config: dict, cv_extracted: 
 
     print(f"  [report] Generated both reports for assessment {assessment_id}")
 
+    # PR7: push results to the customer's ATS if this assessment came from one.
+    # Gated behind the org's ats_push_enabled flag so a misfiring write doesn't
+    # blow up an existing prod customer's ATS while we're still validating.
+    try:
+        from core.ats import push_results
+        push_results(assessment_id)
+    except Exception as e:
+        print(f"  [report] ats push failed: {type(e).__name__}: {e}")
+
     # Fire-and-forget email to the candidate. Mail failure never blocks DB state.
     try:
         assessment = get_assessment(assessment_id)

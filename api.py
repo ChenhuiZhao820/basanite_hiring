@@ -12,7 +12,7 @@ import os
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Header, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -29,7 +29,7 @@ app.add_middleware(
         "https://basanite.co.uk",
         "https://www.basanite.co.uk",
     ],
-    allow_methods=["POST", "GET", "PATCH"],
+    allow_methods=["POST", "GET", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -909,3 +909,573 @@ async def ats_delete_connection(
 
     ok = db.mark_ats_connection_disconnected(connection_id)
     return {"ok": ok}
+
+
+# ─── ATS jobs + mappings (PR4) ─────────────────────────────────────────────
+
+
+@app.get("/ats/jobs")
+async def ats_list_jobs(
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """
+    List jobs from the hirer's connected ATS via Merge. The dashboard uses
+    this to populate the job-mapping UI: pick an ATS job, pair it with a
+    Basanite role, and from then on applications to that ATS job auto-create
+    Basanite assessments.
+    """
+    _verify_internal(authorization)
+    from core import db, ats
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        return {"jobs": [], "connected": False}
+
+    connections = db.get_ats_connections_for_org(org_id)
+    active = next((c for c in connections if c.get("status") == "connected"), None)
+    if not active:
+        return {"jobs": [], "connected": False}
+
+    full = db.get_ats_connection(active["id"])
+    if not full:
+        return {"jobs": [], "connected": False}
+
+    try:
+        token = ats.decrypt_token(full["account_token_encrypted"])
+        client = ats.merge_client(account_token=token)
+        # Merge paginates jobs; for v1 we only show the first page (≤100).
+        # Hirers with more than 100 active reqs are an edge case until we
+        # add server-side search.
+        resp = client.ats.jobs.list(page_size=100, status="OPEN")
+        items = list(getattr(resp, "results", None) or [])
+    except Exception as e:
+        print(f"  [ats] jobs.list failed: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=502, detail="Could not fetch ATS jobs")
+
+    jobs = []
+    for j in items:
+        jobs.append({
+            "merge_job_id": getattr(j, "id", None),
+            "remote_job_id": getattr(j, "remote_id", None),
+            "name": getattr(j, "name", None),
+            "status": getattr(j, "status", None),
+            "departments": [getattr(d, "name", None) for d in (getattr(j, "departments", None) or [])],
+        })
+    return {"jobs": jobs, "connected": True, "connection_id": active["id"]}
+
+
+class _AtsJobMappingRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    merge_job_id: str = Field(min_length=1, max_length=200)
+    remote_job_id: str | None = Field(default=None, max_length=200)
+    job_name: str | None = Field(default=None, max_length=300)
+    role_id: str = Field(min_length=1, max_length=64)
+    auto_invite: bool = True
+
+
+@app.post("/ats/job-mappings")
+async def ats_create_job_mapping(
+    body: _AtsJobMappingRequest,
+    authorization: str | None = Header(default=None),
+):
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(body.user_id)
+    if not org_id:
+        raise HTTPException(status_code=500, detail="Failed to resolve org")
+
+    role = db.get_role(body.role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    role_org = role.get("org_id")
+    role_user = role.get("user_id")
+    # Soft check: legacy roles may be missing org_id (RLS-transitional).
+    # Block obvious cross-org attempts.
+    if role_org is not None and role_org != org_id:
+        raise HTTPException(status_code=403, detail="Role not in your org")
+    if role_org is None and role_user != body.user_id:
+        raise HTTPException(status_code=403, detail="Role not in your org")
+
+    connections = db.get_ats_connections_for_org(org_id)
+    active = next((c for c in connections if c.get("status") == "connected"), None)
+    if not active:
+        raise HTTPException(status_code=400, detail="No active ATS connection")
+
+    saved = db.upsert_ats_job_mapping(
+        connection_id=active["id"],
+        org_id=org_id,
+        merge_job_id=body.merge_job_id,
+        remote_job_id=body.remote_job_id,
+        job_name=body.job_name,
+        role_id=body.role_id,
+        auto_invite=body.auto_invite,
+    )
+    if not saved:
+        raise HTTPException(status_code=500, detail="Failed to save mapping")
+    return {"mapping": saved}
+
+
+@app.get("/ats/job-mappings")
+async def ats_list_job_mappings(
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        return {"mappings": []}
+    return {"mappings": db.get_ats_job_mappings_for_org(org_id)}
+
+
+@app.delete("/ats/job-mappings/{mapping_id}")
+async def ats_delete_job_mapping(
+    mapping_id: str,
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        raise HTTPException(status_code=404, detail="Mapping not found")
+    ok = db.delete_ats_job_mapping(mapping_id, org_id)
+    return {"ok": ok}
+
+
+# ─── ATS feature flags (PR7 dark-launch) ───────────────────────────────────
+
+
+class _AtsFlagRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    enabled: bool
+
+
+@app.post("/ats/flags/push")
+async def ats_set_push_flag(
+    body: _AtsFlagRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Toggle the org's ats_push_enabled flag. Until True, push_results
+    runs in dry-run mode (logs intent, doesn't write to the customer's ATS)."""
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(body.user_id)
+    if not org_id:
+        raise HTTPException(status_code=500, detail="Failed to resolve org")
+    ok = db.set_org_feature_flag(org_id, "ats_push_enabled", body.enabled)
+    return {"ok": ok, "enabled": body.enabled}
+
+
+@app.get("/ats/flags")
+async def ats_get_flags(
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        return {"flags": {}}
+    return {"flags": db.get_org_feature_flags(org_id)}
+
+
+# ─── ATS inbound webhook (PR5) ─────────────────────────────────────────────
+
+
+@app.post("/ats/webhook/merge")
+async def ats_webhook_merge(request: Request):
+    """
+    Inbound Merge webhook. Verifies HMAC, deduplicates via event_id, parses
+    the event type, and on `Application.created` pulls the candidate +
+    resume from Merge and creates a Basanite assessment with a unique invite
+    link, optionally emailing the candidate.
+
+    Critical correctness properties:
+      - The handler ALWAYS returns 200 quickly; failures are logged and
+        emailed to the founder, not bubbled to Merge (which would retry and
+        spam the candidate). The only time we 4xx is on bad signature / no
+        body, which Merge SHOULD see as a configuration error.
+      - Idempotent on event_id. Re-deliveries are a no-op.
+      - Idempotent on merge_application_id via the unique index — the second
+        delivery for the same application updates the existing assessment row
+        rather than creating a duplicate.
+    """
+    raw = await request.body()
+    sig = request.headers.get("x-merge-webhook-signature", "")
+    from core import ats, db
+    from core.email import send_invite_email
+
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty body")
+    if not ats.verify_webhook_signature(raw, sig):
+        # Don't leak whether the secret is misconfigured vs a forgery.
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Malformed JSON")
+
+    # Merge event identifier — see https://docs.merge.dev for the canonical
+    # field. We accept the documented `webhook_id` first, then `id`, then
+    # synthesize from delivery time + linked-account so we never silently
+    # double-process an event without an id (the synth key is stable per
+    # delivery because Merge sends `delivery_timestamp` on each fire).
+    event_id = (
+        payload.get("webhook_id")
+        or payload.get("id")
+        or f"{payload.get('delivery_timestamp', '')}-{payload.get('linked_account', {}).get('id', '')}"
+    )
+    if not event_id or event_id == "-":
+        # Best-effort: log without idempotency.
+        event_id = f"unknown-{datetime.now(timezone.utc).isoformat()}"
+
+    if db.webhook_event_seen(event_id):
+        return {"status": "duplicate", "event_id": event_id}
+
+    hook_type = payload.get("hook", {}).get("event") or payload.get("event") or payload.get("type")
+    linked_account_id = (payload.get("linked_account") or {}).get("id")
+
+    # Log receipt; we'll update to processed/failed at the end.
+    db.log_webhook_event(
+        event_id=event_id,
+        hook_type=hook_type,
+        linked_account_id=linked_account_id,
+        status="received",
+        payload_summary={
+            "hook": hook_type,
+            "model_type": payload.get("data", {}).get("model_type") if isinstance(payload.get("data"), dict) else None,
+        },
+    )
+
+    # We currently care about Application created/updated. Other events are
+    # acknowledged-and-ignored so Merge stops retrying.
+    is_application_event = (
+        hook_type
+        and "application" in str(hook_type).lower()
+        and ("created" in str(hook_type).lower() or "updated" in str(hook_type).lower())
+    )
+    if not is_application_event:
+        db.log_webhook_event(
+            event_id=event_id,
+            hook_type=hook_type,
+            linked_account_id=linked_account_id,
+            status="ignored",
+        )
+        return {"status": "ignored", "hook": hook_type}
+
+    try:
+        result = await _handle_application_event(payload, linked_account_id)
+        db.log_webhook_event(
+            event_id=event_id,
+            hook_type=hook_type,
+            linked_account_id=linked_account_id,
+            status="processed",
+            payload_summary=result,
+        )
+        return {"status": "processed", **result}
+    except Exception as e:
+        msg = f"{type(e).__name__}: {e}"
+        print(f"  [ats/webhook] handler raised: {msg}")
+        db.log_webhook_event(
+            event_id=event_id,
+            hook_type=hook_type,
+            linked_account_id=linked_account_id,
+            status="failed",
+            error_message=msg,
+        )
+        db.log_ats_sync_error(
+            direction="inbound",
+            operation="webhook.application",
+            error_class=type(e).__name__,
+            error_message=msg,
+            context={"event_id": event_id, "linked_account_id": linked_account_id},
+        )
+        try:
+            from core.email import send_ops_alert
+            send_ops_alert(
+                "Webhook handler failed",
+                f"event_id={event_id}\nhook={hook_type}\nlinked_account={linked_account_id}\n{msg}",
+            )
+        except Exception:
+            pass
+        # Return 200 so Merge doesn't retry-storm us — failures are recorded.
+        return {"status": "failed", "event_id": event_id}
+
+
+async def _handle_application_event(payload: dict, linked_account_id: str | None) -> dict:
+    """Process a Merge application.created/updated event into a Basanite
+    assessment. Returns a small summary dict for logging."""
+    import secrets
+    from core import ats, db
+    from core.email import send_invite_email
+
+    data = payload.get("data") or {}
+    # Merge wraps the model under data.model_type / data (varies by version).
+    application = data.get("data") if isinstance(data.get("data"), dict) else data
+
+    merge_application_id = application.get("id") or application.get("application")
+    if not merge_application_id:
+        return {"skipped": "no_application_id"}
+
+    # Resolve the connection via linked_account_id so we know which org owns
+    # this. Without this we can't decrypt the token to fetch the CV.
+    connection = _find_connection_by_linked_account(linked_account_id)
+    if not connection:
+        # Webhook arrived before/after we have a connection record — log
+        # and bail. Common during sandbox testing.
+        return {"skipped": "no_connection_for_linked_account", "linked_account_id": linked_account_id}
+
+    # Find the job mapping. If the application's job isn't mapped, ignore —
+    # the customer hasn't told us they want this job assessed by Basanite.
+    job_field = application.get("job")
+    merge_job_id = job_field if isinstance(job_field, str) else (job_field or {}).get("id")
+    if not merge_job_id:
+        return {"skipped": "no_job_id", "merge_application_id": merge_application_id}
+
+    mapping = db.get_ats_job_mapping_by_merge_job(connection["id"], merge_job_id)
+    if not mapping:
+        return {"skipped": "job_not_mapped", "merge_job_id": merge_job_id}
+
+    role = db.get_role(mapping["role_id"])
+    if not role:
+        return {"skipped": "mapped_role_missing", "role_id": mapping["role_id"]}
+    if role.get("status") != "live":
+        return {"skipped": "role_not_live", "role_id": mapping["role_id"]}
+
+    # Idempotency: same application twice updates the existing assessment.
+    existing = db.get_assessment_by_merge_application(merge_application_id)
+    if existing:
+        return {"skipped": "already_assessed", "assessment_id": existing["id"]}
+
+    # Fetch candidate details (name + email) from Merge.
+    candidate_field = application.get("candidate")
+    merge_candidate_id = candidate_field if isinstance(candidate_field, str) else (candidate_field or {}).get("id")
+    candidate_name = "Candidate"
+    candidate_email = ""
+    if merge_candidate_id:
+        try:
+            token = ats.decrypt_token(connection["account_token_encrypted"])
+            client = ats.merge_client(account_token=token)
+            cand = client.ats.candidates.retrieve(id=merge_candidate_id)
+            first = getattr(cand, "first_name", "") or ""
+            last = getattr(cand, "last_name", "") or ""
+            candidate_name = (f"{first} {last}".strip()) or "Candidate"
+            emails = getattr(cand, "email_addresses", None) or []
+            for e in emails:
+                addr = getattr(e, "value", None) or getattr(e, "email_address", None)
+                if addr:
+                    candidate_email = addr
+                    break
+        except Exception as e:
+            print(f"  [ats/webhook] candidate retrieve failed: {type(e).__name__}: {e}")
+            db.log_ats_sync_error(
+                direction="inbound",
+                operation="cv_fetch.candidate",
+                error_class=type(e).__name__,
+                error_message=str(e),
+                org_id=connection.get("org_id"),
+                connection_id=connection["id"],
+                context={"merge_application_id": merge_application_id, "merge_candidate_id": merge_candidate_id},
+            )
+
+    # Pull CV text from the most recent resume attachment, then run our normal
+    # CV extraction so the interview prompt has structured experience data.
+    cv_text = None
+    cv_extracted: dict = {}
+    if merge_candidate_id:
+        try:
+            token = ats.decrypt_token(connection["account_token_encrypted"])
+            cv_text = ats.fetch_candidate_cv_text(token, merge_candidate_id)
+        except Exception as e:
+            db.log_ats_sync_error(
+                direction="inbound",
+                operation="cv_fetch.attachment",
+                error_class=type(e).__name__,
+                error_message=str(e),
+                org_id=connection.get("org_id"),
+                connection_id=connection["id"],
+                context={"merge_application_id": merge_application_id, "merge_candidate_id": merge_candidate_id},
+            )
+
+    if cv_text:
+        try:
+            from agents.cv_extract import extract_cv
+            cv_extracted = await extract_cv(cv_text, role.get("job_description", ""))
+        except Exception as e:
+            print(f"  [ats/webhook] cv extract failed: {type(e).__name__}: {e}")
+            cv_extracted = {}
+
+    invite_token = secrets.token_urlsafe(32)
+    assessment_payload = {
+        "role_id": role["id"],
+        "candidate_user_id": f"ats:{merge_candidate_id or merge_application_id}",
+        "candidate_name": candidate_name,
+        "candidate_email": candidate_email,
+        "status": "invited",
+        "source": "ats",
+        "connection_id": connection["id"],
+        "merge_application_id": merge_application_id,
+        "merge_candidate_id": merge_candidate_id,
+        "remote_application_id": application.get("remote_id"),
+        "invite_token": invite_token,
+    }
+    if cv_extracted:
+        assessment_payload["cv_extracted"] = json.dumps(cv_extracted)
+        assessment_payload["experience_path"] = cv_extracted.get("experience_path", "path_a")
+
+    created = db.create_assessment(assessment_payload)
+    if not created:
+        raise RuntimeError("create_assessment returned None")
+
+    # Create the interview session shell so candidate can land on /interview.
+    try:
+        db.create_interview_session(created["id"])
+    except Exception:
+        pass
+
+    invite_url = _build_invite_url(invite_token)
+
+    if mapping.get("auto_invite") and candidate_email:
+        try:
+            send_invite_email(
+                to=candidate_email,
+                candidate_name=candidate_name,
+                role_title=role.get("title") or "interview",
+                company_name=role.get("company_name"),
+                invite_url=invite_url,
+                duration_minutes=role.get("interview_duration_minutes") or 30,
+            )
+        except Exception as e:
+            print(f"  [ats/webhook] invite email failed: {type(e).__name__}: {e}")
+
+    return {
+        "assessment_id": created["id"],
+        "merge_application_id": merge_application_id,
+        "invite_sent": bool(mapping.get("auto_invite") and candidate_email),
+    }
+
+
+def _find_connection_by_linked_account(linked_account_id: str | None) -> dict | None:
+    """Look up an ats_connections row by Merge's linked-account UUID.
+    Stored either as account_id (we need to add this in PR3 forwards) or
+    by re-fetching account_details via the encrypted token (slow).
+
+    For v1, we walk all connected rows and probe account_details on each
+    until we find a match. With <50 connections this is fast enough; we'll
+    add a `linked_account_id` column when the second customer ships.
+    """
+    if not linked_account_id:
+        return None
+    from core import ats
+    from core.db import get_client
+
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("ats_connections")
+            .select("*")
+            .eq("status", "connected")
+            .execute()
+        )
+        rows = result.data or []
+    except Exception:
+        return None
+
+    for row in rows:
+        try:
+            token = ats.decrypt_token(row["account_token_encrypted"])
+            scoped = ats.merge_client(account_token=token)
+            details = scoped.ats.account_details.retrieve()
+            if getattr(details, "id", None) == linked_account_id:
+                return row
+        except Exception:
+            continue
+    return None
+
+
+def _build_invite_url(invite_token: str) -> str:
+    base = os.getenv("PUBLIC_APP_URL", "https://basanite.co.uk").rstrip("/")
+    return f"{base}/assess/invite/{invite_token}"
+
+
+# ─── Candidate invite resolution (PR6) ─────────────────────────────────────
+
+
+@app.get("/assess/invite/{invite_token}")
+async def get_invite_info(invite_token: str):
+    """
+    Resolve a unique invite token to the underlying assessment. The candidate
+    flow uses this on `/assess/invite/{token}` to skip the CV upload step
+    when the assessment was pre-populated from an ATS sync.
+    """
+    from core.db import get_assessment_by_invite_token, get_role
+
+    assessment = get_assessment_by_invite_token(invite_token)
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    role = get_role(assessment["role_id"])
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if role["status"] != "live":
+        raise HTTPException(status_code=410, detail="This assessment is no longer accepting candidates")
+
+    dims = _coerce_json_field(role.get("dimensions", []))
+    if not isinstance(dims, list):
+        dims = []
+
+    cv = assessment.get("cv_extracted") or {}
+    if isinstance(cv, str):
+        try:
+            cv = json.loads(cv)
+        except Exception:
+            cv = {}
+
+    return {
+        "assessment_id": assessment["id"],
+        "role_token": role.get("assessment_link_token"),
+        "role_title": role["title"],
+        "company_name": role.get("company_name"),
+        "dimensions_count": len(dims),
+        "interview_duration_minutes": role.get("interview_duration_minutes") or 15,
+        "candidate_name": assessment.get("candidate_name"),
+        "candidate_email": assessment.get("candidate_email"),
+        "cv_prefilled": bool(cv),
+        "experience_path": assessment.get("experience_path"),
+    }
+
+
+# ─── Public report PDF (PR7) ───────────────────────────────────────────────
+
+
+@app.get("/reports/public/{assessment_id}")
+async def download_public_report_pdf(assessment_id: str, token: str):
+    """
+    Serve the hirer report PDF when called with a valid signed `token`. The
+    URL is what we drop into the ATS note so the customer's reviewers can
+    open the report without a Basanite login.
+
+    The signature is HMAC-SHA256 over `assessment_id:expires_at_unix`.
+    Tokens expire 90 days after the push (configurable in core/ats.sign).
+    """
+    from fastapi.responses import Response
+    from core import ats
+
+    if not ats.verify_public_report_url(assessment_id, token):
+        raise HTTPException(status_code=403, detail="Invalid or expired link")
+
+    pdf_bytes, filename = _build_report_pdf(assessment_id, "hirer")
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )

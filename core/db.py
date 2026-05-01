@@ -380,3 +380,254 @@ def mark_ats_connection_disconnected(connection_id: str) -> bool:
     except Exception as e:
         print(f"  DB mark_ats_connection_disconnected error: {e}")
         return False
+
+
+# ─── ATS job mappings (PR4) ────────────────────────────────────────────────
+
+def upsert_ats_job_mapping(
+    *,
+    connection_id: str,
+    org_id: str,
+    merge_job_id: str,
+    role_id: str,
+    remote_job_id: str | None = None,
+    job_name: str | None = None,
+    auto_invite: bool = True,
+) -> dict | None:
+    """Map an ATS job to a Basanite role. Re-mapping replaces."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "connection_id": connection_id,
+            "org_id": org_id,
+            "merge_job_id": merge_job_id,
+            "remote_job_id": remote_job_id,
+            "job_name": job_name,
+            "role_id": role_id,
+            "auto_invite": auto_invite,
+            "updated_at": "now()",
+        }
+        result = (
+            client.table("ats_job_mappings")
+            .upsert(row, on_conflict="connection_id,merge_job_id")
+            .execute()
+        )
+        return result.data[0] if result.data else None
+    except Exception as e:
+        print(f"  DB upsert_ats_job_mapping error: {e}")
+        return None
+
+
+def get_ats_job_mappings_for_org(org_id: str) -> list[dict]:
+    client = get_client()
+    if not client:
+        return []
+    try:
+        result = (
+            client.table("ats_job_mappings")
+            .select("*")
+            .eq("org_id", org_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return result.data or []
+    except Exception as e:
+        print(f"  DB get_ats_job_mappings_for_org error: {e}")
+        return []
+
+
+def get_ats_job_mapping_by_merge_job(connection_id: str, merge_job_id: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("ats_job_mappings")
+            .select("*")
+            .eq("connection_id", connection_id)
+            .eq("merge_job_id", merge_job_id)
+            .limit(1)
+            .execute()
+        )
+        return (result.data or [None])[0]
+    except Exception:
+        return None
+
+
+def delete_ats_job_mapping(mapping_id: str, org_id: str) -> bool:
+    """Delete a mapping, scoped to org_id for safety."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("ats_job_mappings").delete().eq("id", mapping_id).eq(
+            "org_id", org_id
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"  DB delete_ats_job_mapping error: {e}")
+        return False
+
+
+# ─── ATS webhook event log (PR5) ───────────────────────────────────────────
+
+def webhook_event_seen(event_id: str) -> bool:
+    """True if we have already processed this Merge event (idempotency)."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        result = (
+            client.table("ats_webhook_events")
+            .select("id")
+            .eq("event_id", event_id)
+            .limit(1)
+            .execute()
+        )
+        return bool(result.data)
+    except Exception:
+        return False
+
+
+def log_webhook_event(
+    *,
+    event_id: str,
+    hook_type: str | None,
+    linked_account_id: str | None,
+    status: str,
+    payload_summary: dict | None = None,
+    error_message: str | None = None,
+) -> dict | None:
+    """Insert (or upsert by event_id) a row into ats_webhook_events."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "event_id": event_id,
+            "hook_type": hook_type,
+            "linked_account_id": linked_account_id,
+            "status": status,
+            "payload_summary": payload_summary,
+            "error_message": (error_message or "")[:1000] or None,
+            "processed_at": "now()" if status in ("processed", "failed", "ignored") else None,
+        }
+        result = (
+            client.table("ats_webhook_events")
+            .upsert(row, on_conflict="event_id")
+            .execute()
+        )
+        return result.data[0] if result.data else None
+    except Exception as e:
+        print(f"  DB log_webhook_event error: {e}")
+        return None
+
+
+# ─── ATS sync error log (PR5/PR7) ──────────────────────────────────────────
+
+def log_ats_sync_error(
+    *,
+    direction: str,
+    operation: str,
+    error_class: str,
+    error_message: str,
+    org_id: str | None = None,
+    connection_id: str | None = None,
+    assessment_id: str | None = None,
+    context: dict | None = None,
+) -> dict | None:
+    """Persist an ATS-touching error so the dashboard can surface it."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "org_id": org_id,
+            "connection_id": connection_id,
+            "assessment_id": assessment_id,
+            "direction": direction,
+            "operation": operation,
+            "error_class": error_class,
+            "error_message": (error_message or "")[:1000] or None,
+            "context": context,
+        }
+        result = client.table("ats_sync_errors").insert(row).execute()
+        return result.data[0] if result.data else None
+    except Exception as e:
+        print(f"  DB log_ats_sync_error error: {e}")
+        return None
+
+
+# ─── Org feature flags (PR7) ───────────────────────────────────────────────
+
+def get_org_feature_flags(org_id: str) -> dict:
+    client = get_client()
+    if not client:
+        return {}
+    try:
+        result = (
+            client.table("orgs")
+            .select("feature_flags")
+            .eq("id", org_id)
+            .single()
+            .execute()
+        )
+        return (result.data or {}).get("feature_flags") or {}
+    except Exception:
+        return {}
+
+
+def set_org_feature_flag(org_id: str, key: str, value) -> bool:
+    """Merge a single flag into orgs.feature_flags. Reads-then-writes; not atomic
+    under contention but flags flip rarely (manual ops action)."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        flags = get_org_feature_flags(org_id)
+        flags[key] = value
+        client.table("orgs").update(
+            {"feature_flags": flags, "updated_at": "now()"}
+        ).eq("id", org_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB set_org_feature_flag error: {e}")
+        return False
+
+
+# ─── Assessment lookups for ATS flow (PR5/PR6) ─────────────────────────────
+
+def get_assessment_by_invite_token(invite_token: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("assessments")
+            .select("*")
+            .eq("invite_token", invite_token)
+            .limit(1)
+            .execute()
+        )
+        return (result.data or [None])[0]
+    except Exception:
+        return None
+
+
+def get_assessment_by_merge_application(merge_application_id: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("assessments")
+            .select("*")
+            .eq("merge_application_id", merge_application_id)
+            .limit(1)
+            .execute()
+        )
+        return (result.data or [None])[0]
+    except Exception:
+        return None

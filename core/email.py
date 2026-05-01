@@ -123,3 +123,116 @@ def send_report_email(
         msg = _scrub_recipient(str(e), to)[:240]
         print(f"  [email] send failed: {type(e).__name__}: {msg}")
         return False
+
+
+# ─── Candidate invite (PR5/PR6) ────────────────────────────────────────────
+
+def _render_invite_html(candidate_name: str, role_title: str, company_name: str | None, invite_url: str, duration_minutes: int) -> str:
+    safe_name = escape(candidate_name or "there")
+    safe_role = escape(role_title or "your interview")
+    safe_company = escape(company_name or "")
+    company_line = f" with {safe_company}" if safe_company else ""
+    return f"""
+<!doctype html>
+<html>
+  <body style="margin:0;padding:24px;background:#f6f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;color:#1a1a1a">
+    <div style="max-width:640px;margin:0 auto;background:#fff;border:1px solid #e5dccd;padding:32px">
+      <p style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#8a7a5e;margin:0 0 4px">Basanite</p>
+      <h1 style="font-size:22px;margin:0 0 12px">You're invited to interview for {safe_role}</h1>
+      <p style="font-size:15px;line-height:1.55;color:#333;margin:0 0 16px">
+        Hi {safe_name}, your application{company_line} has been received and we'd like to invite you to a short conversational interview.
+      </p>
+      <p style="font-size:15px;line-height:1.55;color:#333;margin:0 0 24px">
+        It takes about {duration_minutes} minutes. You'll talk to an AI interviewer about your real experience, no scripted questions.
+        Use a quiet space and a working microphone.
+      </p>
+      <p style="margin:0 0 32px">
+        <a href="{escape(invite_url)}" style="display:inline-block;background:#1a1a1a;color:#f6f3ee;text-decoration:none;font-weight:600;padding:14px 24px;border-radius:6px">Start your interview</a>
+      </p>
+      <p style="font-size:13px;color:#666;margin:0 0 8px">Or copy this link:</p>
+      <p style="font-size:12px;color:#888;word-break:break-all;margin:0 0 24px">{escape(invite_url)}</p>
+      <p style="font-size:12px;color:#8a7a5e;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
+        This link is unique to you — please don't share it.
+      </p>
+    </div>
+  </body>
+</html>
+""".strip()
+
+
+def send_invite_email(
+    *,
+    to: str,
+    candidate_name: str,
+    role_title: str,
+    company_name: str | None,
+    invite_url: str,
+    duration_minutes: int = 30,
+) -> bool:
+    """Send the candidate their unique interview invite link.
+    Returns True on Resend success, False on any failure (logged)."""
+    api_key = os.getenv("RESEND_API_KEY", "")
+    sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
+    if not api_key:
+        print("  [email/invite] skipped (RESEND_API_KEY missing)")
+        return False
+    if not to or not _EMAIL_RE.match(to):
+        print("  [email/invite] skipped (recipient missing or malformed)")
+        return False
+    if any(s in sender for s in _SANDBOX_SENDERS):
+        print(
+            "  [email/invite] WARNING: using Resend sandbox sender; "
+            "deliveries to anyone other than the Resend account email will fail."
+        )
+    safe_role = _strip_header(role_title)[:140] or "interview"
+    try:
+        import resend
+        resend.api_key = api_key
+        resp = resend.Emails.send({
+            "from": sender,
+            "to": [to],
+            "subject": f"Your interview invite, {safe_role}",
+            "html": _render_invite_html(candidate_name, safe_role, company_name, invite_url, duration_minutes),
+        })
+        msg_id = (resp or {}).get("id") if isinstance(resp, dict) else None
+        if msg_id:
+            print(f"  [email/invite] sent (resend id={msg_id})")
+            return True
+        print(f"  [email/invite] send returned no id; payload type={type(resp).__name__}")
+        return False
+    except Exception as e:
+        msg = _scrub_recipient(str(e), to)[:240]
+        print(f"  [email/invite] send failed: {type(e).__name__}: {msg}")
+        return False
+
+
+# ─── Founder ops alert (PR5/PR7) ───────────────────────────────────────────
+
+def send_ops_alert(subject: str, body: str) -> bool:
+    """Send a plaintext alert to the founder on critical ATS sync failures.
+    OPS_ALERT_TO env controls recipient; falls back to RESEND_FROM mailbox."""
+    api_key = os.getenv("RESEND_API_KEY", "")
+    sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
+    to = os.getenv("OPS_ALERT_TO", "andrew.robertson@basanite.co.uk")
+    if not api_key or not to:
+        print("  [email/ops] skipped (RESEND_API_KEY or OPS_ALERT_TO missing)")
+        return False
+    try:
+        import resend
+        resend.api_key = api_key
+        safe_subject = _strip_header(subject)[:160] or "Basanite ATS alert"
+        html = (
+            "<pre style='font-family:ui-monospace,Menlo,monospace;"
+            "font-size:13px;white-space:pre-wrap'>"
+            f"{escape(body)}</pre>"
+        )
+        resend.Emails.send({
+            "from": sender,
+            "to": [to],
+            "subject": f"[Basanite ATS] {safe_subject}",
+            "html": html,
+        })
+        return True
+    except Exception as e:
+        print(f"  [email/ops] send failed: {type(e).__name__}: {e}")
+        return False
