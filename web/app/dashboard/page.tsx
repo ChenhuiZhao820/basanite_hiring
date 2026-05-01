@@ -1,5 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient, getAuthUserId } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import RolesList from './RolesList'
@@ -7,16 +6,17 @@ import RolesList from './RolesList'
 export const metadata = { title: 'Dashboard' }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // Middleware already validated the session; we just need the user id to
+  // scope queries. getAuthUserId reads it from the cookie JWT — no network.
+  const userId = await getAuthUserId()
+  if (!userId) redirect('/login')
 
   const service = createServiceClient()
 
   const { data: roles } = await service
     .from('roles')
     .select('id, title, company_name, status, dimensions, created_at, assessment_link_token')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   const roleIds = (roles ?? []).map(r => r.id)

@@ -1,4 +1,4 @@
-import { createServiceClient, createClient } from '@/lib/supabase/server'
+import { createServiceClient, getAuthUserId } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
@@ -13,9 +13,8 @@ export default async function RoleDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const userId = await getAuthUserId()
+  if (!userId) redirect('/login')
 
   const service = createServiceClient()
 
@@ -23,7 +22,7 @@ export default async function RoleDetailPage({
     .from('roles')
     .select('*')
     .eq('id', id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (!role) redirect('/dashboard')
