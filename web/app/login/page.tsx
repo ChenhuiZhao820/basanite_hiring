@@ -109,8 +109,13 @@ function LoginForm() {
 
         <p className="text-xs text-slate-400 text-center mt-5">
           Don&apos;t have access?{' '}
-          <a href="/#signup" className="text-gold-600 hover:underline">
-            Request access
+          <a
+            href="https://cal.eu/basanite/intro"
+            target="_blank"
+            rel="noreferrer"
+            className="text-gold-600 hover:underline"
+          >
+            Book a call
           </a>
         </p>
       </div>

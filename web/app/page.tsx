@@ -6,6 +6,10 @@ import { LogoMark } from '@/components/Logo'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
 
+// Single source of truth for the public booking link. Cal.com EU instance
+// keeps the booking-PII transfer inside the EU jurisdiction.
+const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
+
 // ─── Scroll reveal hook ──────────────────────────────────────────────────
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
@@ -91,12 +95,22 @@ function Nav() {
           <a href="#team" className="hover:text-basanite-900 transition-colors">Team</a>
           <a href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</a>
         </div>
-        <a
-          href="/login"
-          className="text-sm font-medium text-basanite-900 border border-basanite-900 px-4 py-2 hover:bg-basanite-900 hover:text-earth-50 transition-colors duration-200"
-        >
-          Sign in
-        </a>
+        <div className="flex items-center gap-3">
+          <a
+            href={BOOK_A_CALL_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-semibold text-earth-50 bg-basanite-900 px-4 py-2 hover:bg-gold-600 transition-colors duration-200"
+          >
+            Book a call
+          </a>
+          <a
+            href="/login"
+            className="text-sm font-medium text-basanite-600 hover:text-basanite-900 transition-colors duration-200"
+          >
+            Sign in
+          </a>
+        </div>
       </div>
     </nav>
   )
@@ -135,10 +149,12 @@ function Hero() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
-              href="/login"
+              href={BOOK_A_CALL_URL}
+              target="_blank"
+              rel="noreferrer"
               className="w-full sm:w-auto px-8 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
             >
-              Start hiring with Basanite
+              Book a call
             </a>
             <a
               href="#demo"
@@ -512,8 +528,13 @@ function ForBoth() {
                 Hirer report designed as a briefing document: what to probe further in the final human interview
               </li>
             </ul>
-            <a href="/login" className="inline-block mt-8 px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-medium hover:bg-gold-600 transition-colors">
-              Start assessing
+            <a
+              href={BOOK_A_CALL_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block mt-8 px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-medium hover:bg-gold-600 transition-colors"
+            >
+              Book a call
             </a>
           </div>
 
@@ -670,35 +691,6 @@ const CTA_STATS = [
 
 function WaitlistCTA() {
   const ref = useReveal()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [company, setCompany] = useState('')
-  const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
-  const [errMsg, setErrMsg] = useState('')
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setState('loading')
-    setErrMsg('')
-    try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, company }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setErrMsg(data.error ?? 'Something went wrong.')
-        setState('error')
-        return
-      }
-      setState('done')
-    } catch {
-      setErrMsg('Network error. Try again.')
-      setState('error')
-    }
-  }
-
   return (
     <section id="request-access" className="relative py-24 sm:py-32 px-6 bg-basanite-900 overflow-hidden">
       <StoneTexture />
@@ -716,60 +708,24 @@ function WaitlistCTA() {
           <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
             Ready to test what matters?
           </h2>
-          <p className="text-earth-300 text-lg mb-3 leading-relaxed">
-            Request early access. We are onboarding a small number of teams now and will be in touch.
-          </p>
-          <p className="text-earth-300/70 text-sm mb-10">
-            More questions first? <a href="/faq" className="text-gold-400 hover:text-gold-300 underline-offset-4 hover:underline">See the FAQ</a>.
+          <p className="text-earth-300 text-lg mb-10 leading-relaxed">
+            Get early access for your team. Book a 20-minute intro call and we&rsquo;ll walk you through the platform live.
           </p>
 
-          {state === 'done' ? (
-            <div className="bg-white/10 border border-gold-500/40 px-6 py-10 text-earth-50">
-              <div className="font-display text-4xl text-gold-400 mb-3">&#10004;</div>
-              <p className="font-display text-xl mb-2">You are on the list.</p>
-              <p className="text-earth-300 text-sm">We will review your request and follow up shortly.</p>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} className="flex flex-col gap-3 text-left">
-              <input
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
-              />
-              <input
-                type="email"
-                placeholder="Work email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
-              />
-              <input
-                type="text"
-                placeholder="Company (optional)"
-                value={company}
-                onChange={e => setCompany(e.target.value)}
-                className="w-full bg-white/10 border border-earth-300/30 text-earth-50 placeholder:text-earth-300/60 px-4 py-3.5 text-base outline-none focus:border-gold-500/60 transition-colors"
-              />
-              {state === 'error' && (
-                <p className="text-xs text-red-200 bg-red-900/30 border border-red-500/30 px-3 py-2">{errMsg}</p>
-              )}
-              <button
-                type="submit"
-                disabled={state === 'loading'}
-                className="w-full bg-gold-500 hover:bg-gold-400 text-white font-semibold py-4 text-base tracking-wide transition-colors duration-200 disabled:opacity-60 mt-2"
-              >
-                {state === 'loading' ? 'Submitting...' : 'Request access'}
-              </button>
-              <p className="text-xs text-earth-300/70 text-center mt-2">
-                Already have access?{' '}
-                <a href="/login" className="text-gold-400 hover:text-gold-300 underline">Sign in</a>
-              </p>
-            </form>
-          )}
+          <a
+            href={BOOK_A_CALL_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block px-10 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
+          >
+            Book a call
+          </a>
+
+          <p className="text-xs text-earth-300/70 mt-8">
+            Already have access? <a href="/login" className="text-gold-400 hover:text-gold-300 underline">Sign in</a>
+            <span className="mx-2 text-earth-300/40">·</span>
+            More questions first? <a href="/faq" className="text-gold-400 hover:text-gold-300 underline">See the FAQ</a>.
+          </p>
         </div>
       </div>
     </section>

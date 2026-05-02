@@ -382,14 +382,16 @@ export default function FaqPage() {
             Still have questions?
           </h2>
           <p className="text-basanite-600 text-base mb-6 max-w-xl mx-auto">
-            Drop your details and we&rsquo;ll be in touch.
+            Book a 20-minute call with the team.
           </p>
-          <Link
-            href="/#request-access"
+          <a
+            href="https://cal.eu/basanite/intro"
+            target="_blank"
+            rel="noreferrer"
             className="inline-block px-6 py-3 bg-basanite-900 text-white text-sm font-medium hover:bg-gold-600 transition-colors"
           >
-            Request access
-          </Link>
+            Book a call
+          </a>
         </section>
       </main>
 
