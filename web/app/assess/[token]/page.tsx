@@ -1,5 +1,6 @@
 import { LogoMark } from '@/components/Logo'
 import Link from 'next/link'
+import { LegalFooter } from '@/components/LegalFooter'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 
@@ -80,16 +81,18 @@ export default async function AssessmentLandingPage({
             </div>
 
             <Link
-              href={`/assess/${token}/onboard`}
+              href={`/assess/${token}/consent`}
               className="block w-full text-center mt-8 px-6 py-3.5 bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 text-sm font-medium hover:bg-gold-600 dark:hover:bg-gold-400 transition-colors"
             >
               Begin Assessment
             </Link>
 
             <p className="text-xs text-basanite-400 dark:text-earth-200/40 text-center mt-4">
-              You will need to create an account and upload your CV to proceed.
+              We&apos;ll explain how your data is used before anything is recorded.
             </p>
           </div>
+
+          <LegalFooter dark className="mt-6" />
         </div>
       </div>
     </div>

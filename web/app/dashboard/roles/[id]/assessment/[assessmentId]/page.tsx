@@ -88,6 +88,22 @@ export default async function AssessmentReportPage({
         </div>
       </div>
 
+      {assessment.object_to_automated_decisions && (
+        <div className="mb-8 border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/60 p-4">
+          <div className="flex items-start gap-3">
+            <svg className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Human review required (GDPR Article 22)</p>
+              <p className="text-xs text-amber-800 dark:text-amber-200 mt-1 leading-relaxed">
+                This candidate exercised their right to object to fully automated decision-making. Use these AI scores as input only — apply your own human judgement before acting on them in any consequential hiring decision.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {assessment.status === 'completed' && (
         <div className="flex flex-wrap gap-2 mb-8">
           <a

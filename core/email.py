@@ -52,11 +52,31 @@ def _render_report_html(candidate_name: str, role_title: str, report: dict) -> s
       {section("Overall", f"<p style='margin:0;font-style:italic;color:#444'>{overall}</p>" if overall else "")}
 
       <p style="font-size:12px;color:#8a7a5e;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
-        Keep this email, it's your personal copy of the report.
+        Keep this email — it&rsquo;s your personal copy of the report.
       </p>
+      {_LEGAL_FOOTER_HTML}
     </div>
   </body>
 </html>
+""".strip()
+
+
+# Shared footer block included at the bottom of every transactional email
+# we send. Carries the controller-of-record (Article 13(1)(a)) info, a
+# reachable contact for privacy queries, and a link to the self-serve
+# data-rights page so the email itself can serve as a vehicle for the
+# user to opt out of further communications or erase their data.
+_LEGAL_FOOTER_HTML = """
+<div style="font-size:11px;color:#8a7a5e;margin-top:24px;padding-top:16px;border-top:1px solid #eee;line-height:1.55">
+  <p style="margin:0 0 6px">
+    Basanite Ltd · 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, UK
+  </p>
+  <p style="margin:0">
+    Privacy queries: <a href="mailto:privacy@basanite.co.uk" style="color:#8a7a5e">privacy@basanite.co.uk</a>
+    · <a href="https://basanite.co.uk/privacy" style="color:#8a7a5e">Privacy notice</a>
+    · <a href="https://basanite.co.uk/data-rights" style="color:#8a7a5e">Manage your data</a>
+  </p>
+</div>
 """.strip()
 
 
@@ -119,9 +139,10 @@ def send_report_email(
         print(f"  [email] send returned no id; payload type={type(resp).__name__}")
         return False
     except Exception as e:
-        # Exception text from Resend can include the recipient address; scrub it.
-        msg = _scrub_recipient(str(e), to)[:240]
-        print(f"  [email] send failed: {type(e).__name__}: {msg}")
+        # Exception text from Resend can include the recipient address; scrub
+        # it AND any other PII pattern (phone, API key) defensively.
+        from core.log_safe import scrub
+        print(f"  [email] send failed: {type(e).__name__}: {scrub(str(e))}")
         return False
 
 
@@ -152,8 +173,12 @@ def _render_invite_html(candidate_name: str, role_title: str, company_name: str 
       <p style="font-size:13px;color:#666;margin:0 0 8px">Or copy this link:</p>
       <p style="font-size:12px;color:#888;word-break:break-all;margin:0 0 24px">{escape(invite_url)}</p>
       <p style="font-size:12px;color:#8a7a5e;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
-        This link is unique to you — please don't share it.
+        This link is unique to you — please don&rsquo;t share it.
       </p>
+      <p style="font-size:11px;color:#8a7a5e;margin:8px 0 0">
+        We&rsquo;ll record your interview, transcribe it, and use AI to score it. You&rsquo;ll see and confirm this on the consent screen before anything is recorded. You can decline at any time and your application stays with the hirer.
+      </p>
+      {_LEGAL_FOOTER_HTML}
     </div>
   </body>
 </html>
@@ -201,12 +226,75 @@ def send_invite_email(
         print(f"  [email/invite] send returned no id; payload type={type(resp).__name__}")
         return False
     except Exception as e:
-        msg = _scrub_recipient(str(e), to)[:240]
-        print(f"  [email/invite] send failed: {type(e).__name__}: {msg}")
+        from core.log_safe import scrub
+        print(f"  [email/invite] send failed: {type(e).__name__}: {scrub(str(e))}")
         return False
 
 
 # ─── Founder ops alert (PR5/PR7) ───────────────────────────────────────────
+
+def send_dsar_verification_email(*, to: str, request_type: str, verify_url: str) -> bool:
+    """Send a one-time verification link for a Data Subject Access Request.
+    Body is intentionally minimal so it doesn't leak details to anyone who
+    intercepts the email — they confirm intent by clicking, then see the
+    full status page on basanite.co.uk."""
+    api_key = os.getenv("RESEND_API_KEY", "")
+    sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
+    if not api_key:
+        print("  [email/dsar] skipped (RESEND_API_KEY missing)")
+        return False
+    if not to or not _EMAIL_RE.match(to):
+        print("  [email/dsar] skipped (recipient malformed)")
+        return False
+
+    pretty = {
+        "export": "data export",
+        "erasure": "data deletion",
+        "rectification": "data correction",
+        "objection": "objection to automated decisions",
+        "restriction": "processing restriction",
+    }.get(request_type, "data request")
+
+    safe_url = escape(verify_url)
+    html = f"""
+<!doctype html>
+<html>
+  <body style="margin:0;padding:24px;background:#f6f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;color:#1a1a1a">
+    <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e5dccd;padding:32px">
+      <p style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#8a7a5e;margin:0 0 4px">Basanite</p>
+      <h1 style="font-size:20px;margin:0 0 12px">Confirm your {escape(pretty)} request</h1>
+      <p style="font-size:14px;line-height:1.55;color:#333;margin:0 0 16px">
+        Someone (hopefully you) submitted a {escape(pretty)} request from this email. Click the button below to confirm — the link is valid for 24 hours and can only be used once.
+      </p>
+      <p style="margin:24px 0">
+        <a href="{safe_url}" style="display:inline-block;background:#1a1a1a;color:#f6f3ee;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:6px">Confirm request</a>
+      </p>
+      <p style="font-size:12px;color:#666;margin:0">
+        If you didn&rsquo;t make this request, ignore this email — nothing happens until you click the link.
+      </p>
+      <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+      <p style="font-size:11px;color:#8a7a5e;margin:0">
+        Basanite Ltd · 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ · privacy@basanite.co.uk
+      </p>
+    </div>
+  </body>
+</html>
+""".strip()
+    try:
+        import resend
+        resend.api_key = api_key
+        resend.Emails.send({
+            "from": sender,
+            "to": [to],
+            "subject": f"Confirm your Basanite {pretty} request",
+            "html": html,
+        })
+        return True
+    except Exception as e:
+        from core.log_safe import scrub
+        print(f"  [email/dsar] failed: {type(e).__name__}: {scrub(str(e))}")
+        return False
+
 
 def send_ops_alert(subject: str, body: str) -> bool:
     """Send a plaintext alert to the founder on critical ATS sync failures.

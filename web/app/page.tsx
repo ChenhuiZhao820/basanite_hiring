@@ -779,18 +779,31 @@ function WaitlistCTA() {
 // ─── Footer ──────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="py-12 px-6 bg-basanite-950 border-t border-basanite-800">
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-2.5">
-          <LogoMark size={22} />
-          <span className="text-earth-300 text-sm font-display">Basanite</span>
+    <footer className="py-10 px-6 bg-basanite-950 border-t border-basanite-800">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <LogoMark size={22} />
+            <span className="text-earth-300 text-sm font-display">Basanite</span>
+          </div>
+          <p className="text-basanite-500 text-xs text-center sm:text-right">
+            Built in Manchester by Drew, Lynn and Aditya.
+            <br className="sm:hidden" />
+            <span className="hidden sm:inline"> &middot; </span>
+            &copy; {new Date().getFullYear()} Basanite.
+          </p>
         </div>
-        <p className="text-basanite-500 text-xs text-center sm:text-right">
-          Built in Manchester by Drew, Lynn and Aditya.
-          <br className="sm:hidden" />
-          <span className="hidden sm:inline"> &middot; </span>
-          &copy; {new Date().getFullYear()} Basanite.
-        </p>
+        <div className="border-t border-basanite-800 mt-6 pt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-basanite-500">
+          <a href="/privacy" className="hover:text-earth-200">Privacy</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/terms" className="hover:text-earth-200">Terms</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/legal/subprocessors" className="hover:text-earth-200">Sub-processors</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/data-rights" className="hover:text-earth-200">Your data rights</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/faq" className="hover:text-earth-200">FAQ</a>
+        </div>
       </div>
     </footer>
   )

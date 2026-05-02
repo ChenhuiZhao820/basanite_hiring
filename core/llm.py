@@ -110,7 +110,8 @@ class LLMService:
                 else:
                     # Truncate to avoid accidentally echoing request payloads
                     # or auth headers from deep-stack exceptions into logs.
-                    print(f"  LLM error: {type(e).__name__}: {error_str[:200]}")
+                    from core.log_safe import scrub
+                    print(f"  LLM error: {type(e).__name__}: {scrub(error_str)}")
                     return {"error": "llm_error"}
 
         return {"error": "Max retries exceeded."}
@@ -144,7 +145,8 @@ class LLMService:
                     print(f"  LLM overloaded (attempt {attempt + 1}/{retries}). Retrying in {wait}s...")
                     await asyncio.sleep(wait)
                 else:
-                    print(f"  LLM error: {type(e).__name__}: {error_str[:200]}")
+                    from core.log_safe import scrub
+                    print(f"  LLM error: {type(e).__name__}: {scrub(error_str)}")
                     return ""
         return ""
 

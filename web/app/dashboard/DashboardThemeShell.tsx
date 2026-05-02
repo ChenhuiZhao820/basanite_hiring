@@ -7,6 +7,7 @@
 
 import { ThemeProvider } from '@/lib/theme'
 import { LogoMark } from '@/components/Logo'
+import { LegalFooter } from '@/components/LegalFooter'
 import DashboardNav from './DashboardNav'
 
 type Props = {
@@ -29,6 +30,9 @@ export function DashboardThemeShell({ email, isAdmin, children }: Props) {
           </div>
         </nav>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">{children}</main>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <LegalFooter />
+        </div>
       </div>
     </ThemeProvider>
   )

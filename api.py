@@ -1479,3 +1479,301 @@ async def download_public_report_pdf(assessment_id: str, token: str):
         media_type="application/pdf",
         headers={"Content-Disposition": f'inline; filename="{filename}"'},
     )
+
+
+# ─── GDPR data-rights (Article 15-22) ──────────────────────────────────────
+# Public-ish endpoints (verified by single-use email tokens) that let any
+# data subject access, erase, object to, or rectify their personal data
+# without going through a human first.
+#
+# Flow:
+#   1. Next.js /api/data-rights creates a dsar_requests row + verification
+#      token, then calls /data-rights/email-verification here to send the
+#      candidate the verify link.
+#   2. Candidate clicks → Next.js /data-rights/verify page server-renders
+#      via /data-rights/verify here, which actions the request and returns
+#      the result (or a signed export download URL).
+
+
+class _DsarEmailVerifyRequest(BaseModel):
+    to: str = Field(min_length=3, max_length=320)
+    request_type: str = Field(min_length=1, max_length=32)
+    verify_url: str = Field(min_length=1, max_length=1000)
+
+
+@app.post("/data-rights/email-verification")
+async def dsar_send_verification_email(
+    body: _DsarEmailVerifyRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Send the data subject a one-time verification link by email."""
+    _verify_internal(authorization)
+    from core.email import send_dsar_verification_email
+
+    sent = send_dsar_verification_email(
+        to=body.to,
+        request_type=body.request_type,
+        verify_url=body.verify_url,
+    )
+    return {"sent": sent}
+
+
+class _DsarVerifyRequest(BaseModel):
+    token: str = Field(min_length=10, max_length=200)
+
+
+@app.post("/data-rights/verify")
+async def dsar_verify(
+    body: _DsarVerifyRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Resolve a verification token and action the corresponding DSAR.
+
+    Returns one of:
+        {"status": "completed", "request_type": ..., "download_url"?: ...}
+        {"status": "pending", "request_type": ...}
+        {"status": "expired"} (410)
+        {"status": "invalid"} (404)
+    """
+    _verify_internal(authorization)
+    from core.db import get_client
+    from datetime import datetime as _dt
+
+    client = get_client()
+    if not client:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    try:
+        result = (
+            client.table("dsar_requests")
+            .select("*")
+            .eq("verification_token", body.token)
+            .single()
+            .execute()
+        )
+        row = result.data
+    except Exception:
+        raise HTTPException(status_code=404, detail="Token not found")
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Token not found")
+    if row.get("status") in ("completed", "rejected"):
+        raise HTTPException(status_code=404, detail="Already actioned")
+
+    expires = row.get("verification_expires_at")
+    if expires:
+        try:
+            exp_dt = _dt.fromisoformat(expires.replace("Z", "+00:00"))
+            if exp_dt < datetime.now(timezone.utc):
+                client.table("dsar_requests").update({"status": "expired"}).eq(
+                    "id", row["id"]
+                ).execute()
+                raise HTTPException(status_code=410, detail="Token expired")
+        except (ValueError, TypeError):
+            pass
+
+    request_type = row["request_type"]
+    email = row["email"]
+
+    # Mark verified before doing the work — even if the work fails, we
+    # don't want a stale token re-usable.
+    client.table("dsar_requests").update({"status": "verified"}).eq(
+        "id", row["id"]
+    ).execute()
+
+    if request_type == "erasure":
+        _action_erasure(email)
+        client.table("dsar_requests").update(
+            {"status": "completed", "completed_at": "now()"}
+        ).eq("id", row["id"]).execute()
+        return {"status": "completed", "request_type": request_type}
+
+    if request_type == "objection":
+        _action_objection(email)
+        client.table("dsar_requests").update(
+            {"status": "completed", "completed_at": "now()"}
+        ).eq("id", row["id"]).execute()
+        return {"status": "completed", "request_type": request_type}
+
+    if request_type == "export":
+        # Mint a short-lived download token so the user can fetch the JSON.
+        # Reuse the public-report URL signer but with a different prefix to
+        # disambiguate. 1 hour validity.
+        from core import ats
+        import time as _time
+
+        expires_at = int(_time.time()) + 3600
+        sig = ats.sign_public_report_url(f"dsar:{row['id']}", expires_at)
+        public_base = os.getenv("PUBLIC_APP_URL", "https://basanite.co.uk").rstrip("/")
+        download_url = (
+            f"{public_base}/api/data-rights/export"
+            f"?dsar_id={row['id']}&expires={expires_at}&sig={sig.split('.', 1)[1]}"
+        )
+        client.table("dsar_requests").update(
+            {"status": "completed", "completed_at": "now()"}
+        ).eq("id", row["id"]).execute()
+        return {
+            "status": "completed",
+            "request_type": request_type,
+            "download_url": download_url,
+        }
+
+    # rectification / restriction → mark verified, ops actions manually.
+    return {"status": "pending", "request_type": request_type}
+
+
+def _action_erasure(email: str) -> None:
+    """Soft-mark all assessments tied to this email for deletion. The
+    retention sweep finalises the purge within 30 days.
+
+    We don't hard-delete here for two reasons:
+      (a) The retention pass is the single source of truth for when data
+          actually leaves storage — easier to audit than ad-hoc deletes.
+      (b) The 30-day window matches GDPR's response deadline and gives ops
+          a chance to halt if a request was fraudulent.
+    """
+    from core.db import get_client
+
+    client = get_client()
+    if not client:
+        return
+    try:
+        client.table("assessments").update(
+            {"deletion_requested_at": "now()"}
+        ).eq("candidate_email", email).execute()
+    except Exception as e:
+        print(f"  [dsar] erasure update failed: {type(e).__name__}: {e}")
+
+
+def _action_objection(email: str) -> None:
+    """Flag all assessments for this email so the hirer must apply human
+    review before treating any score as a decision (Article 22)."""
+    from core.db import get_client
+
+    client = get_client()
+    if not client:
+        return
+    try:
+        client.table("assessments").update(
+            {"object_to_automated_decisions": True}
+        ).eq("candidate_email", email).execute()
+    except Exception as e:
+        print(f"  [dsar] objection update failed: {type(e).__name__}: {e}")
+
+
+@app.get("/data-rights/export")
+async def dsar_export(dsar_id: str, expires: int, sig: str):
+    """Serve the candidate's data export. Signed URL with 1-hour TTL.
+
+    Builds a JSON with: their assessments, transcripts, dimension scores,
+    reports, consent records, and DSAR audit trail. Recordings are
+    referenced by short-lived signed URLs (separate Supabase signed-URL
+    flow), not embedded.
+    """
+    from core import ats
+
+    # Re-build and verify signature: payload was f"dsar:{row['id']}:{expires}"
+    expected = ats.sign_public_report_url(f"dsar:{dsar_id}", expires)
+    expected_sig = expected.split(".", 1)[1]
+    if not hmac.compare_digest(sig, expected_sig):
+        raise HTTPException(status_code=403, detail="Invalid signature")
+    if expires < int(datetime.now(timezone.utc).timestamp()):
+        raise HTTPException(status_code=410, detail="Link expired")
+
+    payload = _build_dsar_export(dsar_id)
+    body = json.dumps(payload, indent=2, default=str)
+    safe_email = (payload.get("subject", {}).get("email") or "subject").replace("@", "-at-")
+    filename = f"basanite-data-export-{safe_email}.json"
+    from fastapi.responses import Response
+
+    return Response(
+        content=body,
+        media_type="application/json",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.post("/admin/retention-sweep")
+async def admin_retention_sweep(authorization: str | None = Header(default=None)):
+    """Run the daily data-retention sweep. Hit by a Render cron job (or
+    the equivalent scheduler). Caller must present the pipeline secret;
+    cron auth is its scope."""
+    _verify_internal(authorization)
+    from core.retention import run_retention_sweep, to_dict
+
+    try:
+        result = run_retention_sweep()
+        return {"ok": True, **to_dict(result)}
+    except Exception as e:
+        print(f"  [retention] sweep raised: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail="Sweep failed")
+
+
+def _build_dsar_export(dsar_id: str) -> dict:
+    """Compose the JSON payload returned by GET /data-rights/export."""
+    from core.db import get_client
+
+    client = get_client()
+    if not client:
+        return {"error": "DB unavailable"}
+
+    try:
+        row = (
+            client.table("dsar_requests")
+            .select("email, created_at, request_type")
+            .eq("id", dsar_id)
+            .single()
+            .execute()
+        ).data or {}
+        email = row.get("email", "")
+    except Exception:
+        return {"error": "DSAR not found"}
+
+    out: dict = {
+        "subject": {"email": email},
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "policy_version": "2026-05-02",
+        "assessments": [],
+        "consent_records": [],
+        "dsar_audit_trail": [],
+    }
+
+    # Assessments + their related rows.
+    try:
+        rows = (
+            client.table("assessments")
+            .select(
+                "id, role_id, candidate_name, candidate_email, status, source, "
+                "started_at, completed_at, created_at, object_to_automated_decisions, "
+                "cv_extracted, dimension_scores(*), reports(*), interview_sessions(*)"
+            )
+            .eq("candidate_email", email)
+            .execute()
+        ).data or []
+        out["assessments"] = rows
+    except Exception as e:
+        out["assessments_error"] = str(e)[:300]
+
+    try:
+        rows = (
+            client.table("consent_records")
+            .select("consent_type, granted, policy_version, created_at, assessment_id")
+            .in_("assessment_id", [a["id"] for a in out.get("assessments", [])])
+            .execute()
+        ).data or []
+        out["consent_records"] = rows
+    except Exception:
+        pass
+
+    try:
+        rows = (
+            client.table("dsar_requests")
+            .select("request_type, status, created_at, completed_at")
+            .eq("email", email)
+            .execute()
+        ).data or []
+        out["dsar_audit_trail"] = rows
+    except Exception:
+        pass
+
+    return out

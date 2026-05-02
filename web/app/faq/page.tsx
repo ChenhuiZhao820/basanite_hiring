@@ -287,7 +287,15 @@ const GROUPS: FaqGroup[] = [
         q: 'What about my privacy?',
         a: (
           <>
-            During Round 2 we capture full keystroke and command history, your dialogue with your AI agent, git state, and time-on-task — all disclosed in plain language at session start. The data is used to score the assessment. We don&rsquo;t sell candidate data, and recordings are scoped to the hirer who paid for the assessment.
+            Before any recording starts you&rsquo;ll see a consent screen explaining what we capture (voice and transcript in Round 1; keystrokes, agent dialogue, git state, and time-on-task in Round 2), where it goes (Anthropic, ElevenLabs, Supabase — listed in full on our <a href="/legal/subprocessors" className="underline text-gold-600">sub-processors page</a>), and how long it&rsquo;s kept (recordings 6 months, transcripts and reports 12 months, then automatically deleted). You can access, export, or erase your data at any time at <a href="/data-rights" className="underline text-gold-600">basanite.co.uk/data-rights</a>. We don&rsquo;t sell candidate data and we don&rsquo;t use it to train AI models. Full details in our <a href="/privacy" className="underline text-gold-600">Privacy Notice</a>.
+          </>
+        ),
+      },
+      {
+        q: 'Is the interview AI? Can I ask for a human to review my result?',
+        a: (
+          <>
+            Yes — the interview is conducted and scored by AI. Under UK GDPR Article 22 you have the right not to be subject to a decision based solely on automated processing. There&rsquo;s a tickbox on the consent screen before the interview, and a self-serve form at <a href="/data-rights" className="underline text-gold-600">basanite.co.uk/data-rights</a>, that flags your assessment so the hirer must apply human review before acting on the score.
           </>
         ),
       },
