@@ -12,13 +12,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Cool dark-stone palette — primary surface + body text.
+        // Originally only had 500-950; extended with 50-400 in 2026-05
+        // because dark-mode text variants needed lighter shades on the
+        // light-text side (text-basanite-400 was being used in
+        // light-mode AND undefined, causing fallback to browser default).
         basanite: {
-          950: '#0f0f0e',
-          900: '#1a1a18',
-          800: '#2d2b28',
-          700: '#3d3a36',
-          600: '#524e48',
+          50: '#f5f3f1',
+          100: '#e6e1da',
+          200: '#d3ccc1',
+          300: '#b3a99e',
+          400: '#847d72',
           500: '#6b665e',
+          600: '#524e48',
+          700: '#3d3a36',
+          800: '#2d2b28',
+          850: '#252320',  // intermediate for layered card surfaces in dark mode
+          900: '#1a1a18',
+          950: '#0f0f0e',
         },
         gold: {
           300: '#e8c555',
@@ -27,11 +38,20 @@ const config: Config = {
           600: '#a6821f',
           700: '#8a6c1a',
         },
+        // Warm cream/sand — used for accents and dark-mode text on basanite.
+        // Originally only 50-300; extended with 400-900 for dark-mode
+        // text contrast (dark:text-earth-400/500/600/etc were undefined).
         earth: {
           50: '#faf8f5',
           100: '#f3efe8',
           200: '#e8e2d8',
           300: '#d4cdc0',
+          400: '#b9b09f',
+          500: '#998e75',
+          600: '#79705c',
+          700: '#5b5446',
+          800: '#3e3a30',
+          900: '#25221c',
         },
       },
       fontFamily: {

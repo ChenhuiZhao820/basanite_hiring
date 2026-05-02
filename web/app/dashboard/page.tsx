@@ -80,7 +80,7 @@ export default async function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
+    <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-850 p-5 dark:shadow-[inset_0_1px_0_0_rgba(196,154,47,0.08)]">
       <p className="text-xs text-basanite-500 dark:text-earth-400 uppercase tracking-wide mb-1">{label}</p>
       <p className="text-2xl font-display text-basanite-900 dark:text-earth-100">{value}</p>
     </div>

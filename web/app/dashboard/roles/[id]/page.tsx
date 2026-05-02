@@ -121,7 +121,7 @@ export default async function RoleDetailPage({
             <div className="w-10 pr-3" aria-hidden="true" />
           </div>
           {/* Rows */}
-          {assessments.map((a: any) => {
+          {assessments.map((a: any, idx: number) => {
             const scores = a.dimension_scores ?? []
             const avgScore = scores.length > 0
               ? (scores.reduce((sum: number, s: any) => sum + (s.score ?? 0), 0) / scores.length).toFixed(1)
@@ -140,7 +140,10 @@ export default async function RoleDetailPage({
             return (
               <div
                 key={a.id}
-                className="flex items-stretch hover:bg-earth-50 dark:hover:bg-basanite-700 transition-colors"
+                className={
+                  'flex items-stretch hover:bg-earth-50 dark:hover:bg-basanite-700 transition-colors ' +
+                  (idx % 2 === 0 ? '' : 'dark:bg-basanite-850')
+                }
               >
                 <Link
                   href={`/dashboard/roles/${id}/assessment/${a.id}`}
