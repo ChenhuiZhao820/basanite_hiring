@@ -135,7 +135,7 @@ export default async function AssessmentReportPage({
       {scores.length > 0 && (
         <section className="mb-10">
           <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Dimension Scores</h2>
-          <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 divide-y divide-earth-100">
+          <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-earth-100">
             {scores.map((s: any) => (
               <div key={s.dimension_key} className="px-5 py-4">
                 <div className="flex items-center justify-between mb-2">
@@ -177,7 +177,7 @@ export default async function AssessmentReportPage({
           <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Key Interview Excerpts</h2>
           <div className="space-y-4">
             {content.top_excerpts.map((e: any, i: number) => (
-              <div key={i} className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+              <div key={i} className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
                 <p className="text-sm text-basanite-800 dark:text-earth-100 mb-2">{e.excerpt}</p>
                 <p className="text-xs text-basanite-400 dark:text-earth-500">{e.why_selected}</p>
                 {e.dimension && (
@@ -197,7 +197,7 @@ export default async function AssessmentReportPage({
           <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Technical Capability Map</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {content.capability_map.demonstrated_depth?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
                 <p className="text-xs text-green-600 font-medium uppercase tracking-wide mb-2">Demonstrated Depth</p>
                 <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
                   {content.capability_map.demonstrated_depth.map((d: string, i: number) => (
@@ -207,7 +207,7 @@ export default async function AssessmentReportPage({
               </div>
             )}
             {content.capability_map.surface_fluency?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
                 <p className="text-xs text-yellow-600 font-medium uppercase tracking-wide mb-2">Surface Fluency</p>
                 <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
                   {content.capability_map.surface_fluency.map((d: string, i: number) => (
@@ -217,7 +217,7 @@ export default async function AssessmentReportPage({
               </div>
             )}
             {content.capability_map.blind_spots?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
                 <p className="text-xs text-red-500 font-medium uppercase tracking-wide mb-2">Suspected Blind Spots</p>
                 <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
                   {content.capability_map.blind_spots.map((d: string, i: number) => (
@@ -227,7 +227,7 @@ export default async function AssessmentReportPage({
               </div>
             )}
             {content.capability_map.requires_expert_verification?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
                 <p className="text-xs text-basanite-500 dark:text-earth-400 font-medium uppercase tracking-wide mb-2">Requires Human Verification</p>
                 <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
                   {content.capability_map.requires_expert_verification.map((d: string, i: number) => (
@@ -244,7 +244,7 @@ export default async function AssessmentReportPage({
       {content.comprehensive_assessment && (
         <section className="mb-10">
           <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Comprehensive Assessment</h2>
-          <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-6">
+          <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-6">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xs font-medium uppercase tracking-wide text-basanite-400 dark:text-earth-500">Cheating Risk:</span>
               <span className={`text-xs font-medium px-2 py-0.5 ${
@@ -271,7 +271,7 @@ export default async function AssessmentReportPage({
             <summary className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4 cursor-pointer hover:text-gold-600 transition-colors">
               Full Interview Transcript ({messages.length} messages)
             </summary>
-            <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 divide-y divide-earth-100 mt-4">
+            <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-earth-100 mt-4">
               {messages.map((m: any, i: number) => (
                 <div key={i} className={`px-5 py-4 ${m.role === 'assistant' ? 'bg-earth-50 dark:bg-basanite-900' : ''}`}>
                   <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-1">

@@ -20,7 +20,7 @@ export function DashboardThemeShell({ email, isAdmin, children }: Props) {
   return (
     <ThemeProvider storageKey="basanite-dashboard-theme" defaultTheme="light">
       <div className="min-h-screen bg-earth-50 dark:bg-basanite-900 transition-colors duration-150">
-        <nav className="bg-white dark:bg-basanite-950 border-b border-earth-200 dark:border-basanite-800 transition-colors">
+        <nav className="bg-white dark:bg-basanite-950 border-b border-earth-200 dark:border-basanite-700 transition-colors">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
             <a href="/dashboard" className="flex items-center gap-2">
               <LogoMark size={24} dark />

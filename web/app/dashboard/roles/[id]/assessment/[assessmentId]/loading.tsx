@@ -13,7 +13,7 @@ export default function Loading() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[1, 2, 3].map(i => (
-          <div key={i} className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4 space-y-2">
+          <div key={i} className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-4 space-y-2">
             <Pulse className="h-3 w-24" />
             <Pulse className="h-5 w-32" />
           </div>

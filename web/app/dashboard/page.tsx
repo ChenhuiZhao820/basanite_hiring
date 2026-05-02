@@ -62,7 +62,7 @@ export default async function DashboardPage() {
       </div>
 
       {(!roles || roles.length === 0) ? (
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-12 text-center">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-12 text-center">
           <p className="text-basanite-600 dark:text-earth-300 mb-4">No roles yet. Create your first role to start assessing candidates.</p>
           <Link
             href="/dashboard/roles/new"
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-5">
+    <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
       <p className="text-xs text-basanite-500 dark:text-earth-400 uppercase tracking-wide mb-1">{label}</p>
       <p className="text-2xl font-display text-basanite-900 dark:text-earth-100">{value}</p>
     </div>

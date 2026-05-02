@@ -6,7 +6,7 @@ export default function Loading() {
       <Pulse className="h-3 w-32 mb-2" />
       <Pulse className="h-7 w-32 mb-1" />
       <Pulse className="h-3 w-64 mb-8" />
-      <div className="border border-slate-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 divide-y divide-slate-100 dark:divide-basanite-800">
+      <div className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-slate-100 dark:divide-basanite-700">
         {[1, 2, 3, 4].map(i => (
           <div key={i} className="px-5 py-4 flex items-center justify-between">
             <div className="space-y-2">

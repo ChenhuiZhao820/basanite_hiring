@@ -29,9 +29,9 @@ function SectionCard({ title, description, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-white dark:bg-basanite-900 border border-slate-200 dark:border-basanite-800 p-6">
+    <div className="bg-white dark:bg-basanite-800 border border-slate-200 dark:border-basanite-700 p-6">
       <div className="mb-5">
-        <h2 className="font-semibold text-[#0b1f3d] text-sm">{title}</h2>
+        <h2 className="font-semibold text-[#0b1f3d] dark:text-earth-100 text-sm">{title}</h2>
         {description && <p className="text-xs text-slate-400 dark:text-earth-500 mt-0.5">{description}</p>}
       </div>
       {children}
@@ -52,7 +52,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full border border-slate-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 px-3 py-2 text-sm text-[#0b1f3d] placeholder-slate-400 focus:outline-none focus:border-[#1d4ed8] transition-colors ${props.className ?? ''}`}
+      className={`w-full border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 placeholder-slate-400 focus:outline-none focus:border-[#1d4ed8] transition-colors ${props.className ?? ''}`}
     />
   )
 }
@@ -262,7 +262,7 @@ function AppearanceSection() {
                 'flex items-center justify-center gap-2 border px-3 py-3 text-xs font-medium transition-colors ' +
                 (active
                   ? 'border-[#0b1f3d] bg-[#0b1f3d] text-white'
-                  : 'border-slate-200 dark:border-basanite-800 text-slate-600 dark:text-earth-300 hover:border-slate-300 hover:text-[#0b1f3d]')
+                  : 'border-slate-200 dark:border-basanite-700 text-slate-600 dark:text-earth-300 hover:border-slate-300 hover:text-[#0b1f3d] dark:text-earth-100')
               }
             >
               {opt === 'light' ? (
@@ -295,14 +295,14 @@ export default function AccountPage() {
       <div className="mb-8">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-earth-500 hover:text-[#0b1f3d] transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-earth-500 hover:text-[#0b1f3d] dark:text-earth-100 transition-colors mb-4"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Back to dashboard
         </Link>
-        <h1 className="font-display text-2xl font-bold text-[#0b1f3d]">Account</h1>
+        <h1 className="font-display text-2xl font-bold text-[#0b1f3d] dark:text-earth-100">Account</h1>
         <p className="text-slate-500 dark:text-earth-400 text-sm mt-1">Manage your profile and account settings.</p>
       </div>
 

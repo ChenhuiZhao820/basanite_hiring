@@ -68,7 +68,7 @@ export default async function RoleDetailPage({
         <div className="border border-gold-500/30 bg-gold-500/5 p-5 mb-8">
           <p className="text-xs text-basanite-600 dark:text-earth-300 font-medium uppercase tracking-wide mb-2">Assessment Link</p>
           <div className="flex items-center gap-3">
-            <code className="flex-1 text-sm text-basanite-800 dark:text-earth-100 bg-white dark:bg-basanite-900 border border-earth-200 dark:border-basanite-800 px-3 py-2 font-mono truncate">
+            <code className="flex-1 text-sm text-basanite-800 dark:text-earth-100 bg-white dark:bg-basanite-800 border border-earth-200 dark:border-basanite-700 px-3 py-2 font-mono truncate">
               {assessmentLink}
             </code>
             <CopyButton text={assessmentLink} />
@@ -79,7 +79,7 @@ export default async function RoleDetailPage({
 
       {/* Role Config Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-4">
           <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Dimensions</p>
           <div className="flex flex-wrap gap-1.5">
             {dimensions.map((d: string) => (
@@ -89,11 +89,11 @@ export default async function RoleDetailPage({
             ))}
           </div>
         </div>
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-4">
           <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Technical Depth</p>
           <p className="text-sm text-basanite-900 dark:text-earth-100 capitalize">{(role.technical_depth ?? 'application').replace('_', ' / ')}</p>
         </div>
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-4">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-4">
           <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Assessments</p>
           <p className="text-sm text-basanite-900 dark:text-earth-100">{assessments?.length ?? 0} total</p>
         </div>
@@ -103,12 +103,12 @@ export default async function RoleDetailPage({
       <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Candidate Queue</h2>
 
       {(!assessments || assessments.length === 0) ? (
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-10 text-center">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-10 text-center">
           <p className="text-basanite-500 dark:text-earth-400 text-sm">No candidates have taken this assessment yet.</p>
           <p className="text-basanite-400 dark:text-earth-500 text-xs mt-2">Share the assessment link to get started.</p>
         </div>
       ) : (
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 divide-y divide-earth-200 dark:divide-basanite-800">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-earth-200 dark:divide-basanite-700">
           {/* Header */}
           <div className="flex items-stretch text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide font-medium">
             <div className="flex-1 grid grid-cols-12 gap-4 px-5 py-3">
@@ -140,7 +140,7 @@ export default async function RoleDetailPage({
             return (
               <div
                 key={a.id}
-                className="flex items-stretch hover:bg-earth-50 dark:hover:bg-basanite-800 transition-colors"
+                className="flex items-stretch hover:bg-earth-50 dark:hover:bg-basanite-700 transition-colors"
               >
                 <Link
                   href={`/dashboard/roles/${id}/assessment/${a.id}`}

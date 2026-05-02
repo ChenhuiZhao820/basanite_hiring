@@ -266,7 +266,7 @@ export default function IntegrationsPage() {
         </div>
       )}
 
-      <section className="bg-white dark:bg-basanite-900 border border-slate-200 dark:border-basanite-800 p-6 mb-6">
+      <section className="bg-white dark:bg-basanite-800 border border-slate-200 dark:border-basanite-700 p-6 mb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="font-medium text-basanite-900 dark:text-earth-100 text-base mb-1">Applicant Tracking System</h2>
@@ -288,7 +288,7 @@ export default function IntegrationsPage() {
         {connections === null ? (
           <p className="text-xs text-slate-400 dark:text-earth-500 mt-6">Loading connections…</p>
         ) : connectedRows.length > 0 ? (
-          <div className="mt-6 border-t border-slate-100 dark:border-basanite-800 pt-4 space-y-3">
+          <div className="mt-6 border-t border-slate-100 dark:border-basanite-700 pt-4 space-y-3">
             {connectedRows.map(c => (
               <div key={c.id} className="flex items-center justify-between gap-4">
                 <div>
@@ -301,7 +301,7 @@ export default function IntegrationsPage() {
                 <button
                   onClick={() => disconnect(c.id)}
                   disabled={busy}
-                  className="text-xs text-slate-500 dark:text-earth-400 hover:text-red-600 border border-slate-200 dark:border-basanite-800 hover:border-red-300 px-3 py-1.5 transition-colors disabled:opacity-60"
+                  className="text-xs text-slate-500 dark:text-earth-400 hover:text-red-600 border border-slate-200 dark:border-basanite-700 hover:border-red-300 px-3 py-1.5 transition-colors disabled:opacity-60"
                 >
                   Disconnect
                 </button>
@@ -312,7 +312,7 @@ export default function IntegrationsPage() {
       </section>
 
       {hasConnection && (
-        <section className="bg-white dark:bg-basanite-900 border border-slate-200 dark:border-basanite-800 p-6 mb-6">
+        <section className="bg-white dark:bg-basanite-800 border border-slate-200 dark:border-basanite-700 p-6 mb-6">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <h2 className="font-medium text-basanite-900 dark:text-earth-100 text-base mb-1">Map jobs → Basanite roles</h2>
@@ -325,7 +325,7 @@ export default function IntegrationsPage() {
             <button
               onClick={() => void refreshJobs()}
               disabled={jobsLoading || busy}
-              className="text-xs text-slate-500 dark:text-earth-400 border border-slate-200 dark:border-basanite-800 px-3 py-1.5 hover:text-basanite-900 dark:hover:text-earth-100 hover:border-slate-300 disabled:opacity-60"
+              className="text-xs text-slate-500 dark:text-earth-400 border border-slate-200 dark:border-basanite-700 px-3 py-1.5 hover:text-basanite-900 dark:hover:text-earth-100 hover:border-slate-300 disabled:opacity-60"
             >
               {jobsLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -344,7 +344,7 @@ export default function IntegrationsPage() {
               No open jobs found in your ATS. (Closed/archived jobs are hidden.)
             </p>
           ) : (
-            <div className="border-t border-slate-100 dark:border-basanite-800">
+            <div className="border-t border-slate-100 dark:border-basanite-700">
               {jobs.map(job => {
                 const mapping = mappingByMergeJobId.get(job.merge_job_id)
                 const roleTitle = mapping ? roles.find(r => r.id === mapping.role_id)?.title : undefined
@@ -397,7 +397,7 @@ function JobRow({
   const [draftAutoInvite, setDraftAutoInvite] = useState<boolean>(mapping?.auto_invite ?? true)
 
   return (
-    <div className="border-b border-slate-100 dark:border-basanite-800 py-3 flex items-center justify-between gap-4">
+    <div className="border-b border-slate-100 dark:border-basanite-700 py-3 flex items-center justify-between gap-4">
       <div className="min-w-0 flex-1">
         <div className="text-sm text-basanite-900 dark:text-earth-100 truncate">{job.name ?? 'Untitled job'}</div>
         <div className="text-xs text-slate-400 dark:text-earth-500 truncate">
@@ -415,14 +415,14 @@ function JobRow({
             <button
               onClick={() => { setDraftRoleId(mapping.role_id); setDraftAutoInvite(mapping.auto_invite); setEditing(true) }}
               disabled={busy}
-              className="text-xs text-slate-500 dark:text-earth-400 hover:text-basanite-900 dark:hover:text-earth-100 border border-slate-200 dark:border-basanite-800 px-2 py-1 disabled:opacity-60"
+              className="text-xs text-slate-500 dark:text-earth-400 hover:text-basanite-900 dark:hover:text-earth-100 border border-slate-200 dark:border-basanite-700 px-2 py-1 disabled:opacity-60"
             >
               Edit
             </button>
             <button
               onClick={onDelete}
               disabled={busy}
-              className="text-xs text-slate-400 dark:text-earth-500 hover:text-red-600 border border-slate-200 dark:border-basanite-800 hover:border-red-300 px-2 py-1 disabled:opacity-60"
+              className="text-xs text-slate-400 dark:text-earth-500 hover:text-red-600 border border-slate-200 dark:border-basanite-700 hover:border-red-300 px-2 py-1 disabled:opacity-60"
             >
               Unmap
             </button>
@@ -440,7 +440,7 @@ function JobRow({
             <select
               value={draftRoleId}
               onChange={e => setDraftRoleId(e.target.value)}
-              className="text-xs border border-slate-200 dark:border-basanite-800 px-2 py-1 max-w-[180px]"
+              className="text-xs border border-slate-200 dark:border-basanite-700 px-2 py-1 max-w-[180px]"
             >
               <option value="" disabled>Pick a role…</option>
               {roles.map(r => (

@@ -142,14 +142,14 @@ export default function NewRolePage() {
         {steps.map((s, i) => (
           <div key={i} className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-              i <= step ? 'bg-basanite-900 text-white' : 'bg-earth-200 text-basanite-500 dark:text-earth-400'
+              i <= step ? 'bg-basanite-900 dark:bg-gold-600 text-white' : 'bg-earth-200 dark:bg-basanite-700 text-basanite-500 dark:text-earth-400'
             }`}>
               {i + 1}
             </div>
             <span className={`text-sm ${i <= step ? 'text-basanite-900 dark:text-earth-100 font-medium' : 'text-basanite-400 dark:text-earth-500'}`}>
               {s}
             </span>
-            {i < steps.length - 1 && <div className="w-12 h-px bg-earth-300" />}
+            {i < steps.length - 1 && <div className="w-12 h-px bg-earth-300 dark:bg-basanite-700" />}
           </div>
         ))}
       </div>
@@ -302,7 +302,7 @@ export default function NewRolePage() {
                 className={`w-full text-left px-5 py-4 border transition-all ${
                   dimensions.includes(d.key)
                     ? 'border-gold-500 bg-gold-500/5'
-                    : 'border-earth-200 dark:border-basanite-800 hover:border-earth-300 dark:hover:border-basanite-700'
+                    : 'border-earth-200 dark:border-basanite-700 hover:border-earth-300 dark:hover:border-basanite-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -325,7 +325,7 @@ export default function NewRolePage() {
           <div className="flex gap-3">
             <button
               onClick={() => setStep(0)}
-              className="px-6 py-3 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 text-sm font-medium hover:bg-earth-100 dark:hover:bg-basanite-800 transition-colors"
+              className="px-6 py-3 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 text-sm font-medium hover:bg-earth-100 dark:hover:bg-basanite-700 transition-colors"
             >
               Back
             </button>

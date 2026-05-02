@@ -79,9 +79,9 @@ export default function RolesList({
           placeholder="Search roles or companies..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="flex-1 min-w-0 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 text-sm px-3 py-2 text-basanite-900 dark:text-earth-100 placeholder:text-basanite-400 focus:outline-none focus:border-basanite-900"
+          className="flex-1 min-w-0 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 text-sm px-3 py-2 text-basanite-900 dark:text-earth-100 placeholder:text-basanite-400 focus:outline-none focus:border-basanite-900"
         />
-        <div className="flex flex-wrap gap-1 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-1 shrink-0">
+        <div className="flex flex-wrap gap-1 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-1 shrink-0">
           {STATUS_FILTERS.map(f => {
             const active = status === f.key
             const count = statusCounts[f.key] ?? 0
@@ -92,8 +92,8 @@ export default function RolesList({
                 className={
                   'text-xs px-3 py-1.5 transition-colors ' +
                   (active
-                    ? 'bg-basanite-900 text-white'
-                    : 'text-basanite-600 dark:text-earth-300 hover:text-basanite-900 dark:hover:text-earth-100 hover:bg-earth-100 dark:hover:bg-basanite-800')
+                    ? 'bg-basanite-900 dark:bg-gold-600 text-white'
+                    : 'text-basanite-600 dark:text-earth-300 hover:text-basanite-900 dark:hover:text-earth-100 hover:bg-earth-100 dark:hover:bg-basanite-700')
                 }
               >
                 {f.label}
@@ -105,7 +105,7 @@ export default function RolesList({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-12 text-center">
+        <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-12 text-center">
           <p className="text-basanite-500 dark:text-earth-400 text-sm">
             {query || status !== 'all' ? 'No roles match those filters.' : 'No roles yet.'}
           </p>
@@ -127,7 +127,7 @@ export default function RolesList({
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="px-3 py-1.5 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 hover:border-earth-300 dark:hover:border-basanite-700 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
+                  className="px-3 py-1.5 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-700 hover:border-earth-300 dark:hover:border-basanite-700 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
                 >
                   ← Previous
                 </button>
@@ -137,7 +137,7 @@ export default function RolesList({
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="px-3 py-1.5 border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-800 hover:border-earth-300 dark:hover:border-basanite-700 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
+                  className="px-3 py-1.5 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 text-basanite-600 dark:text-earth-300 hover:bg-earth-50 dark:hover:bg-basanite-700 hover:border-earth-300 dark:hover:border-basanite-700 transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:border-earth-200"
                 >
                   Next →
                 </button>
@@ -156,7 +156,7 @@ function RoleCard({ role, counts }: { role: Role; counts: Counts }) {
   return (
     <Link
       href={`/dashboard/roles/${role.id}`}
-      className="block border border-earth-200 dark:border-basanite-800 bg-white dark:bg-basanite-900 p-6 card-hover transition-all hover:shadow-sm"
+      className="block border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-6 card-hover transition-all hover:shadow-sm"
     >
       <div className="flex items-start justify-between mb-3">
         <h3 className="font-display text-lg text-basanite-900 dark:text-earth-100 leading-tight">{role.title}</h3>
