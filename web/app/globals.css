@@ -12,10 +12,21 @@
 
 html {
   scroll-behavior: smooth;
+  /* Default page background — shows during macOS rubber-band overscroll
+     above/below the document. Matches the marketing/light surface so the
+     overscroll area never flashes a stark white. */
+  background-color: var(--earth-bg);
+}
+
+/* When any descendant carries the `.dark` class (dashboard ThemeShell or
+   candidate-screening ThemeProvider), flip the html background so the
+   overscroll area matches. Uses :has(), supported in all modern browsers. */
+html:has(.dark) {
+  background-color: #1a1a18; /* basanite-900 */
 }
 
 body {
-  background-color: #ffffff;
+  background-color: transparent;
   color: var(--basanite);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
