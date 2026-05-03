@@ -209,4 +209,4 @@ __marimo__/
 web/node_modules/
 web/.next/
 web/out/
-!web/lib/
+!web/lib/.mcp.json
