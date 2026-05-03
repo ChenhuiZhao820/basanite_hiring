@@ -348,8 +348,10 @@ async def start_assessment(
     # Create interview session
     create_interview_session(assessment["id"])
 
-    # Assemble the role+candidate-specific interview prompt
-    full_prompt = assemble_interview_prompt(role, cv_extracted)
+    # Assemble the role+candidate-specific interview prompt. We pass the
+    # signup-typed name as the canonical identity since CV extraction
+    # often misses or garbles the name field.
+    full_prompt = assemble_interview_prompt(role, cv_extracted, candidate_name=body.candidate_name)
 
     return {
         "assessment_id": assessment["id"],
@@ -434,10 +436,15 @@ async def voice_session(token: str, body: dict):
         raise HTTPException(status_code=502, detail="Failed to obtain voice session")
     signed_url = resp.json().get("signed_url")
 
-    prompt = assemble_interview_prompt(role, cv)
-    candidate_name = (cv.get("name") or "there").split()[0]
+    # Resolve the candidate's name with the same priority as the prompt:
+    # signup-typed name > CV-extracted > generic "there". This is what Baz
+    # uses for the opening line and as the name passed into the system
+    # prompt's candidate_context block.
+    canonical_name = assessment.get("candidate_name") or cv.get("name") or ""
+    prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
+    first_name = (canonical_name or "there").split()[0]
     first_message = (
-        f"Hi {candidate_name}, I'm Baz, I'll be your interviewer today. "
+        f"Hi {first_name}, I'm Baz, I'll be your interviewer today. "
         f"Can you let me know if you can hear me clearly?"
     )
 

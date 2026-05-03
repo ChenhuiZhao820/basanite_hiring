@@ -72,10 +72,19 @@ def _sanitize_untrusted(value, max_chars: int) -> str:
 def assemble_interview_prompt(
     role_config: dict,
     cv_extracted: dict,
+    candidate_name: str | None = None,
 ) -> str:
     """
-    Assemble the full interview agent system prompt by injecting
-    role specific and candidate-specific context into the base prompt.
+    Assemble the full interview agent system prompt by injecting role
+    specific and candidate-specific context into the base prompt.
+
+    `candidate_name` (when provided) is the canonical name the candidate
+    typed at signup or the name pulled from the ATS application. It takes
+    priority over `cv_extracted["name"]` because CV extraction often
+    misses the name field and falls back to "Unknown" — which leaves the
+    agent with no clue what to call the candidate. Pass `None` to fall
+    back to the legacy CV-only behaviour (used by the role-creation
+    template path where there's no candidate yet).
     """
     base = _load_base_prompt()
 
@@ -99,8 +108,16 @@ def assemble_interview_prompt(
     )
 
     # Build CV context — every field below is candidate-controlled and must
-    # be treated as data, never as instructions.
-    cv_name = _sanitize_untrusted(cv_extracted.get("name") or "Unknown", 120)
+    # be treated as data, never as instructions. The signup-typed name
+    # (passed in as `candidate_name`) wins over the CV-extracted name
+    # because CV parsing routinely misses the name field. Final fallback
+    # is "Unknown" so the prompt is never broken by a missing field.
+    resolved_name = (
+        _sanitize_untrusted(candidate_name, 120)
+        or _sanitize_untrusted(cv_extracted.get("name") or "", 120)
+        or "Unknown"
+    )
+    cv_name = resolved_name
     experience_path = cv_extracted.get("experience_path", "path_a")
     if experience_path not in ("path_a", "path_b"):
         experience_path = "path_a"
@@ -211,6 +228,14 @@ Key experiences to anchor questions on:
 Experience summary:
 {experience_summary}
 </candidate_context>
+
+### How to address the candidate
+The candidate's name is **{cv_name}**. Use the first name naturally during the
+conversation when warm/empathetic phrasing helps (e.g. when transitioning topics
+or acknowledging a thoughtful answer). Do **not** ask the candidate to introduce
+themselves or to say their name — you already have it. If `Name` above is
+"Unknown" because we couldn't resolve it, simply default to neutral phrasing
+("you", "your") rather than asking.
 
 ### Interview Constraints
 - Evaluate the pre selected dimensions listed above
