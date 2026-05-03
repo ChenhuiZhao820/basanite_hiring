@@ -44,7 +44,9 @@ VOICES: tuple[Voice, ...] = (
     Voice(id="Zlb1dXrM653N07WRdFW3", name="Joseph",  accent="British",  gender="Male",   description="Articulate"),
     # ─── American ────────────────────────────────────────────────
     Voice(id="EXAVITQu4vr4xnSDxMaL", name="Sarah",   accent="American", gender="Female", description="Soft conversational"),
-    Voice(id="pNInz6obpgDQGcFmaJgB", name="Adam",    accent="American", gender="Male",   description="Deep narration"),
+    Voice(id="cjVigY5qzO86Huf0OWal", name="Eric",    accent="American", gender="Male",   description="Smooth, trustworthy"),
+    # ─── Indian ──────────────────────────────────────────────────
+    Voice(id="zEvjs17jNQ2fH5FxAat2", name="Anika",   accent="Indian",   gender="Female", description="Warm, gentle"),
 )
 
 
