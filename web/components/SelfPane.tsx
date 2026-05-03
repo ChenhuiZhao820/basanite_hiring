@@ -5,12 +5,16 @@ import { forwardRef } from 'react'
 type Props = {
   phase: 'idle' | 'live' | 'ending' | 'done' | 'error'
   label?: string
+  /** True while the candidate is speaking — drives the active speaker ring. */
+  speaking?: boolean
 }
 
 // Left pane in the Meet-style layout. Hosts the candidate's webcam fully
 // filling the pane, with a small label + REC dot in the bottom-left corner.
+// When the candidate is speaking, a gold inset ring + glowing label appear
+// to mirror the Google Meet "active speaker" affordance.
 const SelfPane = forwardRef<HTMLVideoElement, Props>(function SelfPane(
-  { phase, label = 'You' },
+  { phase, label = 'You', speaking = false },
   ref,
 ) {
   return (
@@ -30,6 +34,21 @@ const SelfPane = forwardRef<HTMLVideoElement, Props>(function SelfPane(
         }}
       />
 
+      {/* Active-speaker ring. Inset so it never affects the pane's outer
+          dimensions and never causes layout shift. Soft glow via inner shadow
+          so it reads as warmth rather than a hard border. */}
+      <div
+        aria-hidden
+        className={
+          'absolute inset-0 pointer-events-none transition-opacity duration-150 ' +
+          (speaking ? 'opacity-100' : 'opacity-0')
+        }
+        style={{
+          boxShadow:
+            'inset 0 0 0 3px rgba(196,154,47,0.85), inset 0 0 36px rgba(196,154,47,0.25)',
+        }}
+      />
+
       <div className="absolute bottom-3 left-3 flex items-center gap-2 text-earth-100 text-xs sm:text-sm">
         {phase === 'live' && (
           <span
@@ -38,7 +57,19 @@ const SelfPane = forwardRef<HTMLVideoElement, Props>(function SelfPane(
             title="Recording"
           />
         )}
-        <span className="font-medium drop-shadow-sm">{label}</span>
+        <span
+          className={
+            'font-medium drop-shadow-sm transition-colors ' +
+            (speaking ? 'text-gold-400' : 'text-earth-100')
+          }
+        >
+          {label}
+        </span>
+        {speaking && (
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] uppercase tracking-wide font-semibold bg-gold-500/90 text-basanite-950 rounded">
+            Speaking
+          </span>
+        )}
       </div>
     </div>
   )

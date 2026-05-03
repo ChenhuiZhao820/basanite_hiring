@@ -526,8 +526,18 @@ export default function VoiceInterview({
         callStatus={callStatus}
       />
       <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/10 min-h-0">
-        <SelfPane ref={previewRef} phase={phase} label="You" />
-        <AgentPane getFft={getFft} phase={phase} label="Baz" />
+        <SelfPane
+          ref={previewRef}
+          phase={phase}
+          label="You"
+          speaking={callStatus === 'user-speaking'}
+        />
+        <AgentPane
+          getFft={getFft}
+          phase={phase}
+          label="Baz"
+          speaking={callStatus === 'agent-speaking'}
+        />
       </main>
       <ErrorToast message={phase === 'error' ? errMsg : ''} />
     </div>
