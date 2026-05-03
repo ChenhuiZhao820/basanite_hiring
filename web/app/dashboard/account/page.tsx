@@ -52,7 +52,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 placeholder-slate-400 focus:outline-none focus:border-[#1d4ed8] transition-colors ${props.className ?? ''}`}
+      className={`w-full border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 placeholder-slate-400 dark:placeholder-earth-500 focus:outline-none focus:border-[#1d4ed8] dark:focus:border-gold-500 transition-colors ${props.className ?? ''}`}
     />
   )
 }

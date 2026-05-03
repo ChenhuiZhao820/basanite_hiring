@@ -176,7 +176,7 @@ export default function NewRolePage() {
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
+                className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
                 placeholder="Senior Backend Engineer"
               />
             </div>
@@ -187,7 +187,7 @@ export default function NewRolePage() {
                 type="text"
                 value={companyName}
                 onChange={e => setCompanyName(e.target.value)}
-                className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
+                className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
                 placeholder="Acme Corp"
               />
             </div>
@@ -198,7 +198,7 @@ export default function NewRolePage() {
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
                 rows={12}
-                className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
+                className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
                 placeholder="Paste the full job description here..."
               />
             </div>
@@ -270,7 +270,7 @@ export default function NewRolePage() {
                     Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, Number(e.target.value) || DEFAULT_TARGET_MINUTES)),
                   )
                 }
-                className="w-24 border border-earth-300 dark:border-basanite-700 px-3 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
+                className="w-24 border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-3 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
               />
               <span className="text-sm text-basanite-500 dark:text-earth-400">minutes</span>
             </div>
@@ -291,7 +291,7 @@ export default function NewRolePage() {
               value={customInstructions}
               onChange={e => setCustomInstructions(e.target.value)}
               rows={4}
-              className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
+              className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
               placeholder="Ask about their salary expectations and availability. Confirm they understand what our company does."
             />
           </div>
@@ -339,7 +339,7 @@ export default function NewRolePage() {
           <div className="flex gap-3">
             <button
               onClick={() => setStep(0)}
-              className="px-6 py-3 border border-earth-300 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 text-sm font-medium hover:bg-earth-100 dark:hover:bg-basanite-700 transition-colors"
+              className="px-6 py-3 border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 text-basanite-600 dark:text-earth-300 text-sm font-medium hover:bg-earth-100 dark:hover:bg-basanite-700 transition-colors"
             >
               Back
             </button>

@@ -79,7 +79,7 @@ export default function RolesList({
           placeholder="Search roles or companies..."
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="flex-1 min-w-0 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 text-sm px-3 py-2 text-basanite-900 dark:text-earth-100 placeholder:text-basanite-400 focus:outline-none focus:border-basanite-900"
+          className="flex-1 min-w-0 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 text-sm px-3 py-2 text-basanite-900 dark:text-earth-100 placeholder:text-basanite-400 dark:placeholder:text-earth-500 focus:outline-none focus:border-basanite-900 dark:focus:border-gold-500"
         />
         <div className="flex flex-wrap gap-1 border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-1 shrink-0">
           {STATUS_FILTERS.map(f => {

@@ -440,7 +440,7 @@ function JobRow({
             <select
               value={draftRoleId}
               onChange={e => setDraftRoleId(e.target.value)}
-              className="text-xs border border-slate-200 dark:border-basanite-700 px-2 py-1 max-w-[180px]"
+              className="text-xs border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 text-basanite-900 dark:text-earth-100 px-2 py-1 max-w-[180px] focus:outline-none focus:border-basanite-900 dark:focus:border-gold-500"
             >
               <option value="" disabled>Pick a role…</option>
               {roles.map(r => (
