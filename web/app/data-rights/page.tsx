@@ -55,10 +55,13 @@ export default function DataRightsPage() {
   return (
     <div className="min-h-screen bg-earth-50 flex flex-col">
       <header className="border-b border-earth-200 bg-white">
-        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center">
+        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <LogoMark size={24} dark />
             <span className="font-semibold text-basanite-900 text-sm">Basanite</span>
+          </Link>
+          <Link href="/dashboard" className="text-xs text-basanite-500 hover:text-basanite-900 transition-colors">
+            ← Back to dashboard
           </Link>
         </div>
       </header>
