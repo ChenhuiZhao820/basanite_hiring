@@ -11,6 +11,10 @@ type SessionConfig = {
   prompt: string
   first_message: string
   max_duration_seconds?: number
+  // Optional ElevenLabs voice ID. When set, VoiceInterview will pass it
+  // to overrides.tts.voiceId at startSession so the agent uses this
+  // voice instead of its configured default.
+  voice_id?: string
 }
 
 export default function InterviewPage() {
@@ -80,6 +84,7 @@ export default function InterviewPage() {
       signedUrl={config.signed_url}
       prompt={config.prompt}
       firstMessage={config.first_message}
+      voiceId={config.voice_id}
       targetSeconds={config.max_duration_seconds ?? 20 * 60}
     />
   )

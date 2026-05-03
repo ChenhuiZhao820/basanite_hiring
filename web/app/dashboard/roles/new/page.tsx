@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { VoicePicker } from '@/components/VoicePicker'
 
 // Target length is a hint for the AI, it decides when to end based on signal.
 const DEFAULT_TARGET_MINUTES = 20
@@ -38,6 +39,7 @@ export default function NewRolePage() {
   const [technicalDepth, setTechnicalDepth] = useState<'application' | 'research_architecture'>('application')
   const [interviewDurationMinutes, setInterviewDurationMinutes] = useState(DEFAULT_TARGET_MINUTES)
   const [customInstructions, setCustomInstructions] = useState('')
+  const [voiceId, setVoiceId] = useState<string | null>(null)
   const [recommendLoading, setRecommendLoading] = useState(false)
   const [roleId, setRoleId] = useState<string | null>(null)
 
@@ -115,6 +117,7 @@ export default function NewRolePage() {
           technical_depth: technicalDepth,
           interview_duration_minutes: interviewDurationMinutes,
           custom_instructions: customInstructions.trim() || null,
+          interviewer_voice_id: voiceId,
           status: 'live',
         }),
       })
@@ -291,6 +294,17 @@ export default function NewRolePage() {
               className="w-full border border-earth-300 dark:border-basanite-700 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
               placeholder="Ask about their salary expectations and availability. Confirm they understand what our company does."
             />
+          </div>
+
+          {/* Interviewer voice */}
+          <div className="mb-8">
+            <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">
+              Interviewer voice <span className="text-basanite-400 dark:text-earth-500 normal-case">(optional)</span>
+            </label>
+            <p className="text-xs text-basanite-400 dark:text-earth-500 mb-3">
+              Pick the voice candidates will hear. Click play on any card to preview a 5-second sample.
+            </p>
+            <VoicePicker value={voiceId} onChange={setVoiceId} />
           </div>
 
           {/* Dimensions */}

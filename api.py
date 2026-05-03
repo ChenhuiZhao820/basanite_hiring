@@ -99,6 +99,7 @@ class UpdateRoleRequest(BaseModel):
     status: str | None = Field(default=None, max_length=32)
     interview_duration_minutes: int | None = Field(default=None, ge=1, le=120)
     custom_instructions: str | None = Field(default=None, max_length=2000)
+    interviewer_voice_id: str | None = Field(default=None, max_length=64)
 
 
 @app.post("/roles")
@@ -143,8 +144,17 @@ async def update_role(
 ):
     _verify_internal(authorization)
     from core.db import update_role as db_update_role
+    from core.voices import is_valid_voice
 
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
+
+    # Reject voice IDs that aren't in our curated catalogue. The frontend
+    # only ever sends catalogue values, so rejecting at the API edge stops
+    # any direct-API caller (or stale frontend) from poisoning the column
+    # with strings ElevenLabs would later 4xx on.
+    if "interviewer_voice_id" in fields and not is_valid_voice(fields["interviewer_voice_id"]):
+        raise HTTPException(status_code=400, detail="Unknown interviewer_voice_id")
+
     # dimensions + eligibility_constraints are JSONB, pass the native Python
     # value so supabase-py encodes correctly. Double-encoding here stored them
     # as a JSON *string* instead of a JSON array/object, which is what caused
@@ -464,12 +474,40 @@ async def voice_session(token: str, body: dict):
     # inspecting the network tab. Closing this cleanly requires either
     # ElevenLabs' agent-level config API (slow, racy under concurrent
     # sessions) or a per-session agent — see H3 in the security audit.
-    return {
+    # Per-role voice override. If the role has interviewer_voice_id set
+    # AND it's still in the curated catalogue, surface it so the browser
+    # can pass it via overrides.tts.voiceId to the ElevenLabs SDK at
+    # session start. Otherwise omit and ElevenLabs uses the agent default.
+    from core.voices import is_valid_voice
+    role_voice_id = role.get("interviewer_voice_id")
+    voice_id = role_voice_id if is_valid_voice(role_voice_id) and role_voice_id else None
+
+    payload: dict = {
         "signed_url": signed_url,
         "prompt": prompt,
         "first_message": first_message,
         "max_duration_seconds": max_duration_seconds,
     }
+    if voice_id:
+        payload["voice_id"] = voice_id
+    return payload
+
+
+@app.get("/voices")
+async def list_voices(authorization: str | None = Header(default=None)):
+    """Curated catalogue of selectable interviewer voices.
+
+    Internal endpoint — only the dashboard's voice picker calls this, and
+    only via the Next.js side that already presents the pipeline secret.
+    The frontend currently mirrors the catalogue locally (web/lib/voices.ts)
+    for instant render, but having the catalogue available server-side
+    keeps a single source of truth available for any future UX that does
+    fetch it dynamically.
+    """
+    _verify_internal(authorization)
+    from core.voices import catalogue
+
+    return {"voices": catalogue()}
 
 
 @app.post("/assess/{token}/director")

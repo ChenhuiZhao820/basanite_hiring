@@ -16,6 +16,9 @@ type Props = {
   prompt: string
   firstMessage: string
   targetSeconds: number
+  /** Optional ElevenLabs voice ID. When set, overrides the agent's
+   *  default voice for this session via overrides.tts.voiceId. */
+  voiceId?: string
   /** Header title; defaults to "Technical Screening with Baz". */
   screeningTitle?: string
 }
@@ -84,6 +87,7 @@ export default function VoiceInterview({
   signedUrl,
   prompt,
   firstMessage,
+  voiceId,
   targetSeconds,
   screeningTitle = 'Technical Screening with Baz',
 }: Props) {
@@ -287,15 +291,22 @@ export default function VoiceInterview({
         recorderRef.current = mr
         mr.start(1000)
 
+        // Build the overrides object. The agent.prompt + firstMessage
+        // overrides are always set; tts.voiceId is set conditionally so
+        // a missing/cleared role.interviewer_voice_id keeps the agent's
+        // default voice (the existing behaviour pre this feature).
+        const overridesObj: {
+          agent: { prompt: { prompt: string }; firstMessage: string }
+          tts?: { voiceId: string }
+        } = {
+          agent: { prompt: { prompt }, firstMessage },
+        }
+        if (voiceId) overridesObj.tts = { voiceId }
+
         const id = await conversation.startSession({
           signedUrl,
           connectionType: 'websocket',
-          overrides: {
-            agent: {
-              prompt: { prompt },
-              firstMessage,
-            },
-          },
+          overrides: overridesObj,
         })
         if (id) conversationIdRef.current = id
       } catch (e: any) {

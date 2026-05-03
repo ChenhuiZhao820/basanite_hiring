@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CopyButton } from '@/components/CopyButton'
 import { AssessmentRowMenu } from '@/components/AssessmentRowMenu'
 import { RoleMenu } from '@/components/RoleMenu'
+import { RoleVoiceTile } from '@/components/RoleVoiceTile'
 
 export const metadata = { title: 'Role' }
 
@@ -78,7 +79,7 @@ export default async function RoleDetailPage({
       )}
 
       {/* Role Config Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-4">
           <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Dimensions</p>
           <div className="flex flex-wrap gap-1.5">
@@ -97,6 +98,7 @@ export default async function RoleDetailPage({
           <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Assessments</p>
           <p className="text-sm text-basanite-900 dark:text-earth-100">{assessments?.length ?? 0} total</p>
         </div>
+        <RoleVoiceTile roleId={role.id} initialVoiceId={role.interviewer_voice_id ?? null} />
       </div>
 
       {/* Candidate Queue */}
