@@ -114,6 +114,17 @@ export default function VoiceInterview({
   const endQueuedRef = useRef(false)
   const endInFlightRef = useRef(false)
   const phaseRef = useRef<Phase>('idle')
+  // Time the WebSocket connected (performance.now). Used by the defensive
+  // disconnect handler to distinguish a real interview-ending disconnect
+  // from an immediate connection failure (ElevenLabs rejecting overrides,
+  // network drop pre-handshake, agent config error). Without this we used
+  // to treat any disconnect as a graceful end and call handleEnd, which
+  // wrote a 'completed' assessment with zero transcript.
+  const connectedAtRef = useRef<number | null>(null)
+  // Number of messages observed before disconnect. Combined with
+  // time-since-connect, lets us spot "session opened then died" vs
+  // "real conversation ended".
+  const messageCountRef = useRef(0)
   // Director (background Opus supervisor)
   const bubblesRef = useRef<Bubble[]>([])
   const directorInFlightRef = useRef(false)
@@ -128,15 +139,36 @@ export default function VoiceInterview({
   const conversation = useConversation({
     onConnect: ({ conversationId }) => {
       conversationIdRef.current = conversationId
+      connectedAtRef.current = performance.now()
       setPhase('live')
     },
     onDisconnect: () => {
-      // Fires whether the agent invoked end_call, we called endSession, or the
-      // network dropped. handleEnd is idempotent.
+      // Fires whether the agent invoked end_call, we called endSession, or
+      // the connection died. Distinguish "real end of interview" from
+      // "session never really started" by looking at elapsed time since
+      // onConnect AND whether any messages were exchanged. Both must be
+      // healthy for us to treat this as a graceful completion.
+      const connectedAt = connectedAtRef.current
+      const sinceConnectMs = connectedAt == null ? Infinity : performance.now() - connectedAt
+      const hadMessages = messageCountRef.current > 0
+      const tooQuick = sinceConnectMs < 10_000 && !hadMessages
+      if (tooQuick) {
+        // Most common cause: ElevenLabs agent rejected our session-level
+        // overrides (e.g. overrides.tts.voiceId disabled in the agent's
+        // platform_settings) and dropped the WebSocket. Surface as an
+        // explicit error rather than silently flipping the assessment to
+        // 'completed' with no transcript.
+        console.error('Voice session disconnected before any conversation occurred', { sinceConnectMs })
+        setErrMsg('The interview connection dropped before it could start. Please refresh and try again.')
+        setPhase('error')
+        return
+      }
+      // handleEnd is idempotent.
       void handleEnd()
     },
     onMessage: ({ message, source }) => {
       if (!message) return
+      messageCountRef.current += 1
       const role: Bubble['role'] = source === 'user' ? 'user' : 'assistant'
       setBubbles(prev => [...prev, { role, content: message }])
 
