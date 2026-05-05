@@ -54,12 +54,25 @@ VOICES: tuple[Voice, ...] = (
 ALLOWED_VOICE_IDS: frozenset[str] = frozenset(v.id for v in VOICES)
 
 
-def is_valid_voice(voice_id: str | None) -> bool:
-    """True if voice_id is one of the catalogue entries. None counts as
-    valid because it means 'use the agent default'."""
+def is_valid_voice(voice_id: str | None, *, org_id: str | None = None) -> bool:
+    """True if voice_id is one of the catalogue entries OR an active
+    cloned voice belonging to `org_id`. None counts as valid because it
+    means 'use the agent default'.
+
+    `org_id` is only required when validating a cloned voice; pass None
+    when validating purely against the curated catalogue (e.g. picker
+    pre-select, where we just need to know if it's an ID we recognise).
+    """
     if voice_id is None:
         return True
-    return voice_id in ALLOWED_VOICE_IDS
+    if voice_id in ALLOWED_VOICE_IDS:
+        return True
+    if org_id is None:
+        return False
+    # Lazy import to avoid circular dep with core.db (which imports nothing
+    # from this module today, but we keep the lazy form for safety).
+    from core.db import get_org_custom_voice_by_eleven_id
+    return get_org_custom_voice_by_eleven_id(org_id, voice_id) is not None
 
 
 def to_dict(v: Voice) -> dict:

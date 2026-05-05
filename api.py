@@ -143,17 +143,19 @@ async def update_role(
     authorization: str | None = Header(default=None),
 ):
     _verify_internal(authorization)
-    from core.db import update_role as db_update_role
+    from core.db import update_role as db_update_role, get_role as db_get_role
     from core.voices import is_valid_voice
 
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
 
-    # Reject voice IDs that aren't in our curated catalogue. The frontend
-    # only ever sends catalogue values, so rejecting at the API edge stops
-    # any direct-API caller (or stale frontend) from poisoning the column
-    # with strings ElevenLabs would later 4xx on.
-    if "interviewer_voice_id" in fields and not is_valid_voice(fields["interviewer_voice_id"]):
-        raise HTTPException(status_code=400, detail="Unknown interviewer_voice_id")
+    # Reject voice IDs that aren't in our curated catalogue OR a cloned
+    # voice in the same org as this role. We resolve the role's org_id
+    # before validating so the per-org check has the right scope.
+    if "interviewer_voice_id" in fields:
+        existing_role = db_get_role(role_id)
+        role_org_id = (existing_role or {}).get("org_id")
+        if not is_valid_voice(fields["interviewer_voice_id"], org_id=role_org_id):
+            raise HTTPException(status_code=400, detail="Unknown interviewer_voice_id")
 
     # dimensions + eligibility_constraints are JSONB, pass the native Python
     # value so supabase-py encodes correctly. Double-encoding here stored them
@@ -475,12 +477,16 @@ async def voice_session(token: str, body: dict):
     # ElevenLabs' agent-level config API (slow, racy under concurrent
     # sessions) or a per-session agent — see H3 in the security audit.
     # Per-role voice override. If the role has interviewer_voice_id set
-    # AND it's still in the curated catalogue, surface it so the browser
-    # can pass it via overrides.tts.voiceId to the ElevenLabs SDK at
-    # session start. Otherwise omit and ElevenLabs uses the agent default.
+    # AND it's still in the curated catalogue or the role's org has it as
+    # a cloned voice, surface it so the browser can pass it via
+    # overrides.tts.voiceId to the ElevenLabs SDK at session start.
+    # Otherwise omit and ElevenLabs uses the agent default — handles the
+    # case where a hirer soft-deletes a cloned voice while a candidate is
+    # mid-flight.
     from core.voices import is_valid_voice
     role_voice_id = role.get("interviewer_voice_id")
-    voice_id = role_voice_id if is_valid_voice(role_voice_id) and role_voice_id else None
+    role_org_id = role.get("org_id")
+    voice_id = role_voice_id if (role_voice_id and is_valid_voice(role_voice_id, org_id=role_org_id)) else None
 
     payload: dict = {
         "signed_url": signed_url,
@@ -508,6 +514,254 @@ async def list_voices(authorization: str | None = Header(default=None)):
     from core.voices import catalogue
 
     return {"voices": catalogue()}
+
+
+# ─── Per-org cloned interviewer voices (ElevenLabs IVC) ────────────────────
+# Hirers record themselves once; we send the audio to ElevenLabs Instant
+# Voice Cloning, persist the resulting voice_id against their org, and
+# expose it through the picker alongside the curated catalogue. The voice
+# behaves identically to a catalogue voice from the live session's POV —
+# overrides.tts.voiceId at session start is the same code path either way.
+
+# Hard cap on cloned voices per org so a runaway hirer can't burn through
+# our ElevenLabs voice slots. 5 is generous for a small team.
+_MAX_CUSTOM_VOICES_PER_ORG = 5
+# 5MB cap on the audio payload. ElevenLabs IVC accepts much more, but we
+# don't want a malicious upload eating worker memory before we forward.
+_MAX_VOICE_CLONE_BYTES = 5 * 1024 * 1024
+# Standard preview line synthesised once per cloned voice, served from
+# the org-voice-samples Supabase Storage bucket. Mirror of the line used
+# by scripts/generate_voice_samples.py for the curated voices.
+_VOICE_PREVIEW_LINE = (
+    "Hi, I'm Baz. I'll be conducting your interview today. "
+    "Let me know if you can hear me clearly."
+)
+
+
+@app.get("/voices/custom")
+async def list_custom_voices(
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """List the calling user's org's cloned voices."""
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        return {"voices": []}
+    rows = db.list_org_custom_voices(org_id)
+    return {"voices": rows, "org_id": org_id}
+
+
+@app.delete("/voices/custom/{custom_voice_id}")
+async def delete_custom_voice(
+    custom_voice_id: str,
+    user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Soft-delete a cloned voice. Retention sweep finalises the cascade
+    to ElevenLabs after a 30-day grace window."""
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        raise HTTPException(status_code=404, detail="Voice not found")
+    ok = db.soft_delete_org_custom_voice(custom_voice_id, org_id)
+    if not ok:
+        raise HTTPException(status_code=500, detail="Failed to delete voice")
+    return {"ok": True}
+
+
+@app.post("/voices/clone")
+async def clone_voice(
+    audio: UploadFile = File(...),
+    name: str = Form(min_length=1, max_length=80),
+    description: str | None = Form(default=None, max_length=200),
+    user_id: str = Form(min_length=1, max_length=64),
+    consent_user_agent: str | None = Form(default=None, max_length=400),
+    authorization: str | None = Header(default=None),
+):
+    """Clone a hirer voice via ElevenLabs IVC + persist + log consent.
+
+    Multipart fields:
+      audio              — the recording (audio/webm or audio/mpeg)
+      name               — display label, e.g. "Drew"
+      description        — optional, e.g. "CTO, Manchester"
+      user_id            — hirer's auth.users id (sets org + created_by)
+      consent_user_agent — UA string captured from the consent screen
+    """
+    _verify_internal(authorization)
+    from core import db
+
+    org_id = db.get_or_create_personal_org(user_id)
+    if not org_id:
+        raise HTTPException(status_code=500, detail="Failed to resolve org")
+
+    # Per-org cap.
+    existing = db.list_org_custom_voices(org_id)
+    if len(existing) >= _MAX_CUSTOM_VOICES_PER_ORG:
+        raise HTTPException(
+            status_code=400,
+            detail=f"You've hit the limit of {_MAX_CUSTOM_VOICES_PER_ORG} cloned voices. Delete an existing voice first.",
+        )
+
+    # Bounded read.
+    audio_bytes = await _read_bounded(audio, _MAX_VOICE_CLONE_BYTES)
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Empty audio")
+
+    # ElevenLabs IVC.
+    eleven_voice_id = await _eleven_clone_voice(
+        name=name,
+        description=description,
+        audio=audio_bytes,
+        filename=audio.filename or "sample.webm",
+        content_type=audio.content_type or "audio/webm",
+    )
+
+    # Persist (without sample_url initially — we'll patch it in below).
+    row = db.create_org_custom_voice(
+        org_id=org_id,
+        eleven_voice_id=eleven_voice_id,
+        name=name,
+        description=description,
+        created_by=user_id,
+    )
+    if not row:
+        # ElevenLabs already created the voice; this is a best-effort
+        # cleanup so we don't leak slots. Failing the cleanup is non-fatal.
+        try:
+            await _eleven_delete_voice(eleven_voice_id)
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail="Failed to persist voice")
+
+    # Generate + upload a preview MP3 so the picker has something to play.
+    # If this fails, the voice is still usable; the picker will just hide
+    # the play button until a future retry. Best-effort, never blocking.
+    try:
+        sample_url = await _generate_and_upload_preview(eleven_voice_id)
+        if sample_url:
+            db.update_org_custom_voice(row["id"], org_id, sample_url=sample_url)
+            row["sample_url"] = sample_url
+    except Exception as e:
+        print(f"  [voices/clone] preview generation failed (non-fatal): {type(e).__name__}: {e}")
+
+    # Log consent (Article 7 burden-of-proof).
+    try:
+        db.log_consent(
+            user_id=user_id,
+            consent_type="voice_clone_self_consent",
+            granted=True,
+            policy_version="2026-05-02",
+            user_agent=consent_user_agent,
+        )
+    except Exception as e:
+        print(f"  [voices/clone] consent log failed (non-fatal): {type(e).__name__}: {e}")
+
+    return {"voice": row}
+
+
+async def _eleven_clone_voice(
+    *, name: str, description: str | None, audio: bytes, filename: str, content_type: str
+) -> str:
+    """POST to ElevenLabs /v1/voices/add. Returns the new voice_id."""
+    import httpx
+
+    api_key = os.getenv("ELEVENLABS_API_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ELEVENLABS_API_KEY not configured")
+
+    files = [("files", (filename, audio, content_type))]
+    data: dict = {"name": name}
+    if description:
+        data["description"] = description
+
+    async with httpx.AsyncClient(timeout=60.0) as http:
+        resp = await http.post(
+            "https://api.elevenlabs.io/v1/voices/add",
+            headers={"xi-api-key": api_key},
+            files=files,
+            data=data,
+        )
+    if resp.status_code == 401:
+        # Most common cause: API key missing voices_write permission.
+        raise HTTPException(
+            status_code=503,
+            detail="Voice cloning isn't enabled for this account. Contact support.",
+        )
+    if resp.status_code >= 400:
+        # Don't echo vendor body wholesale (may include the audio filename
+        # or other PII fragments). Log a short version for ops.
+        body_preview = (resp.text or "")[:240]
+        print(f"  [voices/clone] elevenlabs {resp.status_code}: {body_preview}")
+        raise HTTPException(status_code=502, detail="Voice clone failed at the upstream step.")
+
+    payload = resp.json()
+    voice_id = payload.get("voice_id")
+    if not voice_id:
+        raise HTTPException(status_code=502, detail="Voice clone returned no voice_id")
+    return voice_id
+
+
+async def _eleven_delete_voice(eleven_voice_id: str) -> None:
+    """Free a cloned voice slot at ElevenLabs. Used by retention sweep."""
+    import httpx
+
+    api_key = os.getenv("ELEVENLABS_API_KEY", "")
+    if not api_key:
+        return
+    async with httpx.AsyncClient(timeout=20.0) as http:
+        await http.delete(
+            f"https://api.elevenlabs.io/v1/voices/{eleven_voice_id}",
+            headers={"xi-api-key": api_key},
+        )
+
+
+async def _generate_and_upload_preview(eleven_voice_id: str) -> str | None:
+    """Synthesise the standard preview line in this voice and upload to
+    Supabase Storage. Returns the public URL or None on failure."""
+    import httpx
+
+    api_key = os.getenv("ELEVENLABS_API_KEY", "")
+    if not api_key:
+        return None
+
+    async with httpx.AsyncClient(timeout=30.0) as http:
+        resp = await http.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{eleven_voice_id}",
+            headers={"xi-api-key": api_key, "Content-Type": "application/json"},
+            json={
+                "text": _VOICE_PREVIEW_LINE,
+                "model_id": "eleven_turbo_v2_5",
+                "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
+            },
+        )
+    if resp.status_code >= 400:
+        return None
+    audio = resp.content
+
+    # Upload to Supabase Storage (public bucket org-voice-samples).
+    from core.db import get_client
+    client = get_client()
+    if not client:
+        return None
+    path = f"{eleven_voice_id}.mp3"
+    try:
+        client.storage.from_("org-voice-samples").upload(
+            path,
+            audio,
+            {"content-type": "audio/mpeg", "upsert": "true"},
+        )
+        # Build a public URL. The bucket should be marked public via the
+        # Supabase dashboard once on first use.
+        public = client.storage.from_("org-voice-samples").get_public_url(path)
+        return public
+    except Exception as e:
+        print(f"  [voices/clone] storage upload failed: {type(e).__name__}: {e}")
+        return None
 
 
 @app.post("/assess/{token}/director")

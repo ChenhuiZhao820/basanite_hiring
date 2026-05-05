@@ -631,3 +631,137 @@ def get_assessment_by_merge_application(merge_application_id: str) -> dict | Non
         return (result.data or [None])[0]
     except Exception:
         return None
+
+
+# ─── Org custom voices (cloned interviewer voices) ─────────────────────────
+
+def list_org_custom_voices(org_id: str, *, include_deleted: bool = False) -> list[dict]:
+    """Return active cloned voices for an org. Service-role read."""
+    client = get_client()
+    if not client:
+        return []
+    try:
+        q = (
+            client.table("org_custom_voices")
+            .select("id, org_id, eleven_voice_id, name, description, sample_url, created_by, created_at, deleted_at")
+            .eq("org_id", org_id)
+            .order("created_at", desc=True)
+        )
+        if not include_deleted:
+            q = q.is_("deleted_at", "null")
+        result = q.execute()
+        return result.data or []
+    except Exception as e:
+        print(f"  DB list_org_custom_voices error: {e}")
+        return []
+
+
+def create_org_custom_voice(
+    *,
+    org_id: str,
+    eleven_voice_id: str,
+    name: str,
+    description: str | None,
+    created_by: str | None,
+    sample_url: str | None = None,
+) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "org_id": org_id,
+            "eleven_voice_id": eleven_voice_id,
+            "name": name[:80],
+            "description": (description or None) and description[:200],
+            "sample_url": sample_url,
+            "created_by": created_by,
+        }
+        result = client.table("org_custom_voices").insert(row).execute()
+        return (result.data or [None])[0]
+    except Exception as e:
+        print(f"  DB create_org_custom_voice error: {e}")
+        return None
+
+
+def soft_delete_org_custom_voice(custom_voice_id: str, org_id: str) -> bool:
+    """Mark deleted; retention sweep handles the cascade to ElevenLabs."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_custom_voices").update(
+            {"deleted_at": "now()"}
+        ).eq("id", custom_voice_id).eq("org_id", org_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB soft_delete_org_custom_voice error: {e}")
+        return False
+
+
+def get_org_custom_voice_by_eleven_id(org_id: str, eleven_voice_id: str) -> dict | None:
+    """Lookup by ElevenLabs voice ID — used by validation."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("org_custom_voices")
+            .select("*")
+            .eq("org_id", org_id)
+            .eq("eleven_voice_id", eleven_voice_id)
+            .is_("deleted_at", "null")
+            .limit(1)
+            .execute()
+        )
+        return (result.data or [None])[0]
+    except Exception:
+        return None
+
+
+def update_org_custom_voice(custom_voice_id: str, org_id: str, **fields) -> bool:
+    """Generic patcher used to attach sample_url after clone, or rename."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_custom_voices").update(fields).eq(
+            "id", custom_voice_id
+        ).eq("org_id", org_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB update_org_custom_voice error: {e}")
+        return False
+
+
+# ─── Consent records (used by voice-clone consent + GDPR DSARs) ────────────
+
+def log_consent(
+    *,
+    user_id: str | None,
+    consent_type: str,
+    granted: bool,
+    policy_version: str | None = None,
+    assessment_id: str | None = None,
+    user_agent: str | None = None,
+    ip_hash: str | None = None,
+) -> dict | None:
+    """Append a row to consent_records (Article 7 burden of proof)."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "user_id": user_id,
+            "assessment_id": assessment_id,
+            "consent_type": consent_type,
+            "granted": bool(granted),
+            "policy_version": policy_version,
+            "user_agent": user_agent[:400] if user_agent else None,
+            "ip_hash": ip_hash,
+        }
+        result = client.table("consent_records").insert(row).execute()
+        return (result.data or [None])[0]
+    except Exception as e:
+        print(f"  DB log_consent error: {e}")
+        return None

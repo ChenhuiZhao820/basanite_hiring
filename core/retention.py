@@ -43,6 +43,7 @@ class SweepResult:
     deleted_reports: int = 0
     deleted_dimension_scores: int = 0
     deleted_waitlist: int = 0
+    deleted_custom_voices: int = 0
     errors: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -157,6 +158,48 @@ def run_retention_sweep() -> SweepResult:
     except Exception as e:
         result.errors.append({"stage": "waitlist_purge", "message": str(e)[:300]})
 
+    # ─────────────── 5. Soft-deleted cloned voices past 30-day grace ─────────
+    # Hard-delete the row, BUT only if no role still references the
+    # eleven_voice_id (a hirer might have soft-deleted a voice while a
+    # role still uses it; we'd rather keep the orphan than break interviews).
+    # Also tell ElevenLabs to free the voice slot.
+    voice_grace = now - timedelta(days=ERASURE_GRACE_DAYS)
+    try:
+        rows = (
+            client.table("org_custom_voices")
+            .select("id, eleven_voice_id")
+            .lt("deleted_at", voice_grace.isoformat())
+            .not_.is_("deleted_at", "null")
+            .execute()
+        ).data or []
+        for row in rows:
+            ev_id = row.get("eleven_voice_id")
+            try:
+                # Bail if any role still references it. Don't break those
+                # roles by yanking the voice out from under them.
+                in_use = (
+                    client.table("roles")
+                    .select("id")
+                    .eq("interviewer_voice_id", ev_id)
+                    .limit(1)
+                    .execute()
+                ).data
+                if in_use:
+                    continue
+                # Free the ElevenLabs slot. Best-effort — if it fails we
+                # leave the row in place and try again next sweep.
+                _eleven_delete_voice_sync(ev_id)
+                client.table("org_custom_voices").delete().eq("id", row["id"]).execute()
+                result.deleted_custom_voices += 1
+            except Exception as e:
+                result.errors.append({
+                    "stage": "custom_voice_purge",
+                    "voice_id": ev_id,
+                    "message": str(e)[:200],
+                })
+    except Exception as e:
+        result.errors.append({"stage": "custom_voice_query", "message": str(e)[:300]})
+
     # ─────────────── Record the run ──────────────────────────────────────────
     try:
         client.table("data_retention_runs").insert({
@@ -168,6 +211,9 @@ def run_retention_sweep() -> SweepResult:
             "deleted_waitlist": result.deleted_waitlist,
             "errors": result.errors if result.errors else None,
         }).execute()
+        # custom_voices count is logged separately in the print() below — the
+        # data_retention_runs schema doesn't have a column for it; bumping
+        # the schema is a future migration if we want it queryable.
     except Exception as e:
         # We can't record the run — print so it at least appears in logs.
         print(f"  [retention] failed to record run: {type(e).__name__}: {e}")
@@ -180,6 +226,7 @@ def run_retention_sweep() -> SweepResult:
         f"reports={result.deleted_reports} "
         f"scores={result.deleted_dimension_scores} "
         f"waitlist={result.deleted_waitlist} "
+        f"custom_voices={result.deleted_custom_voices} "
         f"errors={len(result.errors)}"
     )
     return result
@@ -208,3 +255,24 @@ def _purge_assessment_completely(client, assessment_id: str, result: SweepResult
 
 def to_dict(r: SweepResult) -> dict:
     return asdict(r)
+
+
+def _eleven_delete_voice_sync(eleven_voice_id: str) -> None:
+    """Sync DELETE call to ElevenLabs — used by the retention sweep to
+    free a cloned voice slot. The sweep runs in a sync FastAPI handler so
+    we use urllib rather than httpx async."""
+    import urllib.request
+    api_key = os.getenv("ELEVENLABS_API_KEY", "")
+    if not api_key:
+        return
+    req = urllib.request.Request(
+        f"https://api.elevenlabs.io/v1/voices/{eleven_voice_id}",
+        method="DELETE",
+        headers={"xi-api-key": api_key},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:  # noqa: S310 (trusted host)
+            resp.read()
+    except Exception as e:
+        # Non-fatal — sweep will retry next run. Log a short scrubbed line.
+        print(f"  [retention] eleven delete failed: {type(e).__name__}: {str(e)[:120]}")

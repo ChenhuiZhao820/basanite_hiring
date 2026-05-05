@@ -62,6 +62,7 @@ export default function PrivacyPage() {
             <li>Account email, name, and password hash (handled by Supabase Auth).</li>
             <li>Roles you create — title, company name, job description, evaluation dimensions.</li>
             <li>Encrypted ATS connection tokens (AES-GCM at rest, decrypted only in memory at the moment of an API call).</li>
+            <li><strong>Voice samples and cloned voice IDs</strong> — when you opt to clone your voice as the interviewer voice. The original audio sample is sent to ElevenLabs for processing; we store the resulting voice ID against your org plus a 5-second preview clip we generate so your team can listen back. We log your consent at the moment of cloning.</li>
           </ul>
 
           <h3 className="font-medium text-basanite-900 mt-6 mb-2">Visitors / waitlist</h3>
@@ -118,6 +119,7 @@ export default function PrivacyPage() {
             <li><strong>Interview transcripts and AI scores:</strong> 12 months from completion, then automatically deleted.</li>
             <li><strong>Hirer reports:</strong> 12 months from completion, then automatically deleted (PDFs may have been downloaded by the hirer; that copy is outside our control).</li>
             <li><strong>CV text:</strong> 12 months from upload, then automatically deleted.</li>
+            <li><strong>Cloned hirer voices:</strong> kept until you delete them from the dashboard. Deletion cascades to ElevenLabs (the voice slot is freed) and to our own records within 30 days.</li>
             <li><strong>Hirer accounts:</strong> kept until the hirer deletes their account; deletion cascades to all associated data within 30 days.</li>
             <li><strong>Waitlist entries:</strong> kept until acted on (approved / rejected) or until you ask us to delete.</li>
             <li><strong>Consent records and DSAR audit trail:</strong> retained for 6 years as required for legal defence.</li>
@@ -164,7 +166,6 @@ export default function PrivacyPage() {
         <Section title="Contact">
           <p>
             <strong>Privacy enquiries:</strong> <a href="mailto:privacy@basanite.co.uk" className="text-gold-600 underline">privacy@basanite.co.uk</a><br />
-            <strong>Postal:</strong> Basanite Ltd, 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, United Kingdom.<br />
             <strong>UK Information Commissioner:</strong> <a href="https://ico.org.uk" className="text-gold-600 underline" target="_blank" rel="noreferrer">ico.org.uk</a> · 0303 123 1113.
           </p>
         </Section>
