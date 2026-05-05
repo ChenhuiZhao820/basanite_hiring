@@ -210,3 +210,4 @@ web/node_modules/
 web/.next/
 web/out/
 !web/lib/.mcp.json
+.DS_Store

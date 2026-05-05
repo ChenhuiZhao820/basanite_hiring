@@ -633,6 +633,370 @@ def get_assessment_by_merge_application(merge_application_id: str) -> dict | Non
         return None
 
 
+# ─── Org membership + settings + invitations (migration 036) ──────────────
+
+def is_org_member(user_id: str, org_id: str) -> str | None:
+    """Return the member's role in the org, or None if not a member.
+    Reused by every endpoint that gates on org membership."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        r = (
+            client.table("org_members")
+            .select("role")
+            .eq("user_id", user_id)
+            .eq("org_id", org_id)
+            .limit(1)
+            .execute()
+        )
+        return (r.data or [{}])[0].get("role") if r.data else None
+    except Exception:
+        return None
+
+
+def list_orgs_for_user(user_id: str) -> list[dict]:
+    """Return every org the user is a member of, with their role."""
+    client = get_client()
+    if not client:
+        return []
+    try:
+        r = (
+            client.table("org_members")
+            .select("role, joined_at:created_at, orgs!inner(id, name, description, auto_join_domain)")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        out = []
+        for row in r.data or []:
+            org = row.get("orgs") or {}
+            out.append({
+                "id": org.get("id"),
+                "name": org.get("name"),
+                "description": org.get("description"),
+                "auto_join_domain": org.get("auto_join_domain"),
+                "role": row.get("role"),
+                "joined_at": row.get("joined_at"),
+            })
+        return out
+    except Exception as e:
+        print(f"  DB list_orgs_for_user error: {e}")
+        return []
+
+
+def list_org_members(org_id: str) -> list[dict]:
+    """Return members of an org with their auth.users metadata.
+    Service-role read; the API gates on membership before calling."""
+    client = get_client()
+    if not client:
+        return []
+    try:
+        rows = (
+            client.table("org_members")
+            .select("user_id, role, created_at")
+            .eq("org_id", org_id)
+            .order("created_at", desc=False)
+            .execute()
+        ).data or []
+        # Resolve emails + names from auth.users via the admin API. supabase-py
+        # exposes this through .auth.admin.list_users(); we filter in Python
+        # because the page size is small (members per org will rarely exceed
+        # 50 in practice).
+        member_ids = {r["user_id"] for r in rows}
+        if not member_ids:
+            return rows
+        try:
+            page = client.auth.admin.list_users()
+            users = (page.users if hasattr(page, "users") else page) or []
+            by_id = {u.id: u for u in users if u.id in member_ids}
+        except Exception:
+            by_id = {}
+        out = []
+        for r in rows:
+            u = by_id.get(r["user_id"])
+            md = (getattr(u, "user_metadata", None) or {}) if u else {}
+            out.append({
+                "user_id": r["user_id"],
+                "role": r["role"],
+                "joined_at": r["created_at"],
+                "email": getattr(u, "email", None) if u else None,
+                "full_name": md.get("full_name") if md else None,
+            })
+        return out
+    except Exception as e:
+        print(f"  DB list_org_members error: {e}")
+        return []
+
+
+def update_org(org_id: str, **fields) -> bool:
+    """Patch an org row. Validation lives in the API layer."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("orgs").update(
+            {**fields, "updated_at": "now()"}
+        ).eq("id", org_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB update_org error: {e}")
+        return False
+
+
+def get_org(org_id: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        r = client.table("orgs").select("*").eq("id", org_id).single().execute()
+        return r.data
+    except Exception:
+        return None
+
+
+def get_org_by_auto_join_domain(domain: str) -> dict | None:
+    """Look up the org configured to auto-join an email domain.
+    Caller is responsible for filtering free email providers first."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        r = (
+            client.table("orgs")
+            .select("*")
+            .ilike("auto_join_domain", domain)
+            .limit(1)
+            .execute()
+        )
+        return (r.data or [None])[0]
+    except Exception:
+        return None
+
+
+def create_org(*, name: str, description: str | None, owner_user_id: str) -> dict | None:
+    """Create a new org and add the caller as the owner. Used by the
+    'Create organisation' flow on the workspace switcher."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        new_org = (
+            client.table("orgs")
+            .insert({"name": name[:200], "description": (description or None) and description[:500]})
+            .execute()
+        )
+        org = (new_org.data or [None])[0]
+        if not org:
+            return None
+        client.table("org_members").upsert(
+            {"org_id": org["id"], "user_id": owner_user_id, "role": "owner"},
+            on_conflict="org_id,user_id",
+        ).execute()
+        return org
+    except Exception as e:
+        print(f"  DB create_org error: {e}")
+        return None
+
+
+def add_org_member(org_id: str, user_id: str, role: str = "member") -> bool:
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_members").upsert(
+            {"org_id": org_id, "user_id": user_id, "role": role},
+            on_conflict="org_id,user_id",
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"  DB add_org_member error: {e}")
+        return False
+
+
+def remove_org_member(org_id: str, user_id: str) -> bool:
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_members").delete().eq("org_id", org_id).eq(
+            "user_id", user_id
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"  DB remove_org_member error: {e}")
+        return False
+
+
+def change_org_member_role(org_id: str, user_id: str, new_role: str) -> bool:
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_members").update({"role": new_role}).eq(
+            "org_id", org_id
+        ).eq("user_id", user_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB change_org_member_role error: {e}")
+        return False
+
+
+def count_org_owners(org_id: str) -> int:
+    client = get_client()
+    if not client:
+        return 0
+    try:
+        r = (
+            client.table("org_members")
+            .select("user_id", count="exact")
+            .eq("org_id", org_id)
+            .eq("role", "owner")
+            .execute()
+        )
+        return r.count or 0
+    except Exception:
+        return 0
+
+
+def delete_org(org_id: str) -> bool:
+    """Hard-delete an org. Cascades through every org_id-keyed FK."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("orgs").delete().eq("id", org_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB delete_org error: {e}")
+        return False
+
+
+# ─── Active org context ────────────────────────────────────────────────────
+
+def get_active_org_id(user_id: str) -> str | None:
+    """Return the user's selected active org_id, falling back to the
+    personal org. Reads auth.users.user_metadata.active_org_id."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        u = client.auth.admin.get_user_by_id(user_id)
+        user = getattr(u, "user", None) or u
+        md = (getattr(user, "user_metadata", None) or {}) if user else {}
+        active = md.get("active_org_id") if md else None
+        if active and is_org_member(user_id, active):
+            return active
+    except Exception:
+        pass
+    # Fallback: personal org (id=user_id by convention).
+    return get_or_create_personal_org(user_id)
+
+
+def set_active_org_id(user_id: str, org_id: str) -> bool:
+    """Mutate auth.users.user_metadata.active_org_id. Caller must verify
+    membership first (the callsite in api.py does)."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        u = client.auth.admin.get_user_by_id(user_id)
+        user = getattr(u, "user", None) or u
+        md = dict(getattr(user, "user_metadata", None) or {})
+        md["active_org_id"] = org_id
+        client.auth.admin.update_user_by_id(user_id, {"user_metadata": md})
+        return True
+    except Exception as e:
+        print(f"  DB set_active_org_id error: {e}")
+        return False
+
+
+# ─── Invitations ───────────────────────────────────────────────────────────
+
+def create_org_invitation(
+    *, org_id: str, email: str, role: str, token: str, expires_at: str, created_by: str
+) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        r = client.table("org_invitations").insert({
+            "org_id": org_id,
+            "email": email.lower().strip(),
+            "role": role,
+            "token": token,
+            "expires_at": expires_at,
+            "created_by": created_by,
+        }).execute()
+        return (r.data or [None])[0]
+    except Exception as e:
+        print(f"  DB create_org_invitation error: {e}")
+        return None
+
+
+def list_pending_invitations(org_id: str) -> list[dict]:
+    client = get_client()
+    if not client:
+        return []
+    try:
+        r = (
+            client.table("org_invitations")
+            .select("id, email, role, expires_at, created_at, created_by")
+            .eq("org_id", org_id)
+            .is_("accepted_at", "null")
+            .is_("cancelled_at", "null")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return r.data or []
+    except Exception:
+        return []
+
+
+def get_invitation_by_token(token: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        r = (
+            client.table("org_invitations")
+            .select("*, orgs(id, name)")
+            .eq("token", token)
+            .limit(1)
+            .execute()
+        )
+        return (r.data or [None])[0]
+    except Exception:
+        return None
+
+
+def cancel_invitation(invitation_id: str, org_id: str) -> bool:
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_invitations").update(
+            {"cancelled_at": "now()"}
+        ).eq("id", invitation_id).eq("org_id", org_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB cancel_invitation error: {e}")
+        return False
+
+
+def mark_invitation_accepted(invitation_id: str) -> bool:
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("org_invitations").update(
+            {"accepted_at": "now()"}
+        ).eq("id", invitation_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB mark_invitation_accepted error: {e}")
+        return False
+
+
 # ─── Org custom voices (cloned interviewer voices) ─────────────────────────
 
 def list_org_custom_voices(org_id: str, *, include_deleted: bool = False) -> list[dict]:

@@ -2076,3 +2076,422 @@ def _build_dsar_export(dsar_id: str) -> dict:
         pass
 
     return out
+
+
+# ─── Organisations ─────────────────────────────────────────────────────────
+# Multi-org membership, settings, invitations, domain auto-join, and the
+# active-org switcher. Every endpoint checks org membership via
+# db.is_org_member(user_id, org_id) and additionally enforces role where
+# the operation is owner/admin-only.
+
+import secrets as _secrets
+from datetime import timedelta as _timedelta
+
+
+def _public_app_url() -> str:
+    return (os.getenv("PUBLIC_APP_URL") or "https://basanite.co.uk").rstrip("/")
+
+
+class _CreateOrgRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    name: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=500)
+
+
+@app.get("/orgs")
+async def orgs_list_mine(user_id: str, authorization: str | None = Header(default=None)):
+    """Every org the calling user is a member of (with their role)."""
+    _verify_internal(authorization)
+    from core import db
+    return {"orgs": db.list_orgs_for_user(user_id)}
+
+
+@app.post("/orgs")
+async def orgs_create(body: _CreateOrgRequest, authorization: str | None = Header(default=None)):
+    """Create a new shared org. Caller becomes the owner. Used by the
+    workspace switcher's 'Create organisation' flow."""
+    _verify_internal(authorization)
+    from core import db
+
+    org = db.create_org(
+        name=body.name.strip(),
+        description=(body.description or None) and body.description.strip(),
+        owner_user_id=body.user_id,
+    )
+    if not org:
+        raise HTTPException(status_code=500, detail="Failed to create organisation")
+    db.set_active_org_id(body.user_id, org["id"])
+    return {"org": org}
+
+
+@app.get("/orgs/active")
+async def orgs_get_active(user_id: str, authorization: str | None = Header(default=None)):
+    """Resolve the user's active org_id (falls back to personal org)."""
+    _verify_internal(authorization)
+    from core import db
+    return {"active_org_id": db.get_active_org_id(user_id)}
+
+
+class _SetActiveOrgRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    org_id: str = Field(min_length=1, max_length=64)
+
+
+@app.post("/orgs/active")
+async def orgs_set_active(body: _SetActiveOrgRequest, authorization: str | None = Header(default=None)):
+    """Flip the user's active org. Caller must already be a member."""
+    _verify_internal(authorization)
+    from core import db
+
+    if not db.is_org_member(body.user_id, body.org_id):
+        raise HTTPException(status_code=403, detail="Not a member of that organisation")
+    if not db.set_active_org_id(body.user_id, body.org_id):
+        raise HTTPException(status_code=500, detail="Failed to switch organisation")
+    return {"ok": True, "active_org_id": body.org_id}
+
+
+@app.get("/orgs/{org_id}")
+async def orgs_get(org_id: str, user_id: str, authorization: str | None = Header(default=None)):
+    """Full settings payload for one org: profile + members + pending
+    invitations. Membership-gated; owners/admins additionally see the
+    invitations section."""
+    _verify_internal(authorization)
+    from core import db
+
+    role = db.is_org_member(user_id, org_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Organisation not found")
+    org = db.get_org(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organisation not found")
+    members = db.list_org_members(org_id)
+    invitations: list[dict] = []
+    if role in ("owner", "admin"):
+        invitations = db.list_pending_invitations(org_id)
+    return {
+        "org": org,
+        "members": members,
+        "invitations": invitations,
+        "viewer_role": role,
+    }
+
+
+class _UpdateOrgRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    name: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=500)
+    auto_join_domain: str | None = Field(default=None, max_length=200)
+    # Sentinel: if the caller wants to clear the domain, send "" rather than
+    # leaving the field absent (which would mean "don't change").
+    clear_auto_join_domain: bool = False
+
+
+@app.patch("/orgs/{org_id}")
+async def orgs_update(org_id: str, body: _UpdateOrgRequest, authorization: str | None = Header(default=None)):
+    """Update org profile / domain. Owners + admins only."""
+    _verify_internal(authorization)
+    from core import db
+    from core.orgs import is_free_email_domain
+
+    role = db.is_org_member(body.user_id, org_id)
+    if role not in ("owner", "admin"):
+        raise HTTPException(status_code=403, detail="Owners or admins only")
+
+    fields: dict = {}
+    if body.name is not None:
+        fields["name"] = body.name.strip()[:200]
+    if body.description is not None:
+        fields["description"] = body.description.strip()[:500] or None
+    if body.clear_auto_join_domain:
+        fields["auto_join_domain"] = None
+    elif body.auto_join_domain is not None:
+        domain = body.auto_join_domain.strip().lower()
+        if not domain:
+            fields["auto_join_domain"] = None
+        else:
+            if is_free_email_domain(domain):
+                raise HTTPException(
+                    status_code=400,
+                    detail="That looks like a free email provider. Use a domain you own (e.g. yourcompany.com).",
+                )
+            # Basic shape check — at least one dot, no whitespace, no '@'.
+            if "@" in domain or " " in domain or "." not in domain:
+                raise HTTPException(status_code=400, detail="Invalid domain")
+            fields["auto_join_domain"] = domain
+
+    if not fields:
+        return {"ok": True, "unchanged": True}
+    if not db.update_org(org_id, **fields):
+        raise HTTPException(status_code=500, detail="Failed to update organisation")
+    return {"ok": True}
+
+
+class _ChangeMemberRoleRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    new_role: str = Field(min_length=1, max_length=32)
+
+
+@app.patch("/orgs/{org_id}/members/{member_user_id}")
+async def orgs_change_member_role(
+    org_id: str, member_user_id: str, body: _ChangeMemberRoleRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Owner-only role mutation. Cannot demote the last owner."""
+    _verify_internal(authorization)
+    from core import db
+
+    if db.is_org_member(body.user_id, org_id) != "owner":
+        raise HTTPException(status_code=403, detail="Owners only")
+    if body.new_role not in ("owner", "admin", "member"):
+        raise HTTPException(status_code=400, detail="Invalid role")
+    # Prevent stranding the org without an owner.
+    current = db.is_org_member(member_user_id, org_id)
+    if current == "owner" and body.new_role != "owner" and db.count_org_owners(org_id) <= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Promote another member to owner before demoting yourself.",
+        )
+    if not db.change_org_member_role(org_id, member_user_id, body.new_role):
+        raise HTTPException(status_code=500, detail="Failed to change role")
+    return {"ok": True}
+
+
+class _RemoveMemberRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+
+
+@app.delete("/orgs/{org_id}/members/{member_user_id}")
+async def orgs_remove_member(
+    org_id: str, member_user_id: str, user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Remove a member. The caller is allowed to remove themselves
+    (Leave organisation); otherwise must be an owner. Last owner cannot
+    leave."""
+    _verify_internal(authorization)
+    from core import db
+
+    caller_role = db.is_org_member(user_id, org_id)
+    if not caller_role:
+        raise HTTPException(status_code=403, detail="Not a member")
+    is_self = user_id == member_user_id
+    if not is_self and caller_role != "owner":
+        raise HTTPException(status_code=403, detail="Owners only")
+
+    target_role = db.is_org_member(member_user_id, org_id)
+    if target_role == "owner" and db.count_org_owners(org_id) <= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Promote another owner before leaving — every organisation needs at least one owner.",
+        )
+    if not db.remove_org_member(org_id, member_user_id):
+        raise HTTPException(status_code=500, detail="Failed to remove member")
+
+    # If the removed user had this org active, fall their active context
+    # back to their personal org so the next dashboard load makes sense.
+    try:
+        db.set_active_org_id(member_user_id, db.get_or_create_personal_org(member_user_id) or member_user_id)
+    except Exception:
+        pass
+
+    return {"ok": True}
+
+
+@app.delete("/orgs/{org_id}")
+async def orgs_delete(org_id: str, user_id: str, authorization: str | None = Header(default=None)):
+    """Permanently delete an org. Owner-only. Cascades to roles, voices,
+    ATS connections, candidate assessments via FK ON DELETE CASCADE."""
+    _verify_internal(authorization)
+    from core import db
+
+    if db.is_org_member(user_id, org_id) != "owner":
+        raise HTTPException(status_code=403, detail="Owners only")
+    # Refuse to delete a personal org (id == user_id) since that's where
+    # this user's standalone data lives. They can rename it instead.
+    if org_id == user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Personal workspaces can't be deleted — they're tied to your account.",
+        )
+    if not db.delete_org(org_id):
+        raise HTTPException(status_code=500, detail="Failed to delete organisation")
+    return {"ok": True}
+
+
+class _CreateInvitationRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    email: str = Field(min_length=3, max_length=320)
+    role: str = Field(default="member", max_length=32)
+
+
+@app.post("/orgs/{org_id}/invitations")
+async def orgs_create_invitation(
+    org_id: str, body: _CreateInvitationRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Mint an invitation token and email it to the recipient."""
+    _verify_internal(authorization)
+    from core import db
+    from core.email import send_org_invitation_email
+
+    role = db.is_org_member(body.user_id, org_id)
+    if role not in ("owner", "admin"):
+        raise HTTPException(status_code=403, detail="Owners or admins only")
+    if body.role not in ("member", "admin"):
+        raise HTTPException(status_code=400, detail="Invalid role")
+    email = body.email.strip().lower()
+    if "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="Invalid email")
+
+    token = _secrets.token_urlsafe(32)
+    expires = (datetime.now(timezone.utc) + _timedelta(days=14)).isoformat()
+    inv = db.create_org_invitation(
+        org_id=org_id, email=email, role=body.role,
+        token=token, expires_at=expires, created_by=body.user_id,
+    )
+    if not inv:
+        raise HTTPException(status_code=500, detail="Failed to create invitation")
+
+    # Resolve org name + inviter display name for the email body.
+    org = db.get_org(org_id) or {}
+    inviter_name = None
+    try:
+        u = db.get_client().auth.admin.get_user_by_id(body.user_id)
+        user = getattr(u, "user", None) or u
+        md = (getattr(user, "user_metadata", None) or {}) if user else {}
+        inviter_name = md.get("full_name") or (getattr(user, "email", None) if user else None)
+    except Exception:
+        pass
+
+    accept_url = f"{_public_app_url()}/accept-invite?token={token}"
+    try:
+        send_org_invitation_email(
+            to=email,
+            org_name=org.get("name") or "Basanite",
+            inviter_name=inviter_name,
+            accept_url=accept_url,
+        )
+    except Exception as e:
+        print(f"  [orgs/invite] email send failed: {type(e).__name__}: {e}")
+
+    # Don't echo the token back to the caller — it landed in the email,
+    # and the dashboard only needs the row id + email + expiry to render
+    # the pending list.
+    return {"invitation": {k: v for k, v in inv.items() if k != "token"}}
+
+
+@app.delete("/orgs/{org_id}/invitations/{invitation_id}")
+async def orgs_cancel_invitation(
+    org_id: str, invitation_id: str, user_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Cancel a pending invitation."""
+    _verify_internal(authorization)
+    from core import db
+
+    role = db.is_org_member(user_id, org_id)
+    if role not in ("owner", "admin"):
+        raise HTTPException(status_code=403, detail="Owners or admins only")
+    if not db.cancel_invitation(invitation_id, org_id):
+        raise HTTPException(status_code=500, detail="Failed to cancel")
+    return {"ok": True}
+
+
+class _AcceptInviteRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    token: str = Field(min_length=10, max_length=200)
+
+
+@app.post("/accept-invite")
+async def accept_invite(body: _AcceptInviteRequest, authorization: str | None = Header(default=None)):
+    """Resolve an invitation token to a membership.
+
+    The token is the only auth on the link itself, but the FastAPI side
+    additionally verifies that the signed-in user's email matches the
+    invited email — stops Bob from accepting Alice's invitation by
+    forwarding the link.
+    """
+    _verify_internal(authorization)
+    from core import db
+
+    inv = db.get_invitation_by_token(body.token)
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+    if inv.get("accepted_at"):
+        raise HTTPException(status_code=410, detail="Already accepted")
+    if inv.get("cancelled_at"):
+        raise HTTPException(status_code=410, detail="Invitation cancelled")
+    expires = inv.get("expires_at")
+    if expires:
+        try:
+            exp_dt = datetime.fromisoformat(expires.replace("Z", "+00:00"))
+            if exp_dt < datetime.now(timezone.utc):
+                raise HTTPException(status_code=410, detail="Invitation expired")
+        except (ValueError, TypeError):
+            pass
+
+    # Email match check.
+    invited_email = (inv.get("email") or "").lower()
+    try:
+        u = db.get_client().auth.admin.get_user_by_id(body.user_id)
+        user = getattr(u, "user", None) or u
+        signed_in_email = (getattr(user, "email", None) or "").lower()
+    except Exception:
+        signed_in_email = ""
+    if invited_email and signed_in_email and invited_email != signed_in_email:
+        raise HTTPException(
+            status_code=403,
+            detail=f"This invitation was sent to {invited_email}. Sign in with that account to accept.",
+        )
+
+    org_id = inv.get("org_id")
+    if not org_id:
+        raise HTTPException(status_code=500, detail="Invitation missing org reference")
+
+    db.add_org_member(org_id, body.user_id, role=inv.get("role") or "member")
+    db.mark_invitation_accepted(inv["id"])
+    db.set_active_org_id(body.user_id, org_id)
+
+    # Audit consent (Article 7) — joining an org via invitation is a
+    # privacy-relevant act since their data becomes visible to the org.
+    try:
+        db.log_consent(
+            user_id=body.user_id,
+            consent_type="joined_org_via_invitation",
+            granted=True,
+            policy_version="2026-05-02",
+        )
+    except Exception:
+        pass
+
+    return {"ok": True, "org_id": org_id, "org_name": (inv.get("orgs") or {}).get("name")}
+
+
+class _PostSignupRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    email: str = Field(min_length=3, max_length=320)
+
+
+@app.post("/auth/post-signup")
+async def post_signup(body: _PostSignupRequest, authorization: str | None = Header(default=None)):
+    """Hook fired after a hirer signs up. Auto-joins them to a matching
+    org if their email domain has been configured for auto-join, else
+    seeds their personal org as the active context."""
+    _verify_internal(authorization)
+    from core import db
+    from core.orgs import extract_email_domain, is_free_email_domain
+
+    domain = extract_email_domain(body.email)
+    if domain and not is_free_email_domain(domain):
+        org = db.get_org_by_auto_join_domain(domain)
+        if org:
+            db.add_org_member(org["id"], body.user_id, role="member")
+            db.set_active_org_id(body.user_id, org["id"])
+            return {"ok": True, "joined_org_id": org["id"], "auto_joined": True}
+
+    # No auto-join match — make sure the user has a personal org and use
+    # it as their active context.
+    personal_org_id = db.get_or_create_personal_org(body.user_id)
+    if personal_org_id:
+        db.set_active_org_id(body.user_id, personal_org_id)
+    return {"ok": True, "joined_org_id": personal_org_id, "auto_joined": False}

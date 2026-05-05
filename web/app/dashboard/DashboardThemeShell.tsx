@@ -8,6 +8,7 @@
 import { ThemeProvider } from '@/lib/theme'
 import { LogoMark } from '@/components/Logo'
 import { LegalFooter } from '@/components/LegalFooter'
+import { WorkspaceSwitcher } from '@/components/WorkspaceSwitcher'
 import DashboardNav from './DashboardNav'
 
 type Props = {
@@ -21,11 +22,15 @@ export function DashboardThemeShell({ email, isAdmin, children }: Props) {
     <ThemeProvider storageKey="basanite-dashboard-theme" defaultTheme="light">
       <div className="min-h-screen bg-earth-50 dark:bg-basanite-900 transition-colors duration-150">
         <nav className="bg-white dark:bg-basanite-950 border-b border-earth-200 dark:border-basanite-700 transition-colors">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-            <a href="/dashboard" className="flex items-center gap-2">
-              <LogoMark size={24} dark />
-              <span className="font-semibold text-basanite-900 dark:text-earth-100 text-sm">Basanite</span>
-            </a>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <a href="/dashboard" className="flex items-center gap-2 shrink-0">
+                <LogoMark size={24} dark />
+                <span className="font-semibold text-basanite-900 dark:text-earth-100 text-sm hidden sm:inline">Basanite</span>
+              </a>
+              <span className="text-basanite-300 dark:text-basanite-700">/</span>
+              <WorkspaceSwitcher />
+            </div>
             <DashboardNav email={email} isAdmin={isAdmin} />
           </div>
         </nav>

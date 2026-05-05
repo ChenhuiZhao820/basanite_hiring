@@ -38,6 +38,10 @@ export default function SetPasswordPage() {
     setLoading(true)
     const { error: updateError } = await supabase.auth.updateUser({ password })
     if (updateError) { setError(updateError.message); setLoading(false); return }
+    // Best-effort: hit the post-signup hook so a hirer landing here is
+    // auto-joined to a matching domain org (if configured) or has their
+    // personal-org context seeded as active. Never blocks the redirect.
+    try { await fetch('/api/auth/post-signup', { method: 'POST' }) } catch {}
     router.push('/dashboard')
     router.refresh()
   }

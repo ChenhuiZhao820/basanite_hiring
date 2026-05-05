@@ -68,9 +68,6 @@ def _render_report_html(candidate_name: str, role_title: str, report: dict) -> s
 # user to opt out of further communications or erase their data.
 _LEGAL_FOOTER_HTML = """
 <div style="font-size:11px;color:#8a7a5e;margin-top:24px;padding-top:16px;border-top:1px solid #eee;line-height:1.55">
-  <p style="margin:0 0 6px">
-    Basanite Ltd · 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ, UK
-  </p>
   <p style="margin:0">
     Privacy queries: <a href="mailto:privacy@basanite.co.uk" style="color:#8a7a5e">privacy@basanite.co.uk</a>
     · <a href="https://basanite.co.uk/privacy" style="color:#8a7a5e">Privacy notice</a>
@@ -231,6 +228,74 @@ def send_invite_email(
         return False
 
 
+# ─── Org invitation (organisations rollout) ────────────────────────────────
+
+def send_org_invitation_email(
+    *,
+    to: str,
+    org_name: str,
+    inviter_name: str | None,
+    accept_url: str,
+) -> bool:
+    """Email the invitee a one-click 'Accept invitation' link. The token
+    in the URL is the only auth — they're matched against `email` at the
+    moment of acceptance."""
+    api_key = os.getenv("RESEND_API_KEY", "")
+    sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
+    if not api_key:
+        print("  [email/org-invite] skipped (RESEND_API_KEY missing)")
+        return False
+    if not to or not _EMAIL_RE.match(to):
+        print("  [email/org-invite] skipped (recipient malformed)")
+        return False
+    if any(s in sender for s in _SANDBOX_SENDERS):
+        print(
+            "  [email/org-invite] WARNING: using Resend sandbox sender; "
+            "deliveries to anyone other than the Resend account email will fail."
+        )
+    inviter = (inviter_name or "Your teammate").strip()[:80] or "Your teammate"
+    safe_org = _strip_header(org_name)[:140] or "their team"
+    safe_url = escape(accept_url)
+    html = f"""
+<!doctype html>
+<html>
+  <body style="margin:0;padding:24px;background:#f6f3ee;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;color:#1a1a1a">
+    <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e5dccd;padding:32px">
+      <p style="font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#8a7a5e;margin:0 0 4px">Basanite</p>
+      <h1 style="font-size:20px;margin:0 0 12px">{escape(inviter)} invited you to {escape(safe_org)}</h1>
+      <p style="font-size:14px;line-height:1.55;color:#333;margin:0 0 16px">
+        Joining gives you access to {escape(safe_org)}&rsquo;s shared roles, candidate pipelines, cloned interviewer voices, and ATS connections on Basanite.
+      </p>
+      <p style="margin:24px 0">
+        <a href="{safe_url}" style="display:inline-block;background:#1a1a1a;color:#f6f3ee;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:6px">Accept invitation</a>
+      </p>
+      <p style="font-size:12px;color:#666;margin:0">
+        Or copy this link: <a href="{safe_url}" style="color:#666">{safe_url}</a>
+      </p>
+      <p style="font-size:12px;color:#888;margin:16px 0 0">
+        The invitation expires in 14 days. If you didn&rsquo;t expect this, ignore this email — nothing happens until you click the link.
+      </p>
+      {_LEGAL_FOOTER_HTML}
+    </div>
+  </body>
+</html>
+""".strip()
+    try:
+        import resend
+        resend.api_key = api_key
+        resend.Emails.send({
+            "from": sender,
+            "to": [to],
+            "subject": f"You're invited to {safe_org} on Basanite",
+            "html": html,
+        })
+        return True
+    except Exception as e:
+        from core.log_safe import scrub
+        print(f"  [email/org-invite] failed: {type(e).__name__}: {scrub(str(e))}")
+        return False
+
+
 # ─── Founder ops alert (PR5/PR7) ───────────────────────────────────────────
 
 def send_dsar_verification_email(*, to: str, request_type: str, verify_url: str) -> bool:
@@ -274,7 +339,7 @@ def send_dsar_verification_email(*, to: str, request_type: str, verify_url: str)
       </p>
       <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
       <p style="font-size:11px;color:#8a7a5e;margin:0">
-        Basanite Ltd · 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ · privacy@basanite.co.uk
+        Privacy queries: privacy@basanite.co.uk
       </p>
     </div>
   </body>
