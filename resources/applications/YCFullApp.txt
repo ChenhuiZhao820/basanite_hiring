@@ -1,0 +1,735 @@
+How long have the founders known one another and how did you meet? Have any of the founders not met in person?
+3 years, we met in 2nd year of university have been best friends since.
+Who writes code, or does other technical work on your product? Was any of it done by a non-founder? Please explain.
+Andrew and Lynn
+Are you looking for a cofounder?
+no
+Founder Video
+Company
+Company name
+Basanite
+Describe what your company does in 50 characters or less.
+AI that screens, assesses & negotiates tech hires
+Company URL, if any
+basanite.co.uk
+Demo Video
+Please provide a link to the product, if any.
+basanite.co.uk
+andrew.robertson-2@student.manchester.ac.uk/YCDemoPassword12,,
+What is your company going to make? Please describe your product and what it does or will do.
+Basanite is an AI agent that runs technical interviews end-to-end, so hirers only spend time on candidates worth meeting.
+
+A hirer pastes a job description and Basanite generates a tailored customisable evaluation framework, including the ability to negotiate salaries and inject specific conversational flows. Each candidate uploads their CV, and the system builds a unique interview from their actual experience. The interview agent probes the depth behind every answer, tracks narrative consistency, and flags AI-assisted responses. It then ranks all applicants with dimension scores, verbatim evidence, and salary compatibility. The hirer gets a shortlist with a briefing document for each candidate telling them exactly where to probe in the final round carried out by humans.
+
+We are currently building our 3rd iteration: a sandboxed coding environment where candidates work alongside an AI coding agent on a real codebase. This lets us measure the one skill no existing interview captures: how effectively an engineer collaborates with AI tooling.
+Where do you live now, and where would the company be based after YC?
+Manchester, UK & Hangzhou, China / San Francisco, USA
+Explain your decision regarding location.
+San Francisco. That's where our customers, investors, and the people building AI dev tools are. It's also where our problem (candidate inflation) is worst. We're currently split between the UK and China, and distributed early teams ship slower. All three of us will relocate to SF for the batch.
+Progress
+How far along are you?
+We've shipped our second iteration. The product runs end-to-end: ATS coverage across 50+ systems via Merge.dev, personalised interview synthesis from each candidate's CV, and structured reports for hirers. A data analytics team at Virgin Media O2 trialed the platform and gave us strong feedback.
+
+We're now in a verbal commitment for our first paid pilot with Maxwell Bond, a 7-figure recruitment firm, for contracting and part-time technical roles. The contract is worth ~£40k/year.
+How long have each of you been working on this? How much of that has been full-time? Please explain.
+We started Basanite 6 weeks ago. Lynn (CPO) is full-time. Aditya (CEO) and Drew (CTO) are doing 20-25 hours a week alongside final-year computer science at Manchester. Both graduate in June 2026 and go full-time the day they finish.
+
+We shipped the MVP in week one: technical AI interviews with 100% AI detection on our trial set. In mock interviews, candidates who are genuinely fit for a role consistently rank higher than weaker ones, whether they cheat or not. We did desk research with hiring managers and an occupational psychometricist at Manchester to refine the scoring rubric. We've been accepted onto an internal accelerator at Stripe and have invited to speak at the Digital Futures conference in Manchetser on May 7th.
+What tech stack are you using, or planning to use, to build this product? Include AI models and AI coding tools you use.
+The product is a Next.js frontend on Vercel and a FastAPI backend on Render, with Supabase for database, auth, and recording storage. Interviews are run by an ElevenLabs voice agent driven by Claude Sonnet 4.6. A parallel Claude Opus 4.7 supervisor watches the live transcript and emits tactical directives to lift question depth. Haiku 4.5 handles CV extraction and report generation. ATS integrations go through Merge.dev. Transactional email via Resend.
+
+We are an AI Native company, if we had the budget to token max, we would. Our dev stack includes 2xClaude Max, 1xClaude Pro, Ottr premium. We created custom tooling for in-house automations: outreach, web interaction, competitor analysis. All of which utilise Claude Code context engineering in our private Github repo.
+Optional: attach a coding agent session you're particularly proud of.
+▐▛███▜▌ Claude Code v2.1.121 ▝▜█████▛▘ Opus 4.7 · Claude Max ▘▘ ▝▝ ~/dev/Basanite
+
+❯ I get this error on the deployed webpage.
+
+login:1 Executing inline script violates the following Content Security
+Policy directive 'script-src 'self' 'nonce-aVIEz1Xdj2//XIXqvMwm1A==' blob:'.
+Either the 'unsafe-inline' keyword, a hash
+('sha256-Le/0Kco7DjsaALkVzqohNsD6cbdzUcLuUzCsy0M1JPU='), or a nonce
+('nonce-...') is required to enable inline execution. The action has been
+blocked.Understand this error
+login:1 Executing inline script violates the following Content Security
+Policy directive 'script-src 'self' 'nonce-aVIEz1Xdj2//XIXqvMwm1A==' blob:'.
+Either the 'unsafe-inline' keyword, a hash
+('sha256-3M8LwqDZeVJeCSl6yjUVRAay4xmgBKmIiOvg/Q8SE2c='), or a nonce
+('nonce-...') is required to enable inline execution. The action has been
+blocked.Understand this error
+login:1 Executing inline script violates the following Content Security
+Policy directive 'script-src 'self' 'nonce-aVIEz1Xdj2//XIXqvMwm1A==' blob:'.
+Either the 'unsafe-inline' keyword, a hash
+('sha256-jMmbinV2WdEoSXxPxLb19or1dkkJ27CsjFGIZMMrVc4='), or a nonce
+('nonce-...') is required to enable inline execution. The action has been
+blocked.Understand this error
+login:1 Executing inline script violates the following Content Security
+Policy directive 'script-src 'self' 'nonce-aVIEz1Xdj2//XIXqvMwm1A==' blob:'.
+Either the 'unsafe-inline' keyword, a hash
+('sha256-tn7xe1bCkVzTD45JAucdbqtfHmV0ujDhn/cWoVU5hsg='), or a nonce
+('nonce-...') is required to enable inline execution. The action has been
+blocked.Understand this error
+login:1 Executing inline script violates the following Content Security
+Policy directive 'script-src 'self' 'nonce-aVIEz1Xdj2//XIXqvMwm1A==' blob:'.
+Either the 'unsafe-inline' keyword, a hash
+('sha256-YFH1ntnIgoHU0dBEWRPXQ/Pfz8ARynOaT2ZuNjz05G4='), or a nonce
+('nonce-...') is required to enable inline execution. The action has been
+blocked.Understand this error
+a4eb85eb8d3fddf9.js?dpl=dpl_HJe72oX4ME2KSA7vFLN9mXFGY5vR:1 Uncaught (in
+promise) Error: Connection closed.
+at eu (a4eb85eb8d3fddf9.js?dpl=dpl_HJe72oX4ME2KSA7vFLN9mXFGY5vR:1:13766)
+at t (a4eb85eb8d3fddf9.js?dpl=dpl_HJe72oX4ME2KSA7vFLN9mXFGY5vR:1:14121)
+
+Searched for 5 patterns, read 4 files, listed 1 directory (ctrl+o to expand)
+
+⏺ The CSP nonce flow is set up in middleware, but the root layout never reads headers(), so Next.js is statically rendering pages — meaning its inline bootstrap/hydration scripts get emitted at build time without the nonce attribute. When the request hits and CSP is enforced with a nonce, those nonceless inline scripts get blocked.
+
+The fix is to opt routes into dynamic rendering by reading the x-nonce header in the root layout. Once Next.js sees both the request-side Content-Security-Policy header and the route is dynamic, it automatically stamps its framework inline scripts with the matching nonce.
+
+⏺ Update(web/app/layout.tsx) ⎿  Added 1 line 1 import type { Metadata } from 'next' 2 import { Fraunces, DM_Serif_Display } from 'next/font/google' 3 +import { headers } from 'next/headers'
+4 import { AuthErrorRedirect } from '@/components/AuthErrorRedirec t' 5 import './globals.css' 6
+
+⏺ Update(web/app/layout.tsx) ⎿  Added 6 lines, removed 1 line 27 }, 28 } 29
+30 -export default function RootLayout({ children }: { children: Re -act.ReactNode }) {
+30 +export default async function RootLayout({ children }: { childr +en: React.ReactNode }) {
+31 + // Reading the per-request nonce from middleware opts the tre +e into dynamic
+32 + // rendering, which is required for Next.js to attach the mat +ching nonce to
+33 + // its framework inline scripts. Without this, hydration scri +pts ship without
+34 + // a nonce and the strict CSP blocks them.
+35 + await headers()
+36 return ( 37 <html lang="en" className={${fraunces.variable} ${dmSerif. variable}}> 38 <body>
+
+⏺ Fixed. The root cause:
+
+web/middleware.ts does the CSP nonce setup correctly — generates a per-request nonce, attaches it to the request as x-nonce, and sets Content-Security-Policy on both the request and response. But for Next.js to actually stamp that nonce onto its framework inline scripts (hydration, streaming, RSC payload), the route has to be dynamically rendered. Without that, Next.js statically pre-renders the HTML at build time with inline scripts that have no nonce — and those are exactly what your browser is blocking.
+
+The fix is in web/app/layout.tsx:34 — calling await headers() in the root layout opts the entire tree into dynamic rendering. Next.js then sees the CSP on the request, picks up the nonce, and applies it to its inline scripts automatically.
+
+Once deployed, the login:1 inline-script CSP errors should disappear. The Connection closed. error in a4eb85eb…js is most likely a downstream effect (a Supabase realtime/auth client that couldn't initialise because its bootstrap script was blocked) and should clear up too — verify after the deploy.
+
+Two quick sanity checks worth doing once redeployed:
+
+Open the login page and confirm View Source shows <script nonce="…"> on Next's inline scripts, with the same nonce as the Content-Security-Policy response header.
+The NextResponse.redirect(...) paths in middleware.ts (lines 79–110) don't currently set the CSP header on the redirect response itself. That's harmless for the redirect (no body to execute), but if you ever start seeing CSP gaps on redirected hops, attach cspHeader to those NextResponse.redirect returns too.
+✻ Crunched for 1m 27s
+
+❯ this was working fine for ages why did it randomly fail?
+
+⏺ Bash(git -C /Users/andrewrobertson/dev/Basanite log --oneline -20 -- web/middleware.ts web/next.config.js) ⎿  a704b9e chore: security hardening, resources, and logos fa175fa feat: distinct hirer and candidate roles in app_metadata 76cf504 feat: voice interview via ElevenLabs with Opus Director superv … +2 lines (ctrl+o to expand)
+
+⏺ Bash(git -C /Users/andrewrobertson/dev/Basanite log --oneline --all -10) ⎿  a704b9e chore: security hardening, resources, and logos 86b4147 chore: move cold email prompt under resources/outreach 1adb506 Add files via upload … +9 lines (ctrl+o to expand)
+
+⏺ Bash(git -C /Users/andrewrobertson/dev/Basanite show a704b9e --stat | head -30) ⎿  commit a704b9e43d3c26accaaef3ad35909a2b73e5693c Author: g52332ar andrew.robertson-2@student.manchester.ac.uk Date: Mon Apr 27 14:53:19 2026 +0200 … +22 lines (ctrl+o to expand)
+
+⏺ It didn't randomly fail — the strict CSP itself is brand new. It landed in commit a704b9e (yesterday, "chore: security hardening, resources, and logos"), which is also the commit that introduced web/middleware.ts. The commit message even says it explicitly: "middleware: per-request CSP nonce, broaden matcher to attach CSP to every HTML/API response".
+
+Before that commit there was no CSP header on responses, so Next.js's inline hydration scripts loaded fine. The new middleware turned on a strict script-src 'self' 'nonce-…' policy, but the static-rendering side of the change (reading headers() in the layout to opt routes into dynamic rendering) wasn't done — so Next.js was emitting nonceless inline scripts that the brand-new CSP then blocked. That's the gap I just closed in web/app/layout.tsx.
+
+Net: this is a regression introduced ~24 hours ago by the security-hardening commit, not a Next.js or browser update breaking something stable.
+
+✻ Brewed for 20s
+
+※ recap: Goal was to fix CSP errors blocking inline scripts on the deployed login page. I added await headers() to web/app/layout.tsx to opt routes into dynamic rendering. Next action: deploy and verify the errors are gone. (disable recaps in /config)
+
+❯ push the changes to prod
+
+⏺ Bash(git -C /Users/andrewrobertson/dev/Basanite status) ⎿  On branch main Your branch is up to date with 'origin/main'. … +7 lines (ctrl+o to expand)
+
+⏺ Bash(git -C /Users/andrewrobertson/dev/Basanite diff web/app/layout.tsx) ⎿  diff --git a/web/app/layout.tsx b/web/app/layout.tsx index ddc5e35..08cb8c6 100644 --- a/web/app/layout.tsx … +21 lines (ctrl+o to expand)
+
+⏺ Bash(git -C /Users/andrewrobertson/dev/Basanite remote -v && git -C /Users/andrewrobertson/dev/Basanite log origin/main..HEAD --oneline 2>/dev/null) ⎿  origin https://github.com/NeoDrew/basanite.git (fetch) origin https://github.com/NeoDrew/basanite.git (push)
+
+⏺ Bash(git add web/app/layout.tsx && git commit -m "$(cat <<'EOF' fix: opt root layout into dynamic rendering so CSP nonces attach…) ⎿  [main 4b38884] fix: opt root layout into dynamic rendering so CSP nonc es attach 1 file changed, 7 insertions(+), 1 deletion(-)
+
+⏺ Bash(git push origin main) ⎿  To https://github.com/NeoDrew/basanite.git a704b9e..4b38884 main -> main
+
+⏺ Pushed 4b38884 to origin/main. Vercel should pick it up and start a production build automatically. Once the deploy goes green, hard-refresh /login and the inline-script CSP errors should be gone.
+
+✻ Sautéed for 20s ❯ /effort max
+⎿ Set effort level to max (this session only): Maximum capability with deepest reasoning
+
+❯ /plan I want to change the conversation from a text message system to free
+speech and an AI 'bubble' which moves on the AI's voice pitch and tone. Kind of like the NCS music videos. I want no text on the screen and a pattern in the
+background, kinda like wall paper. Video is still there but the conversation
+happens between you and a Bubble.
+⎿ Enabled plan mode
+
+⏺ I'll need to dig into the current interview UI and the ElevenLabs integration before I can propose anything sensible. Let me research first, then plan.
+
+Listed 1 directory (ctrl+o to expand)
+
+⏺ Bash(find /Users/andrewrobertson/dev/Basanite/web -type f ( -name ".tsx" -o -name ".ts" ) -not -path "/node_modules/" | xargs grep -l -i "elevenlabs|conversat…) ⎿  /Users/andrewrobertson/dev/Basanite/web/middleware.ts /Users/andrewrobertson/dev/Basanite/web/app/page.tsx /Users/andrewrobertson/dev/Basanite/web/components/VoiceInterview.tsx … +10 lines (ctrl+o to expand)
+
+⏺ Plan mode is active. Let me research the current interview UI to understand exactly what's there before proposing a redesign.
+
+⏺ Explore(Map current candidate interview UI) ⎿  Done (25 tool uses · 77.0k tokens · 1m 24s) (ctrl+o to expand)
+
+⏺ Solid reconnaissance. Before I move to design, the load-bearing technical unknown is: does @elevenlabs/react v0.7.1 expose any audio analysis surface for the agent's output stream? The reconnaissance says it doesn't visibly expose one, but I want to confirm by checking the actual SDK API rather than just the current usage. That decides whether the bubble can truly be voice-pitch-reactive or has to fall back to a synthetic envelope driven by isSpeaking.
+
+Searched for 1 pattern, read 1 file, listed 1 directory (ctrl+o to expand)
+
+⏺ The SDK exposes exactly what we need: getOutputByteFrequencyData() (FFT bins of agent's output audio), getOutputVolume(), plus an onAudio callback and onVadScore voice-activity events. The bubble can genuinely react to AI voice pitch & tone in real time — no synthetic fallback needed.
+
+Now I'll have a Plan agent draft the implementation strategy in detail, then I'll review and ask the user about the few open design choices.
+
+⏺ Plan(Design bubble interview UI plan) ⎿  Done (8 tool uses · 41.9k tokens · 2m 1s) (ctrl+o to expand)
+
+⏺ The plan is detailed enough. Before finalizing, I want to confirm a few design choices that meaningfully affect the feel of the screen — they're judgment calls, not implementation details.
+
+⏺ User declined to answer questions
+
+❯ Dark Background yes, Just react to AI voice Yes, Mobile native too, yes.
+
+⏺ Got it: dark, AI-only reactivity, mobile in scope. Writing the final plan now.
+
+⏺ Updated plan ⎿  /plan to preview
+
+⏺ User approved Claude's plan ⎿  Plan saved to: ~/.claude/plans/dynamic-floating-pebble.md · /plan to edit Voice-only Interview UI — Audio-reactive Bubble
+
+ Context
+
+ The candidate interview screen today (web/components/VoiceInterview.tsx) is
+  voice-primary (ElevenLabs Conversational AI agent) with a text-chat
+ overlay: left/right transcript bubbles, a header with phase label + elapsed
+  time + progress bar, a "your turn / interviewer is speaking" status line,
+ and a 96×96 self-view in the bottom-left. The user wants to replace this
+ overlay with a single audio-reactive "bubble" — NCS music-video style —
+ that pulses and morphs to the AI's voice pitch and tone, set against a
+ wallpaper-style background. No text on screen during the conversation. The
+ candidate's webcam stays visible (smaller, repositioned). The existing
+ voice/recording/finalize/director pipeline must be preserved exactly — only
+  the visual layer changes.
+
+ Confirmed product decisions:
+ - Theme: dark, NCS-style (basanite/black backdrop, gold glow). Other
+ screens stay light.
+ - Reactivity: AI's voice only. Candidate audio does not drive the bubble.
+ - Viewports: desktop, tablet, and mobile all in scope (~375px upward).
+
+ The big technical unlock: @elevenlabs/react v0.7.1 already exposes
+ getOutputByteFrequencyData() (FFT bins of agent output), getOutputVolume(),
+  and isSpeaking on the useConversation() hook (see
+ web/node_modules/@elevenlabs/react/dist/index.d.ts:31-46). The bubble can
+ be genuinely audio-reactive — no synthetic envelope.
+
+ Approach
+
+ Component architecture
+
+ Refactor web/components/VoiceInterview.tsx into a thin host that owns the
+ SDK + lifecycle + recorder + timer + director, plus three new
+ presentational children:
+
+ - web/components/AgentBubble.tsx (new) — SVG blob, runs its own rAF loop,
+ mutates DOM via refs (no React re-renders per frame).
+ - web/components/InterviewBackground.tsx (new) — full-bleed dark wallpaper
+ with grain.
+ - web/components/SelfView.tsx (new) — circular self-view extracted from
+ current JSX.
+
+ VoiceInterview keeps its useConversation() instance, captures it in a ref,
+ and passes a stable getter to the bubble:
+
+ type FftSnapshot = { freq: Uint8Array | undefined; volume: number;
+ isSpeaking: boolean }
+ const getFft: () => FftSnapshot
+
+ AgentBubble props: getFft (stable callback over a ref), phase: Phase
+ (re-renders only on phase change). All the existing state, timers, refs,
+ transcript capture, director firing, finalize, route push remain untouched
+ — only the JSX returned during the live phase changes.
+
+ Bubble visualization (SVG morphing path)
+
+ Single <svg viewBox="-150 -150 300 300"> containing a <path> whose d
+ attribute is rebuilt every animation frame.
+
+ - 36 control points around a circle at base radius R = 110.
+ - Each frame: pull FFT bins via getOutputByteFrequencyData(), split into
+ low (bins 0–3), mid (4–15), high (16–31) bands, normalize to 0–1.
+ - Per control point: blend the three bands by angle (lows widen the whole
+ shape, mids ripple at 6 lobes, highs ripple at 12), plus a slow inline
+ simplex-noise term for organic-ness.
+ - Low-pass smooth radii frame-to-frame: smoothed[i] = smoothed[i] * 0.78 + 
+ raw[i] * 0.22. Volume smoothing alpha 0.15.
+ - Build d with closed quadratic Béziers between midpoints (cheap, smooth,
+ no library).
+ - Fill: <radialGradient> from #3d3a36 (basanite-700) at center to #c49a2f
+ (gold-500) at 80%.
+ - Glow: feGaussianBlur filter driven by a CSS variable --bubble-glow set
+ per frame from getOutputVolume(). Wrapping <g> gets transform: scale(1 + 
+ vol*0.04).
+ - Idle (when !isSpeaking): deform = 6 (very small) + R += sin(t*0.0015)*4
+ so the bubble breathes slowly.
+ - Inline a ~40-line simplex-noise implementation rather than adding
+ simplex-noise as a dep.
+
+ Phase-driven CSS:
+ - data-phase="idle" (connecting) → 70% opacity, 5s breathing period, no
+ reactivity.
+ - data-phase="live" → full reactivity (only when isSpeaking; otherwise
+ breathe).
+ - data-phase="error" → desaturate to basanite-only fill, shrink 20%,
+ freeze. Plus a small toast (the only on-screen text in the redesign — error
+  is unavoidable).
+ - data-phase="ending" → 1s warm flare then ease to scale 0.8 + opacity 0.6.
+ - data-phase="done" → collapse to a point over 600ms; the existing
+ completion takeover at VoiceInterview.tsx:410-473 then renders unchanged.
+ - prefers-reduced-motion: reduce → static breathing only, no morph.
+
+ Background wallpaper
+
+ InterviewBackground.tsx is a fixed-position layered div, pure CSS, no
+ asset:
+
+ - Layer 1: linear-gradient(180deg, #1a1a18, #0f0f0e) — basanite-900 → 950.
+ - Layer 2: radial-gradient(ellipse 60% 50% at 50% 45%, 
+ rgba(196,154,47,0.12), transparent 70%) — soft gold halo behind the bubble.
+ - Layer 3: inline-SVG <feTurbulence baseFrequency="0.9" numOctaves="2"/>
+ data URI, mix-blend-mode: overlay; opacity: 0.06 — film grain.
+
+ Self-view
+
+ Extract the existing <video> from VoiceInterview.tsx:529-536 into
+ SelfView.tsx. Keep muted, playsInline, scale-x-[-1] mirroring, and the same
+  previewRef (forwardRef). New look:
+
+ - fixed bottom-6 right-6, rounded-full, 88px diameter (desktop), 64px on
+ mobile (<640px).
+ - ring-1 ring-gold-500/40 shadow-lg shadow-black/30.
+ - REC indicator: 6px red pulsing dot in the top-right of the circle,
+ aria-label="Recording in progress" (no "REC" text). Tooltip on hover.
+ - Hover (desktop only): expands to ~120px over 200ms.
+
+ Minimal controls
+
+ "End interview early" button: fixed bottom-6 left-1/2 -translate-x-1/2,
+ ghost style — text-earth-200/40 hover:text-earth-100 border 
+ border-earth-200/15 hover:border-gold-500/60 px-4 py-2 text-xs uppercase 
+ tracking-widest. Single click triggers the existing requestGracefulEnd flow
+  (no confirmation modal). On mobile, slightly larger tap area (min 44px
+ height) but same position.
+
+ Delete from the live JSX: header bar (logo + phase label + time + progress
+ bar), transcript scroll panel, status footer line. Keep the underlying
+ elapsed timer, setInterval, cue logic, director triggers, transcript
+ capture (bubbles state) — they're load-bearing for the agent's behavior and
+  finalize payload.
+
+ Mobile / responsive
+
+ - Bubble sized in vmin (~60vmin on <640px, 38vmin on tablet/desktop) so it
+ scales with the smaller axis.
+ - Self-view: 64px on <640px, 88px from sm: breakpoint.
+ - End button keeps centered-bottom, but pb-[env(safe-area-inset-bottom)] to
+  clear iOS home indicator.
+ - Background gradient/grain are device-pixel-density independent.
+ - Test that pinch-zoom is disabled (<meta name="viewport" 
+ content="...maximum-scale=1..."> already set in layout? — verify) so the
+ bubble doesn't get zoomed out of place.
+
+ Performance
+
+ - One rAF loop, cancelled in useEffect cleanup.
+ - 36 control points; smoothing alpha 0.22 (radii) / 0.15 (volume).
+ - getOutputByteFrequencyData() returns undefined until first audio frame —
+ guard.
+ - Cleanup on unmount: cancel rAF, stop tracks, stop recorder, clear
+ interval (existing).
+
+ Critical files
+
+ Modify:
+ - web/components/VoiceInterview.tsx — strip header/transcript/footer JSX
+ from the live phase block; render <InterviewBackground />, <AgentBubble 
+ getFft={...} phase={phase} />, <SelfView ref={previewRef} phase={phase} />,
+  <EndButton onClick={requestGracefulEnd} />, <ErrorToast errMsg={errMsg} 
+ />. Keep ALL hooks, refs, timers, lifecycle handlers, the phase === 
+ 'ending' || 'done' takeover (lines 410–473), and the transcript-capture
+ setBubbles in onMessage.
+ - web/app/assess/[token]/interview/page.tsx — change loading state's
+ bg-earth-50 → bg-basanite-950 so there's no light→dark flash on mount.
+ - web/app/globals.css — add @keyframes bubble-breathe, a
+ prefers-reduced-motion block, default --bubble-glow CSS var.
+ - web/tailwind.config.ts — register bubble-breathe keyframes/animation
+ alongside the existing pulse-slow/fade-up set.
+
+ Create:
+ - web/components/AgentBubble.tsx — SVG + rAF + inline simplex-noise.
+ - web/components/InterviewBackground.tsx — layered gradients + inline-SVG
+ grain.
+ - web/components/SelfView.tsx — circular mirrored self-view, forwardRef.
+ - web/components/EndButton.tsx — ghost button.
+ - web/components/ErrorToast.tsx — bottom-center toast, only renders when
+ errMsg is set.
+
+ Reuse (don't reimplement):
+ - useConversation from @elevenlabs/react — already imported in
+ VoiceInterview.
+ - getOutputByteFrequencyData() / getOutputVolume() / isSpeaking —
+ web/node_modules/@elevenlabs/react/dist/index.d.ts:31-46.
+ - previewRef MediaStream wiring — VoiceInterview.tsx:217-224.
+ - Tailwind theme tokens (basanite, gold, earth) — web/tailwind.config.ts.
+ - Existing finalize/upload/director/cue logic in VoiceInterview.tsx:33-72, 
+ 146-148, 167, 337-387 — untouched.
+
+ No changes needed:
+ - Backend (api.py, interview.py, etc.).
+ - web/app/api/assess/[token]/voice-session/route.ts, /director, /finalize,
+ /upload-recording.
+ - The check page (web/app/assess/[token]/check/page.tsx) — already releases
+  its stream before navigating, so the interview can re-acquire fresh.
+ - No new npm dependencies (simplex-noise inlined).
+ - Middleware/CSP — the new code only uses inline SVG via data URIs and
+ same-origin assets, well within the existing CSP.
+
+ Verification
+
+ Run npm run dev from web/. Drive via chromeflow MCP.
+
+ Functional (via DevTools network panel + console):
+ 1. Hit the candidate flow: /assess/{token} → onboard → check (grant mic +
+ cam) → interview.
+ 2. On interview load, confirm POST /api/assess/{token}/voice-session →
+ ElevenLabs websocket connects → MediaRecorder starts logging blobs.
+ 3. Speak. Confirm bubbles state grows on onMessage (transcript still
+ captured) but nothing renders to the DOM.
+ 4. Wait 2 minutes: confirm POST /api/assess/{token}/director fires;
+ response logged.
+ 5. Click "End interview early": confirm graceful drain (no agent cut-off
+ mid-sentence), then POST /api/assess/{token}/upload-recording, then POST 
+ /api/assess/{token}/finalize with conversation_id + recording_path +
+ assessment_id, then 4-second hold, then /assess/{token}/complete.
+
+ Visual (chromeflow take_and_copy_screenshot):
+ 1. Connecting state: dim breathing bubble, dark backdrop, no jitter, no
+ text.
+ 2. Live + agent speaking: bubble morphs visibly. Capture three frames 200ms
+  apart; confirm the SVG d attribute differs across frames (get_elements on
+ the path).
+ 3. Live + agent silent: gentle breathing only, no morph.
+ 4. Self-view: bottom-right circle, mirrored, gold ring, red dot pulsing.
+ 5. Background: dark with warm glow + grain, no banding on retina.
+ 6. End button: barely visible at idle, brightens on hover.
+ 7. Error path (kill the websocket via DevTools network blocking): bubble
+ desaturates + shrinks; toast appears bottom-center with a Reload link.
+ 8. Resize 1440 → 768 → 375: bubble scales (vmin), self-view stays
+ bottom-right, end button stays bottom-center, no overlap. iOS Safari
+ simulator: safe-area-inset clears the home indicator.
+ 9. Toggle macOS "Reduce motion" in System Settings → Accessibility: bubble
+ stops morphing, breathes only.
+
+ Perf checks:
+ - Performance tab heap snapshot before vs after a 5-minute idle session —
+ no growth.
+ - Zero React warnings in console across the whole flow.
+ - Recording upload stays within ~50 MB cap for a 10-minute session (bitrate
+  budget unchanged).
+⏺ Plan approved. I'll set up a task list and start by reading the files I need to refactor. Read 4 files (ctrl+o to expand)
+
+⏺ I have full context. Now building the components in order.
+
+⏺ Write(web/components/AgentBubble.tsx) ⎿  Wrote 177 lines to web/components/AgentBubble.tsx 1 'use client' 2 3 import { useEffect, useRef } from 'react' 4 5 type FftSnapshot = { 6 freq: Uint8Array | undefined 7 volume: number 8 isSpeaking: boolean 9 } … +181 lines (ctrl+o to expand)
+
+⏺ Write(web/components/InterviewBackground.tsx) ⎿  Wrote 48 lines to web/components/InterviewBackground.tsx 2 'use client' 3 // Full-bleed dark wallpaper for the interview screen. Three lay ers: 4 // 1. linear gradient basanite-900 → 950 5 // 2. soft warm radial halo behind the bubble 7 // No external assets, no images, no JS work after first paint.) 8 9 const GRAIN_SVG = 10 "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='2 40'>" + … +44 lines (ctrl+o to expand)
+
+⏺ Write(web/components/SelfView.tsx) ⎿  Wrote 38 lines to web/components/SelfView.tsx 2 'use client' 3 import { forwardRef } from 'react' 4 5 type Props = { 6 phase: 'idle' | 'live' | 'ending' | 'done' | 'error' 7 } 8 9 const SelfView = forwardRef<HTMLVideoElement, Props>(function Se lfView({ phase }, ref) { 10 return ( … +32 lines (ctrl+o to expand)
+
+⏺ Write(web/components/EndButton.tsx) ⎿  Wrote 21 lines to web/components/EndButton.tsx 1 'use client' 2 3 type Props = { 4 onClick: () => void 5 visible: boolean 6 } 7 8 export default function EndButton({ onClick, visible }: Props) { 9 if (!visible) return null 10 return ( … +15 lines (ctrl+o to expand)
+
+⏺ Write(web/components/ErrorToast.tsx) ⎿  Wrote 28 lines to web/components/ErrorToast.tsx 1 'use client' 2 3 type Props = { 4 message: string 5 } 6 7 export default function ErrorToast({ message }: Props) { 8 if (!message) return null 9 return ( 10 <div … +23 lines (ctrl+o to expand)
+
+⏺ Now refactoring VoiceInterview. I'll do targeted edits to preserve the load-bearing logic and only swap out the visual layer.
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Added 6 lines, removed 1 line 1 'use client' 2
+3 import { useConversation } from '@elevenlabs/react' 4 -import { useEffect, useMemo, useRef, useState } from 'react'
+4 +import { useCallback, useEffect, useMemo, useRef, useState } fr +om 'react'
+5 import { useRouter } from 'next/navigation' 6 import { LogoMark } from '@/components/Logo' 7 +import AgentBubble from '@/components/AgentBubble'
+8 +import InterviewBackground from '@/components/InterviewBackgrou +nd'
+9 +import SelfView from '@/components/SelfView'
+10 +import EndButton from '@/components/EndButton'
+11 +import ErrorToast from '@/components/ErrorToast'
+12
+13 type Props = { 14 token: string
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Removed 1 line 101 const ceilingFiredRef = useRef(false) 102 const endQueuedRef = useRef(false) 103 const endInFlightRef = useRef(false) 104 - const messagesEndRef = useRef<HTMLDivElement>(null)
+104 const phaseRef = useRef<Phase>('idle') 105 // Director (background Opus supervisor) 106 const bubblesRef = useRef<Bubble[]>([])
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Added 20 lines 147 }, 148 }) 149
+150 + // Hold a live ref to the conversation so the bubble's rAF l +oop can sample
+151 + // FFT/volume each frame without re-rendering this component + on every tick.
+152 + const conversationRef = useRef(conversation)
+153 + conversationRef.current = conversation
+154 +
+155 + const getFft = useCallback(() => {
+156 + const c = conversationRef.current
+157 + let freq: Uint8Array | undefined
+158 + let volume = 0
+159 + let isSpeaking = false
+160 + try {
+161 + freq = c?.getOutputByteFrequencyData?.()
+162 + volume = c?.getOutputVolume?.() ?? 0
+163 + isSpeaking = !!c?.isSpeaking
+164 + } catch {
+165 + // Pre-connect, the SDK may not have an analyser yet.
+166 + }
+167 + return { freq, volume, isSpeaking }
+168 + }, [])
+169 +
+170 // Director: ask our backend (running Opus) for one tactical directive based 171 // on the transcript so far, and forward it to the live agen t. Cheap: ~6-10 172 // calls per interview. Safe: runs in parallel, zero impact on voice latency.
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Removed 5 lines 228 // Otherwise the isSpeaking watcher below ends it on the n ext true→false edge. 229 } 230
+231 - // Auto-scroll the transcript panel.
+232 - useEffect(() => {
+233 - messagesEndRef.current?.scrollIntoView({ behavior: 'smooth -' })
+234 - }, [bubbles])
+235 -
+231 // Kick off: acquire camera+mic, start the ElevenLabs sessio n. 232 useEffect(() => { 233 let cancelled = false
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Removed 19 lines 405 window.setTimeout(() => router.push(/assess/${token}/comp lete), COMPLETION_HOLD_SECONDS * 1000) 406 } 407
+408 - // Display the elapsed time, counting up from 0:00.
+409 - const timeLabel = useMemo(() => {
+410 - const m = Math.floor(elapsed / 60)
+411 - const s = elapsed % 60
+412 - return ${m}:${s.toString().padStart(2, '0')}
+413 - }, [elapsed])
+414 -
+415 - // Progress bar tracks elapsed against the target, capping a -t 100% at the target.
+416 - // After the target is exceeded, the bar stays at 100%.
+417 - const progressPct = Math.min(100, (elapsed / targetSeconds) -* 100)
+418 -
+419 - const phaseLabel = useMemo(() => ({
+420 - idle: 'Connecting…',
+421 - live: 'Live interview',
+422 - ending: 'Finalising…',
+423 - done: 'Complete',
+424 - error: 'Error',
+425 - }[phase]), [phase])
+426 -
+408 // Full-screen completion takeover. Replaces the chat UI ent irely, no tiny 409 // "saving…" blip at the bottom of a dead camera feed. 410 if (phase === 'ending' || phase === 'done') {
+
+⏺ Now the main JSX swap — replace the entire live-phase return block:
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Added 6 lines, removed 78 lines 473 } 474
+475 return ( 476 - <div className="h-screen flex flex-col bg-earth-50">
+477 - <header className="flex-shrink-0 border-b border-earth-2 -00 bg-white">
+478 - <div className="max-w-3xl mx-auto px-6 h-14 flex items --center justify-between">
+479 - <span className="font-display text-basanite-900 text --sm">Basanite</span>
+480 - <div className="flex items-center gap-4">
+481 - <span className="text-xs text-basanite-400">{phase -Label}</span>
+482 - <span className="text-xs text-basanite-300 font-mo -no">
+483 - {timeLabel} <span className="opacity-60">· targe -t {targetMinutes}m</span>
+484 - </span>
+485 - </div>
+486 - </div>
+487 - <div className="h-0.5 bg-earth-200">
+488 - <div
+489 - className="h-full bg-gold-500 transition-all durat -ion-500"
+490 - style={{ width: ${progressPct}% }}
+491 - />
+492 - </div>
+493 - </header>
+494 -
+495 - <div className="flex-1 overflow-y-auto">
+496 - <div className="max-w-3xl mx-auto px-6 py-8 space-y-6" ->
+497 - {phase === 'error' && (
+498 - <div className="bg-red-50 border border-red-200 px --4 py-3 text-sm text-red-700">
+499 - {errMsg}
+500 - </div>
+501 - )}
+502 - {bubbles.length === 0 && phase !== 'error' && (
+503 - <p className="text-sm text-basanite-400 italic">Wa -iting for the interviewer to begin speaking…</p>
+504 - )}
+505 - {bubbles.map((m, i) => (
+506 - <div key={i} className={flex ${m.role === 'user' -? 'justify-end' : 'justify-start'}}>
+507 - <div className={max-w-[85%] ${ 508 - m.role === 'user' 509 - ? 'bg-basanite-900 text-earth-50 px-5 py-3.5 -' 510 - : 'bg-white border border-earth-200 px-5 py- -3.5' 511 - }}>
+512 - {m.role === 'assistant' && (
+513 - <p className="text-[10px] text-basanite-400 -uppercase tracking-widest font-medium mb-2">Interviewer</p>
+514 - )}
+515 - <p className={text-sm leading-relaxed whitesp -ace-pre-wrap ${ 516 - m.role === 'user' ? 'text-earth-100' : 'text --basanite-700' 517 - }}>
+518 - {m.content}
+519 - </p>
+520 - </div>
+521 - </div>
+522 - ))}
+523 - <div ref={messagesEndRef} />
+524 - </div>
+525 - </div>
+526 -
+527 - <div className="flex-shrink-0 border-t border-earth-200 -bg-white">
+528 - <div className="max-w-3xl mx-auto px-6 py-4 flex items --center gap-4">
+529 - <div className="relative w-24 h-24 bg-basanite-900 o -verflow-hidden shrink-0">
+530 - <video ref={previewRef} muted playsInline classNam -e="w-full h-full object-cover scale-x-[-1]" />
+531 - {phase === 'live' && (
+532 - <span className="absolute top-1 left-1 flex item -s-center gap-1 text-[10px] text-white bg-red-600 px-1.5 py-0.5 - font-medium">
+533 - <span className="w-1.5 h-1.5 rounded-full bg-w -hite animate-pulse" /> REC
+534 - </span>
+535 - )}
+536 - </div>
+537 - <div className="flex-1">
+538 - <p className="text-xs text-basanite-500 mb-2">
+539 - {phase === 'live' && (conversation.isSpeaking ? -'The interviewer is speaking…' : "Your turn, the interviewer i -s listening.")}
+540 - {phase === 'idle' && 'Connecting your call…'}
+541 - {phase === 'error' && errMsg}
+542 - </p>
+543 - {phase === 'live' ? (
+544 - <button
+545 - onClick={() => requestGracefulEnd()}
+546 - className="px-4 py-2 border border-earth-300 h -over:border-basanite-500 text-basanite-700 text-sm font-medium - transition-colors"
+547 - >
+548 - End interview early
+549 - </button>
+550 - ) : null}
+551 - </div>
+552 - </div>
+553 - </div>
+476 + <div className="fixed inset-0 overflow-hidden bg-basanite- +950 text-earth-100">
+477 + <InterviewBackground />
+478 + <AgentBubble getFft={getFft} phase={phase} />
+479 + <SelfView ref={previewRef} phase={phase} />
+480 + <EndButton onClick={() => requestGracefulEnd()} visible= +{phase === 'live'} />
+481 + <ErrorToast message={phase === 'error' ? errMsg : ''} /> 482 </div> 483 ) 484 }
+
+Read 1 file (ctrl+o to expand)
+
+⏺ useMemo is now unused. Quick cleanup.
+
+⏺ Update(web/components/VoiceInterview.tsx) ⎿  Added 1 line, removed 1 line 1 'use client' 2
+3 import { useConversation } from '@elevenlabs/react' 4 -import { useCallback, useEffect, useMemo, useRef, useState } fro -m 'react'
+4 +import { useCallback, useEffect, useRef, useState } from 'react' 5 import { useRouter } from 'next/navigation' 6 import { LogoMark } from '@/components/Logo' 7 import AgentBubble from '@/components/AgentBubble'
+
+⏺ Let me clean up SelfView to use Tailwind responsive sizing instead of CSS vars (cleaner).
+
+⏺ Update(web/components/SelfView.tsx) ⎿  Added 1 line, removed 8 lines 8
+9 const SelfView = forwardRef<HTMLVideoElement, Props>(function S elfView({ phase }, ref) { 10 return ( 11 - <div
+12 - className="fixed bottom-6 right-6 z-20 group"
+13 - style={{
+14 - // Mobile: 64px. From sm: 88px. Hover (desktop only): 1 -20px.
+15 - width: 'var(--self-view-size)',
+16 - height: 'var(--self-view-size)',
+17 - }}
+18 - >
+11 + <div className="fixed bottom-6 right-6 z-20 group w-16 h-16 + sm:w-[88px] sm:h-[88px]">
+12 <div className="relative w-full h-full rounded-full overf low-hidden ring-1 ring-gold-500/40 shadow-lg shadow-black/40 tr ansition-transform duration-200 ease-out sm:group-hover:scale-[ 1.36]"> 13 <video 14 ref={ref}
+
+⏺ Update(web/app/globals.css) ⎿  Added 50 lines 43 opacity: 1; 44 transform: translateY(0); 45 } 46 +
+47 +/* ─────────────────── Agent bubble (interview screen) ──────── +─────────── /
+48 +
+49 +.agent-bubble__svg {
+50 + / Mobile takes a bigger share of viewport; tablet/desktop mo +re reserved. /
+51 + width: 60vmin;
+52 + height: 60vmin;
+53 + max-width: 560px;
+54 + max-height: 560px;
+55 + filter: drop-shadow(0 0 var(--bubble-glow, 8px) rgba(196, 154 +, 47, 0.55));
+56 + transition: opacity 600ms ease-out, filter 200ms linear;
+57 +}
+58 +
+59 +@media (min-width: 640px) {
+60 + .agent-bubble__svg {
+61 + width: 38vmin;
+62 + height: 38vmin;
+63 + }
+64 +}
+65 +
+66 +.agent-bubble__path {
+67 + fill: url(#bubbleFill);
+68 +}
+69 +
+70 +.agent-bubble[data-phase='idle'] .agent-bubble__svg {
+71 + opacity: 0.7;
+72 +}
+73 +
+74 +.agent-bubble[data-phase='live'] .agent-bubble__svg {
+75 + opacity: 1;
+76 +}
+77 +
+78 +.agent-bubble[data-phase='error'] .agent-bubble__svg {
+79 + opacity: 0.55;
+80 + transform: scale(0.8);
+81 + filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
+82 +}
+83 +.agent-bubble[data-phase='error'] .agent-bubble__path {
+84 + fill: url(#bubbleFillError);
+85 +}
+86 +
+87 +@media (prefers-reduced-motion: reduce) {
+88 + .agent-bubble__svg {
+89 + / The rAF loop already skips morphing under reduce-motion; + also pin glow. */
+90 + filter: drop-shadow(0 0 8px rgba(196, 154, 47, 0.45));
+91 + }
+92 + .agent-bubble__group {
+93 + transform: scale(1) !important;
+94 + }
+95 +}
+
+⏺ Tailwind config doesn't need changes (breathing is JS-driven, not CSS animation). Updating the loading bg now.
+
+⏺ Update(web/app/assess/[token]/interview/page.tsx) ⎿  Added 2 lines, removed 2 lines 65
+66 if (!assessmentId || !config) { 67 return ( 68 - <div className="min-h-screen flex items-center justify-ce -nter bg-earth-50">
+69 - <p className="text-sm text-basanite-500">Preparing your - interview…</p>
+68 + <div className="min-h-screen flex items-center justify-ce +nter bg-basanite-950">
+
+Preview truncated (647 KB total). Download full file
+
+Are people using your product?
+Yes
+How many active users or customers do you have? How many are paying? Who is paying you the most, and how much do they pay you?
+We're starting our first paid pilot this week with Maxwell Bond, a 7-figure recruitment firm, for contracting and part-time technical roles.
+
+Before that, 50 trial users tested the product to shape our first iteration: computer science students at the University of Manchester, data engineers at Virgin Media O2, and Manchester-based tech recruiters.
+Do you have revenue?
+no
+If you are applying with the same idea as a previous batch, did anything change? If you applied with a different idea, why did you pivot and what did you learn from the last idea?
+Unanswered
+If you have already participated or committed to participate in an incubator, "accelerator" or "pre-accelerator" program, please tell us about it.
+We have been accepted into an internal accelerator program by Stripe VC. We are currently onboarding onto the program.
+Idea
+Why did you pick this idea to work on? Do you have domain expertise in this area? How do you know people need what you're making?
+We work in this industry and we see the problem first hand. All three of us have watched how trivially these systems break: AI overlays, leaked question banks, friends coasting through Hackerrank, capable people filtered out by a process that doesn't actually measure anything useful. In November, 150 students at our university were caught cheating on an ARM Hackerrank assessment. This is happening everywhere.
+
+We've spoken to hiring managers and senior engineers. The message is consistent: first-round technical screens waste the most time and produce the weakest signal. One engineering manager told us he rejects 80% of candidates at the live interview stage who passed the coding screen.
+
+We're candidates today and interviewers tomorrow. We know what's broken because we've been on both ends of it.
+Who are your competitors? What do you understand about your business that they don't?
+We have categorised our competitors into three groups and each has a different blind spot.
+
+First, coding assessment platforms such as HackerRank and CodeSignal. They assess for standardised problems that tools like ChatGPT and Cluely solves trivially. They test pattern-matching on leaked question banks. The signal has collapsed.
+
+Second, AI interview tools, examples are HireVue, Karat, and Mercor. These are automated versions of static structured interviews. Questions from the same question bank for every candidate, same leakability, just delivered faster. Mercor is closest to us but runs a generic interview not personalised to the candidate's experience, so it can't probe depth.
+
+Third, traditional screens, for example Greenhouse and manual phone screens. They can't run consistent, deep first-round interviews at volume and requires senior engineers to lose hours on candidates who shouldn't be there.
+
+What we understand: in a world where AI can answer any static question, the only defensible screen generates each interview from the candidate's actual experience and probes the reasoning behind their answers. Static question banks, however AI-delivered, are a dead instrument.
+How do or will you make money? How much could you make?
+We run a subscription credit model. Companies buy a monthly credit allowance sized to their headcount and top up if they run out or hit a busy hiring period. Gross margin is currently over 50%.
+
+We're starting with specialist recruitment agencies, plus startups and SMBs that are too understaffed to screen candidates properly.
+
+The Maxwell Bond contract will generate ~£40k/year at ~£20k gross profit. UK TAM across agencies and in-house teams is £350-500m. US TAM approaches $2B.
+Which category best applies to your company?
+B2B SaaS
+If you had any other ideas you considered applying with, please list them. One may be something we've been waiting for. Often when we fund people it's to do something they list here and not in the main application.
+We also considered going wider into a full agentic hiring platform (posting, screening, scheduling, offers). We narrowed to first-round interviews because that's where the signal failure is worst.
+
+Another more different idea is Git for Doc. While working as a team we tried to build a knowledge base, but when documents evolve, it’s hard to keep up with what changed, why, or who decided it. We want a collaborative document editor where every saved version carries a commit message, a full diff, and a breakdown of each contributor’s changes. Approvers can accept or reject versions with written reasoning, creating a traceable record of how a team’s knowledge actually develops over time. It can then be integrated with AI as a knowledge graph to serve as an LLM Wiki for AI-native companies.
+Equity
+Have you formed ANY legal entity yet?
+no
+If you have not formed the company yet, describe the planned equity ownership breakdown among the founders, employees and any other proposed stockholders. If there are multiple founders, be sure to give the proposed equity ownership of each founder and founder title (e.g. CEO). (This question is as much for you as us.)
+Aditya Shah (CEO): 33.3%
+Andrew Robertson (CTO): 33.3%
+Lynn Zhao (CPO): 33.3%
+
+We plan to create a 10% option pool from dilution at our first fundraise, not from existing equity.
+Have you taken any investment yet?
+no
+Are you currently fundraising?
+no
+Curious
+What convinced you to apply to Y Combinator? Did someone encourage you to apply? Have you been to any YC events?
+Every YC company is hiring engineers, often urgently and often with weak screening. The batch itself is one of the highest-density customer pools we could be inside. Beyond that, we're moving from product to go-to-market and the YC network has the highest concentration of founders and investors who've solved the exact problems we're about to hit.
+How did you hear about Y Combinator?
+Social media. We've followed YC and some of its best investor's content for years.
+Batch Preference
+What batch do you want to apply for?
+current

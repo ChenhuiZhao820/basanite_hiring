@@ -1,0 +1,80 @@
+1. Geography & scope
+Bot should include:
+Greater Manchester / North West / UK‑wide.
+EU/global programmes if they are remote or clearly open to UK startups.
+Exclude: things explicitly limited to another country’s residents with no UK option.
+
+2. Opportunity types to capture
+Include all of these (we care about funding and visibility):
+Funding:
+Grants (any size, from micro‑grants upwards).
+Startup / innovation / pitch competitions.
+Student or graduate entrepreneurship awards.
+Programmes:
+Accelerators, pre‑accelerators, incubators, venture builders.
+University and alumni entrepreneurship programmes (esp. UoM, but also others).
+Visibility / community:
+Founder clubs, startup clubs, demo days, showcases where startups can apply to present.
+Hackathons and build weekends (especially AI / future of work / HR / SaaS themes).
+Do not filter by amount – capture everything that fits; we’ll prioritise later.
+
+3. Thematic / sector filters
+Keep when any of these themes appear in the opportunity description:
+AI / machine learning / artificial intelligence / data‑driven.
+HR tech, recruitment, hiring, talent acquisition, “future of work”.
+B2B SaaS, software startup, SME digitalisation / SME tech.
+Also keep broad “innovation / digital / tech startup” programmes even if not HR‑specific.
+
+4. Founder profile / eligibility signals
+Actively look for and tag:
+Student / alumni:
+“University of Manchester”, “Masood Entrepreneurship Centre”, “Venture Further”, “Venture Builder”.
+“student startup”, “graduate entrepreneur”, “recent graduate”.
+Female / diversity:
+“women founders”, “female‑led”, “diverse teams”, “inclusive innovation”, “DEI in tech”.
+We are eligible for student/alumni things (UoM) and can apply as a mixed‑gender founding team.
+
+5. Exclusions
+Auto‑exclude if:
+Requires being a registered charity / CIC / non‑profit only.
+Strictly “voluntary and community sector only” with no for‑profit allowance.
+Non‑digital local grants with no startup angle (e.g. purely for sports clubs / gardening etc.).
+Job adverts, freelance gigs, standard procurement tenders (unless framed as a startup innovation challenge).
+
+6. Data to store per opportunity
+For every opportunity the bot finds, store at least:
+name – name of opportunity.
+organiser – organisation running it.
+url – main application/info page.
+type – one of: grant, competition, accelerator, pre-accelerator, incubator, venture-builder, hackathon, founder-club, showcase.
+location_scope – e.g. Manchester, North West, UK-wide, EU, Global.
+deadline_date – normalised date if possible (YYYY-MM-DD), else null.
+deadline_raw – raw deadline text snippet.
+event_dates – if it’s an event/cohort (optional).
+amount_cash_gbp – numeric if you can parse; else null.
+benefits_description – text (cash + perks like credits, mentoring, workspace, visibility).
+eligibility_snippet – 1–3 sentence extract mentioning who can apply.
+application_effort – rough tag if you can infer: light (simple form), medium, heavy (e.g. big grant).
+tags – array of tags from:
+AI, HR-recruitment, B2B-SaaS, Student-Alumni, Female-founder-eligible, Manchester-NorthWest, UK-wide, Global, Visibility-focused.
+status – default new.
+
+7. JSON field schema (for reference)
+json
+{
+  "name": "string",
+  "organiser": "string",
+  "url": "string",
+  "type": "string", 
+  "location_scope": "string",
+  "deadline_date": "string|null", 
+  "deadline_raw": "string|null",
+  "event_dates": "string|null",
+  "amount_cash_gbp": "number|null",
+  "benefits_description": "string",
+  "eligibility_snippet": "string",
+  "application_effort": "light|medium|heavy|null",
+  "tags": ["string"],
+  "status": "new|shortlisted|applied|won|rejected"
+}
+
