@@ -39,7 +39,7 @@ export default function PrivacyPage() {
 
         <Section title="Who we are">
           <p>
-            Basanite (the &ldquo;Platform&rdquo;) is operated by <strong>Basanite Ltd</strong>, registered in the United Kingdom.
+            Basanite (the &ldquo;Platform&rdquo;) is operated by <strong>Basanite</strong>, based in the United Kingdom.
             For privacy queries: <a href="mailto:privacy@basanite.co.uk" className="text-gold-600 underline">privacy@basanite.co.uk</a>.
           </p>
           <p className="mt-3">

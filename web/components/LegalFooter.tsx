@@ -23,7 +23,7 @@ export function LegalFooter({ dark = false, className = '' }: Props) {
       <span className={sep}>·</span>
       <Link href="/data-rights" className={text}>Your data rights</Link>
       <span className={sep}>·</span>
-      <span className={dark ? 'text-earth-200/40' : 'text-basanite-400'}>© Basanite Ltd</span>
+      <span className={dark ? 'text-earth-200/40' : 'text-basanite-400'}>© Basanite</span>
     </footer>
   )
 }
