@@ -21,8 +21,10 @@ Use this directory for: business docs, outreach campaigns, sales/prospect data, 
 
 This is the main active workflow. Claude was historically driven here with the Gmail MCP to create drafts; the JSON files are the durable record.
 
-**Templates** (`outreach/*.txt`):
-- `reachoutEmailTemplate.txt` — "Cold Email Generator Prompt". A meta-prompt, not a filled template. Feeds in name/title/org, bio, and a goal (coffee chat / validation / partnership / pilot / investor intro). Hard style rules: **UK English, no em dashes, no AI-sounding phrases, not salesy, low-pressure ask.** Used for `template: "long_form"` leads (academic/validation/partnership angle).
+**Templates**:
+- `scholarOutreachTemplate.txt` — Cold email generator prompt for **academic/scholar outreach** (supervisor intros, advisory relationships, paper authors, validation). Feeds in name/title/org, bio, and a goal (coffee chat / validation / partnership / advisory). Hard style rules: **UK English, no em dashes, no AI-sounding phrases, not salesy, low-pressure ask.** Used for `template: "long_form"` academic leads.
+- `generalSalesOutreach.md` — Cold email template for **sales outreach** (potential customers, channel partners, agency recruiters). Same style rules; goals shift to free pilot / paid pilot / discovery call / channel intro / demo. Includes a worked example (Picture More, May 2026) and subject-line patterns.
+- `basanite_cold_email_prompt.md` — Earlier master prompt, partly superseded by the two above; kept for reference and the "structure" guidance.
 - `linkedinOutreach.txt` — Short LinkedIn DM template, hiring-pain hook ("I saw you're still looking for {role}... we made a tool to automate screenings..."). Used for `template: "short_form"` leads.
 
 **Lead files** (`outreach/*.json`, `outreach/prospects.csv`):

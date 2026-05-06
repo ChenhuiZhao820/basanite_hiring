@@ -1,6 +1,6 @@
 """
 Consolidate the three agent outputs into leads_batch_D.json with IDs, subjects,
-and personalised draft bodies. Style rules (from reachoutEmailTemplate.txt):
+and personalised draft bodies. Style rules (from scholarOutreachTemplate.txt):
 UK English, no em dashes, no AI-sounding phrases, warm and human, low-pressure
 ask. Manchester alum => soft MCR connection; non-alum MCR-HQ => ecosystem ref.
 Short form = hiring-pain hook; long form = critical/commercial perspective.
