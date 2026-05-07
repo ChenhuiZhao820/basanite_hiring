@@ -4,7 +4,7 @@ import { LogoMark } from '@/components/Logo'
 export const metadata = { title: 'Basanite — Privacy Notice' }
 
 // Last review date — bump when material changes ship.
-const POLICY_VERSION = '2026-05-02'
+const POLICY_VERSION = '2026-05-07'
 
 export default function PrivacyPage() {
   return (
@@ -39,11 +39,14 @@ export default function PrivacyPage() {
 
         <Section title="Who we are">
           <p>
-            Basanite (the &ldquo;Platform&rdquo;) is operated by <strong>Basanite</strong>, based in the United Kingdom.
+            Basanite (the &ldquo;Platform&rdquo;) is currently operated as an unincorporated UK venture by its three founders &mdash; <strong>Aditya Shah</strong>, <strong>Andrew Robertson</strong>, and <strong>Lynn Zhao</strong> &mdash; based in the United Kingdom.
             For privacy queries: <a href="mailto:privacy@basanite.co.uk" className="text-gold-600 underline">privacy@basanite.co.uk</a>.
           </p>
           <p className="mt-3">
-            <strong>Roles under GDPR:</strong> When you take an assessment, the hirer who invited you (e.g. the company you applied to) is the <em>data controller</em>. Basanite acts as a <em>data processor</em> for that hirer. When you sign up as a hirer, Basanite is the controller for your account information.
+            <strong>Roles under GDPR:</strong> When you take an assessment, the hirer who invited you (e.g. the company you applied to) is the <em>data controller</em>. The founders act jointly as the <em>data processor</em> that hirer engages. When you sign up as a hirer, the founders are <em>joint data controllers</em> for your account information. Once a UK company is incorporated these roles will transfer to that entity and we will update this notice.
+          </p>
+          <p className="mt-3">
+            <strong>Joint controllers&apos; single point of contact (Art. 26 UK GDPR):</strong> the founders have agreed that <a href="mailto:privacy@basanite.co.uk" className="text-gold-600 underline">privacy@basanite.co.uk</a> is the single point of contact for exercising any of the rights set out below, regardless of which founder you reach. The essence of the arrangement is available on request.
           </p>
         </Section>
 
@@ -160,6 +163,9 @@ export default function PrivacyPage() {
         <Section title="Changes to this notice">
           <p>
             When we change this notice we update the version date at the top and, for material changes, notify users by email or in-app banner. Previous versions are kept on file and available on request.
+          </p>
+          <p className="mt-3 text-xs text-basanite-500">
+            <strong>{POLICY_VERSION}:</strong> identified the operator as the three founders acting jointly until a UK company is incorporated, and added the joint-controller single point of contact.
           </p>
         </Section>
 

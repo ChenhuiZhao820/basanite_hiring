@@ -3,7 +3,7 @@ import { LogoMark } from '@/components/Logo'
 
 export const metadata = { title: 'Basanite — Terms of Service' }
 
-const TERMS_VERSION = '2026-05-02'
+const TERMS_VERSION = '2026-05-07'
 
 export default function TermsPage() {
   return (
@@ -27,6 +27,12 @@ export default function TermsPage() {
         <p className="text-sm leading-relaxed mb-6">
           These terms govern your use of Basanite. By signing up or taking an assessment you agree to these terms and to the <Link href="/privacy" className="text-gold-600 underline">Privacy Notice</Link>.
         </p>
+
+        <Section title="Who you are contracting with">
+          <p>
+            Basanite is currently operated as an unincorporated UK venture by its three founders &mdash; <strong>Aditya Shah</strong>, <strong>Andrew Robertson</strong>, and <strong>Lynn Zhao</strong> &mdash; based in the United Kingdom. References to &ldquo;Basanite&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo; or &ldquo;our&rdquo; in these terms mean those three individuals acting jointly. Until a UK company is incorporated, obligations and liabilities under these terms are owed jointly and severally by the named founders. Once an entity is incorporated we will novate this contract to the new entity and update this page.
+          </p>
+        </Section>
 
         <Section title="Eligibility">
           <p>You must be at least 16 years old to use Basanite. Hirer accounts may only be created by individuals authorised to act on behalf of the hiring organisation.</p>

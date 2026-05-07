@@ -23,7 +23,7 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'All structured data: candidate name/email, CV text, transcripts, scores, reports, recordings, account credentials',
     region: 'AWS us-east-1 (United States)',
     transfer: 'UK Extension to the EU-US Data Privacy Framework + SCCs',
-    dpa: 'Standard DPA available; in execution',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://supabase.com/privacy',
   },
   {
@@ -32,7 +32,7 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'CV text, interview transcripts (in-flight only), role configuration. Anthropic does not retain or train on data by default and Basanite has not opted in to any training programme.',
     region: 'United States',
     transfer: 'Standard Contractual Clauses (SCCs)',
-    dpa: 'Standard DPA available; in execution',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://www.anthropic.com/privacy',
   },
   {
@@ -41,7 +41,7 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'Live audio stream during the interview. ElevenLabs may retain conversation logs for a short debugging window per their terms.',
     region: 'United States',
     transfer: 'Standard Contractual Clauses (SCCs)',
-    dpa: 'Standard DPA available; in execution',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://elevenlabs.io/privacy',
   },
   {
@@ -50,7 +50,7 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'ATS-linked-account tokens (encrypted), candidate names/emails, CV attachments, assessment results',
     region: 'United States',
     transfer: 'Standard Contractual Clauses (SCCs)',
-    dpa: 'Standard DPA available; in execution',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://www.merge.dev/legal/privacy-policy',
   },
   {
@@ -59,7 +59,7 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'Recipient email address, candidate name, role title, feedback report content',
     region: 'United States',
     transfer: 'Standard Contractual Clauses (SCCs)',
-    dpa: 'Standard DPA available; in execution',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://resend.com/legal/privacy-policy',
   },
   {
@@ -68,7 +68,7 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'Request metadata (IP, user-agent, path) for the marketing site and dashboard. No application personal data is processed by Vercel functions in this deployment.',
     region: 'Global edge; primary US',
     transfer: 'Standard Contractual Clauses (SCCs)',
-    dpa: 'Standard DPA executed via Vercel Pro plan',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://vercel.com/legal/privacy-policy',
   },
   {
@@ -77,12 +77,12 @@ const SUBPROCESSORS: SubProcessor[] = [
     data: 'In-flight: all candidate and hirer data passes through this service. At rest: 30-day rolling logs (PII-scrubbed by application code).',
     region: 'AWS us-east (United States)',
     transfer: 'Standard Contractual Clauses (SCCs)',
-    dpa: 'Standard DPA available; in execution',
+    dpa: 'Standard DPA available; will be executed prior to processing live customer data',
     link: 'https://render.com/privacy',
   },
 ]
 
-const POLICY_VERSION = '2026-05-02'
+const POLICY_VERSION = '2026-05-07'
 
 export default function SubprocessorsPage() {
   return (
@@ -109,7 +109,7 @@ export default function SubprocessorsPage() {
         </p>
 
         <p className="text-sm leading-relaxed mb-10">
-          A sub-processor is a third-party service we engage to help us deliver Basanite. Each sub-processor below is bound by a Data Processing Agreement (DPA) that contractually requires them to handle personal data only on our documented instructions and to apply at least the security standards we apply.
+          A sub-processor is a third-party service we engage to help us deliver Basanite. Before processing live customer data we execute a Data Processing Agreement (DPA) with each sub-processor that contractually requires them to handle personal data only on our documented instructions and to apply at least the security standards we apply. Per-provider DPA status is shown below.
         </p>
 
         <div className="space-y-6">
