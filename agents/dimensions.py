@@ -6,6 +6,7 @@ Given a JD, recommends 3-4 dimensions from the 8 available and calibrates techni
 import os
 import yaml
 from core.llm import get_llm_service, MODEL_FAST
+from core.schemas import DimensionRecommendation, validate_or_error
 
 DIMENSIONS = {
     "judgment_under_ambiguity": {
@@ -93,4 +94,5 @@ Respond with JSON:
   }}
 }}"""
 
-    return await llm.generate_json(prompt, system_instruction=system, model=MODEL_FAST, max_tokens=1024)
+    raw = await llm.generate_json(prompt, system_instruction=system, model=MODEL_FAST, max_tokens=1024)
+    return validate_or_error(raw, DimensionRecommendation)
