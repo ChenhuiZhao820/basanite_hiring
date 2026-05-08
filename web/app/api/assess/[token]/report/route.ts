@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { allow } from '@/lib/rate-limit'
 
 export async function GET(
   request: NextRequest,
@@ -16,6 +17,14 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Frontend polls this endpoint until the report is ready. Cap to 60/hr
+  // per candidate — generous for ~1 poll/min over an hour while still
+  // blocking enumeration / scraping attempts.
+  const allowed = await allow(`assess-report:${user.id}`, 60, 60 * 60 * 1000)
+  if (!allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   const service = createServiceClient()
