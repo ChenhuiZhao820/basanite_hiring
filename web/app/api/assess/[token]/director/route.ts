@@ -3,6 +3,7 @@ import { assertCandidateOwnsAssessment } from '@/lib/assess-auth'
 import { allow, getIP } from '@/lib/rate-limit'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
+const PIPELINE_SECRET = process.env.PIPELINE_API_SECRET ?? ''
 
 export async function POST(
   request: NextRequest,
@@ -32,7 +33,14 @@ export async function POST(
   try {
     const res = await fetch(`${PIPELINE_URL}/assess/${token}/director`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        // ENG-17: forward the internal pipeline secret so FastAPI knows the
+        // request originates from this server (which has already authenticated
+        // and rate-limited the candidate), not from a public caller holding
+        // a leaked assessment_link_token.
+        'Authorization': `Bearer ${PIPELINE_SECRET}`,
+      },
       body: JSON.stringify(body),
       signal: controller.signal,
     })

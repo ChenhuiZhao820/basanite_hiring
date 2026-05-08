@@ -765,11 +765,23 @@ async def _generate_and_upload_preview(eleven_voice_id: str) -> str | None:
 
 
 @app.post("/assess/{token}/director")
-async def director_tick(token: str, body: dict):
+async def director_tick(
+    token: str,
+    body: dict,
+    authorization: str | None = Header(default=None),
+):
     """
     One pass of the Director supervisor. Returns a short tactical directive the
     live client can forward to the ElevenLabs agent via sendContextualUpdate.
+
+    Requires the internal pipeline secret. The candidate's browser must NOT
+    call this endpoint directly — it goes through the Next.js wrapper, which
+    authenticates the candidate, rate-limits per user, and forwards the
+    secret. Without the secret check here, a public attacker holding a
+    leaked assessment_link_token could spam Opus calls (ENG-17).
     """
+    _verify_internal(authorization)
+
     from interview import director_directive
 
     assessment_id = body.get("assessment_id")
