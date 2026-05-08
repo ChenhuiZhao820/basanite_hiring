@@ -788,7 +788,7 @@ async def director_tick(
     if not assessment_id:
         raise HTTPException(status_code=400, detail="Missing assessment_id")
 
-    role, _assessment, cv = _load_assessment_for_token(token, assessment_id)
+    role, assessment, cv = _load_assessment_for_token(token, assessment_id)
     role["dimensions"] = _coerce_json_field(role.get("dimensions", [])) or []
     if not isinstance(role["dimensions"], list):
         role["dimensions"] = []
@@ -803,7 +803,29 @@ async def director_tick(
         if r in ("user", "assistant") and c:
             messages.append({"role": r, "content": c})
 
-    elapsed_seconds = int(body.get("elapsed_seconds") or 0)
+    # ENG-23: timing must be enforced server-side. The client used to send
+    # `elapsed_seconds`, but a tampered browser could under-report time to
+    # keep the interview running past the role's duration cap (and keep
+    # burning Opus on Director ticks). We derive elapsed from the
+    # assessment's `started_at` timestamp instead, and refuse Director
+    # work past the role's cap plus a 10-minute buffer.
+    started_at_raw = assessment.get("started_at") if assessment else None
+    if not started_at_raw:
+        # No started_at means the candidate hasn't started yet — Director
+        # has nothing to supervise.
+        return {"skip": True}
+    try:
+        started_at = datetime.fromisoformat(str(started_at_raw).replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return {"skip": True}
+    elapsed_seconds = int((datetime.now(timezone.utc) - started_at).total_seconds())
+    if elapsed_seconds < 0:
+        elapsed_seconds = 0
+
+    duration_minutes = role.get("interview_duration_minutes") or 15
+    hard_ceiling_seconds = int(duration_minutes) * 60 + 600  # +10 min buffer
+    if elapsed_seconds > hard_ceiling_seconds:
+        return {"skip": True, "reason": "past_duration_cap"}
 
     result = await director_directive(role, cv, messages, elapsed_seconds)
     if not result:
