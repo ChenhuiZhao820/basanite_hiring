@@ -59,6 +59,14 @@ def _verify_internal(authorization: str | None):
 _MAX_CV_BYTES = 10 * 1024 * 1024          # 10 MB — comfortably larger than any CV
 _MAX_RECORDING_BYTES = 200 * 1024 * 1024  # 200 MB — ~45 min low-bitrate webm
 
+# ENG-27: WebM/Matroska files begin with the EBML magic. We reject any
+# upload to /upload-recording whose first four bytes don't match — without
+# this check, a candidate could upload arbitrary binary content as their
+# "interview recording" (malware, exfil, illegal content), all stored
+# under the assessment's storage prefix.
+_WEBM_MAGIC = b"\x1a\x45\xdf\xa3"
+_MIN_RECORDING_BYTES = 1024  # < 1KB is not a real recording
+
 
 async def _read_bounded(upload: UploadFile, limit: int) -> bytes:
     """Read an upload into memory, refusing if it exceeds `limit` bytes.
@@ -870,6 +878,17 @@ async def upload_recording(
     data = await _read_bounded(file, _MAX_RECORDING_BYTES)
     if not data:
         raise HTTPException(status_code=400, detail="Empty upload")
+    # ENG-27: content validation. Trust nothing from the client about the
+    # file's nature — verify the magic bytes match WebM/EBML before
+    # storing. Tiny payloads are rejected too; a legitimate recording is
+    # always at least a few KB even for the shortest interview.
+    if len(data) < _MIN_RECORDING_BYTES:
+        raise HTTPException(status_code=400, detail="Recording too small")
+    if not data.startswith(_WEBM_MAGIC):
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported recording format (expected WebM)",
+        )
 
     client = get_client()
     if not client:
