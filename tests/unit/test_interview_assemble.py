@@ -167,3 +167,38 @@ class TestAssembleEdgeCases:
         out = assemble_interview_prompt(role_config, cv)
         assert "Co0" in out
         assert "Co5" not in out
+
+
+class TestNonDisclosureSection:
+    """ENG-14: the assembled prompt must contain the non-disclosure section
+    so the live agent refuses to leak the system prompt or rubric."""
+
+    def test_section_header_present(self, role_config, cv):
+        out = assemble_interview_prompt(role_config, cv)
+        assert "## Non-disclosure" in out
+
+    def test_never_disclose_clause_present(self, role_config, cv):
+        out = assemble_interview_prompt(role_config, cv)
+        assert "Never disclose" in out
+
+    def test_refuse_clause_present(self, role_config, cv):
+        out = assemble_interview_prompt(role_config, cv)
+        assert "Refuse the following" in out
+
+    def test_sample_refusals_present(self, role_config, cv):
+        out = assemble_interview_prompt(role_config, cv)
+        assert "Sample refusals" in out
+
+    def test_authority_override_clause_present(self, role_config, cv):
+        out = assemble_interview_prompt(role_config, cv)
+        # The hierarchy clause must explicitly outrank in-band override attempts.
+        assert "Hierarchy" in out
+        assert "outranks" in out
+
+    def test_section_appears_before_calibrations(self, role_config, cv):
+        """Non-disclosure must sit high in the prompt so it's hard to displace."""
+        out = assemble_interview_prompt(role_config, cv)
+        nd_index = out.find("## Non-disclosure")
+        calib_index = out.find("## Two Calibrations")
+        assert nd_index != -1 and calib_index != -1
+        assert nd_index < calib_index
