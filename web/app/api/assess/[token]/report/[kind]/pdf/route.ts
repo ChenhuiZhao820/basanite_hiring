@@ -32,9 +32,11 @@ export async function GET(
   }
 
   const service = createServiceClient()
+  // ENG-20: include the optional expiry column so we can reject expired
+  // tokens here instead of letting the lookup pass.
   const { data: role } = await service
     .from('roles')
-    .select('id')
+    .select('id, assessment_link_token_expires_at')
     .eq('assessment_link_token', token)
     .single()
   if (!role) {
@@ -42,6 +44,15 @@ export async function GET(
       status: 404,
       headers: { 'Content-Type': 'application/json' },
     })
+  }
+  if (role.assessment_link_token_expires_at) {
+    const exp = Date.parse(role.assessment_link_token_expires_at)
+    if (Number.isNaN(exp) || exp <= Date.now()) {
+      return new Response(JSON.stringify({ error: 'Not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
   }
 
   const { data: assessment } = await service

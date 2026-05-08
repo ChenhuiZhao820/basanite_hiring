@@ -31,11 +31,18 @@ export async function GET(
 
   const { data: role } = await service
     .from('roles')
-    .select('id')
+    .select('id, assessment_link_token_expires_at')
     .eq('assessment_link_token', token)
     .single()
   if (!role) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  // ENG-20: optional token expiry. Treat expired the same as unknown.
+  if (role.assessment_link_token_expires_at) {
+    const exp = Date.parse(role.assessment_link_token_expires_at)
+    if (Number.isNaN(exp) || exp <= Date.now()) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
   }
 
   const { data: assessment } = await service

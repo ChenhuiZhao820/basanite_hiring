@@ -50,12 +50,31 @@ def get_role(role_id: str) -> dict | None:
 
 
 def get_role_by_token(token: str) -> dict | None:
+    """Look up a role by its assessment link token.
+
+    ENG-20: also enforces the optional expiry column. A token whose
+    `assessment_link_token_expires_at` is in the past is treated the same
+    as an unknown token (returns None) — callers don't need to distinguish.
+    """
     client = get_client()
     if not client:
         return None
     try:
         result = client.table("roles").select("*").eq("assessment_link_token", token).single().execute()
-        return result.data
+        role = result.data
+        if not role:
+            return None
+        expires_at = role.get("assessment_link_token_expires_at")
+        if expires_at:
+            from datetime import datetime, timezone
+            try:
+                exp = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+                if datetime.now(timezone.utc) >= exp:
+                    return None
+            except (ValueError, AttributeError):
+                # Malformed timestamp shouldn't make us serve content; fail closed.
+                return None
+        return role
     except Exception:
         return None
 

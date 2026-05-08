@@ -53,6 +53,61 @@ class TestGetRoleByToken:
         fake_supabase.table("roles").execute_raises = Exception()
         assert db.get_role_by_token("x") is None
 
+    # ENG-20: optional token expiry.
+    def test_null_expiry_passes_through(self, fake_supabase):
+        fake_supabase.table("roles").execute_data = {
+            "id": "r1",
+            "assessment_link_token": "tok",
+            "assessment_link_token_expires_at": None,
+        }
+        out = db.get_role_by_token("tok")
+        assert out is not None
+        assert out["id"] == "r1"
+
+    def test_future_expiry_passes_through(self, fake_supabase):
+        from datetime import datetime, timezone, timedelta
+        future = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+        fake_supabase.table("roles").execute_data = {
+            "id": "r1",
+            "assessment_link_token": "tok",
+            "assessment_link_token_expires_at": future,
+        }
+        out = db.get_role_by_token("tok")
+        assert out is not None
+        assert out["id"] == "r1"
+
+    def test_past_expiry_returns_none(self, fake_supabase):
+        from datetime import datetime, timezone, timedelta
+        past = (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat()
+        fake_supabase.table("roles").execute_data = {
+            "id": "r1",
+            "assessment_link_token": "tok",
+            "assessment_link_token_expires_at": past,
+        }
+        assert db.get_role_by_token("tok") is None
+
+    def test_malformed_expiry_fails_closed(self, fake_supabase):
+        fake_supabase.table("roles").execute_data = {
+            "id": "r1",
+            "assessment_link_token": "tok",
+            "assessment_link_token_expires_at": "not-a-timestamp",
+        }
+        # Fail closed — don't serve content if we can't parse the expiry.
+        assert db.get_role_by_token("tok") is None
+
+    def test_z_suffix_expiry_parsed(self, fake_supabase):
+        # Postgres TIMESTAMPTZ commonly serialises with a 'Z' suffix; ensure
+        # we parse that variant as well as +00:00.
+        from datetime import datetime, timezone, timedelta
+        future = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat().replace("+00:00", "Z")
+        fake_supabase.table("roles").execute_data = {
+            "id": "r1",
+            "assessment_link_token": "tok",
+            "assessment_link_token_expires_at": future,
+        }
+        out = db.get_role_by_token("tok")
+        assert out is not None
+
 
 class TestGetRolesForUser:
     def test_returns_list(self, fake_supabase):

@@ -2,6 +2,36 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 /**
+ * Returns true if the role's optional token expiry has passed.
+ * NULL / undefined means the token never expires (ENG-20).
+ */
+function isTokenExpired(expiresAt: string | null | undefined): boolean {
+  if (!expiresAt) return false
+  const t = Date.parse(expiresAt)
+  if (Number.isNaN(t)) return true  // fail closed on malformed timestamps
+  return t <= Date.now()
+}
+
+/**
+ * Look up the role by token, enforcing the optional ENG-20 expiry.
+ * Returns null if the token is unknown OR expired (caller doesn't need
+ * to distinguish; both surface as 404 / "Not found").
+ */
+async function lookupRoleByToken(
+  service: ReturnType<typeof createServiceClient>,
+  token: string,
+): Promise<{ id: string } | null> {
+  const { data: role } = await service
+    .from('roles')
+    .select('id, assessment_link_token_expires_at')
+    .eq('assessment_link_token', token)
+    .single()
+  if (!role) return null
+  if (isTokenExpired(role.assessment_link_token_expires_at)) return null
+  return { id: role.id }
+}
+
+/**
  * Verify the caller is signed in and owns the assessment for this token.
  *
  * The four-way join token↔role↔assessment↔candidate_user_id is the only
@@ -29,11 +59,7 @@ export async function assertCandidateOwnsAssessment(
   }
 
   const service = createServiceClient()
-  const { data: role } = await service
-    .from('roles')
-    .select('id')
-    .eq('assessment_link_token', token)
-    .single()
+  const role = await lookupRoleByToken(service, token)
   if (!role) {
     return { error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
   }
@@ -69,11 +95,7 @@ export async function assertCandidateSession(
   }
 
   const service = createServiceClient()
-  const { data: role } = await service
-    .from('roles')
-    .select('id')
-    .eq('assessment_link_token', token)
-    .single()
+  const role = await lookupRoleByToken(service, token)
   if (!role) {
     return { error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
   }
