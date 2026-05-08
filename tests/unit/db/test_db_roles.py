@@ -132,6 +132,45 @@ class TestGetRolesForUser:
         assert db.get_roles_for_user("u1") == []
 
 
+class TestActiveAssessmentForCandidate:
+    """ENG-24: get_active_assessment_for_candidate returns the existing
+    in_progress / completed row for the (role, candidate) pair, if any."""
+
+    def test_returns_existing_active_row(self, fake_supabase):
+        fake_supabase.table("assessments").execute_data = [
+            {"id": "a1", "status": "in_progress"},
+        ]
+        out = db.get_active_assessment_for_candidate("r1", "u1")
+        assert out is not None
+        assert out["id"] == "a1"
+
+    def test_returns_none_when_no_match(self, fake_supabase):
+        fake_supabase.table("assessments").execute_data = []
+        assert db.get_active_assessment_for_candidate("r1", "u1") is None
+
+    def test_filters_on_role_and_candidate(self, fake_supabase):
+        fake_supabase.table("assessments").execute_data = []
+        db.get_active_assessment_for_candidate("r1", "u1")
+        eq_calls = [c for c in fake_supabase.table("assessments").calls if c[0] == "eq"]
+        assert ("role_id", "r1") in [c[1] for c in eq_calls]
+        assert ("candidate_user_id", "u1") in [c[1] for c in eq_calls]
+
+    def test_filters_on_active_statuses(self, fake_supabase):
+        fake_supabase.table("assessments").execute_data = []
+        db.get_active_assessment_for_candidate("r1", "u1")
+        in_calls = [c for c in fake_supabase.table("assessments").calls if c[0] == "in_"]
+        # in_("status", ["in_progress", "completed"])
+        assert any(c[1][0] == "status" for c in in_calls)
+        for c in in_calls:
+            if c[1][0] == "status":
+                assert "in_progress" in c[1][1]
+                assert "completed" in c[1][1]
+
+    def test_returns_none_on_db_error(self, fake_supabase):
+        fake_supabase.table("assessments").execute_raises = Exception()
+        assert db.get_active_assessment_for_candidate("r1", "u1") is None
+
+
 class TestUpdateRole:
     def test_returns_true_on_success(self, fake_supabase):
         fake_supabase.table("roles").execute_data = []

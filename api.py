@@ -330,13 +330,32 @@ async def start_assessment(
     body: StartAssessmentRequest,
 ):
     """Create an assessment and extract CV. Returns assessment_id."""
-    from core.db import get_role_by_token, create_assessment, update_assessment, create_interview_session
+    from core.db import (
+        get_role_by_token,
+        create_assessment,
+        update_assessment,
+        create_interview_session,
+        get_active_assessment_for_candidate,
+    )
     from agents.cv_extract import extract_cv
     from interview import assemble_interview_prompt
 
     role = get_role_by_token(token)
     if not role or role["status"] != "live":
         raise HTTPException(status_code=404, detail="Assessment not found or not active")
+
+    # ENG-24: refuse to start a second interview if this candidate already
+    # has an in_progress or completed assessment for this role. The partial
+    # unique index in migration 038 is the DB-level enforcement; this check
+    # is the friendly 409 path so the candidate sees a clear message
+    # instead of a generic 500 from the constraint violation.
+    if body.candidate_user_id:
+        existing = get_active_assessment_for_candidate(role["id"], body.candidate_user_id)
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail="An assessment already exists for this candidate on this role.",
+            )
 
     # Create assessment
     assessment = create_assessment({

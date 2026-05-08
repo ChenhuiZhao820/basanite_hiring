@@ -127,6 +127,30 @@ def get_assessment(assessment_id: str) -> dict | None:
         return None
 
 
+def get_active_assessment_for_candidate(role_id: str, candidate_user_id: str) -> dict | None:
+    """ENG-24: return an existing in_progress / completed assessment for this
+    candidate on this role, if any. Used by /start to refuse duplicate
+    interviews before insert (the partial unique index in migration 038
+    is the belt-and-braces enforcement)."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("assessments")
+            .select("id, status")
+            .eq("role_id", role_id)
+            .eq("candidate_user_id", candidate_user_id)
+            .in_("status", ["in_progress", "completed"])
+            .limit(1)
+            .execute()
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
 def get_assessments_for_role(role_id: str) -> list[dict]:
     client = get_client()
     if not client:
