@@ -10,7 +10,6 @@ responsible for:
    directives mid-interview to lift question depth
 """
 import os
-import re
 from datetime import datetime, timezone
 
 from core.db import (
@@ -20,6 +19,10 @@ from core.db import (
     save_report,
 )
 from core.llm import get_llm_service, MODEL_DIRECTOR
+from core.sanitize import (
+    sanitize_untrusted as _sanitize_untrusted,
+    INJECTION_PATTERNS as _INJECTION_PATTERNS,
+)
 from agents.report import generate_hirer_report, generate_candidate_report
 from core.email import send_report_email
 
@@ -38,35 +41,6 @@ def _load_base_prompt() -> str:
         with open(_BASE_PROMPT_PATH, "r") as f:
             _BASE_PROMPT = f.read()
     return _BASE_PROMPT
-
-
-# Patterns commonly used in prompt-injection attempts to spoof role boundaries
-# or to break out of the data block back into instructions. We neutralise them
-# with a visible marker so injection attempts are obvious in logs.
-_INJECTION_PATTERNS = re.compile(
-    r"(?:"
-    r"</?\s*(?:system|instructions?|assistant|user|human|context)\s*>"
-    r"|\[/?\s*(?:INST|SYSTEM|ASSISTANT|USER)\s*\]"
-    r"|(?:^|\n)\s*(?:system|assistant|human|user)\s*:"
-    r"|(?:^|\n)\s*###\s*(?:system|assistant|user|instructions?)\b"
-    r"|ignore (?:all )?(?:previous|prior|above) instructions"
-    r")",
-    re.IGNORECASE,
-)
-
-
-def _sanitize_untrusted(value, max_chars: int) -> str:
-    """Length-cap and neutralise obvious prompt-injection markers.
-
-    Applied to candidate-controlled data (name, anchor points, experience
-    entries) before it is spliced into the interview system prompt.
-    """
-    if value is None:
-        return ""
-    text = str(value).strip()
-    if len(text) > max_chars:
-        text = text[:max_chars].rstrip() + "…"
-    return _INJECTION_PATTERNS.sub("[filtered]", text)
 
 
 def assemble_interview_prompt(
