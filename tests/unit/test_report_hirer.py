@@ -48,6 +48,12 @@ class TestGenerateHirerReport:
             return_value=make_response(json.dumps(hirer_payload)))
         out = await report.generate_hirer_report(
             sample_transcript, sample_role, sample_cv_extracted)
+        # ENG-25: post-processing stamps `verified` flags on each scoring
+        # row and excerpt. Compare ignoring those.
+        for row in out["scoring_summary"]:
+            row.pop("verified", None)
+        for ex in out["top_excerpts"]:
+            ex.pop("verified", None)
         assert out == hirer_payload
 
     async def test_scores_in_range(self, fake_anthropic, make_response,

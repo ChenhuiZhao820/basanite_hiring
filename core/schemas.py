@@ -99,6 +99,11 @@ class ScoringRow(_LooseModel):
     score: float = Field(ge=1, le=5)
     quotation_basis: str = ""
     notes: str = ""
+    # ENG-25: set False after report generation if the quotation cannot be
+    # found in the candidate's transcript (hallucinated quote). True is the
+    # safe default for legacy data and for cases where verification ran and
+    # the quote was confirmed.
+    verified: bool = True
 
 
 class TopExcerpt(_LooseModel):
@@ -106,6 +111,7 @@ class TopExcerpt(_LooseModel):
     why_selected: str = ""
     dimension: str = ""
     signal_type: str = ""
+    verified: bool = True
 
 
 class CapabilityMap(_LooseModel):
