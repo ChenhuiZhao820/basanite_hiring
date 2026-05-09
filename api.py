@@ -893,9 +893,17 @@ async def list_voices(authorization: str | None = Header(default=None)):
 # Hard cap on cloned voices per org so a runaway hirer can't burn through
 # our ElevenLabs voice slots. 5 is generous for a small team.
 _MAX_CUSTOM_VOICES_PER_ORG = 5
-# 5MB cap on the audio payload. ElevenLabs IVC accepts much more, but we
-# don't want a malicious upload eating worker memory before we forward.
-_MAX_VOICE_CLONE_BYTES = 5 * 1024 * 1024
+# ENG-47: tightened from 5 MB → 2 MB. The product enforces a 30–90s
+# voice-clone duration client-side; on the server we don't parse the
+# audio (no ffprobe / mutagen-webm support) so we approximate by file
+# size. At typical voice bitrates (Opus 64–192 kbps, which is what the
+# browser MediaRecorder produces for WebM) 90 seconds is ≤ ~2 MB. The
+# old 5 MB cap allowed roughly 10 minutes of audio through, which the
+# UI never produces and ElevenLabs would happily charge for. The min
+# (50 KB) catches near-empty uploads — a 30s clip even at low quality
+# is at least ~150 KB.
+_MAX_VOICE_CLONE_BYTES = 2 * 1024 * 1024
+_MIN_VOICE_CLONE_BYTES = 50 * 1024
 # Standard preview line synthesised once per cloned voice, served from
 # the org-voice-samples Supabase Storage bucket. Mirror of the line used
 # by scripts/generate_voice_samples.py for the curated voices.
@@ -978,6 +986,14 @@ async def clone_voice(
     audio_bytes = await _read_bounded(audio, _MAX_VOICE_CLONE_BYTES)
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Empty audio")
+
+    # ENG-47: server-side bounds approximating the 30–90s duration cap.
+    # The browser already enforces it but we don't trust the client.
+    if len(audio_bytes) < _MIN_VOICE_CLONE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail="Recording too short. Please record at least 30 seconds.",
+        )
 
     # ENG-36: validate the magic bytes before forwarding to ElevenLabs.
     # Trust nothing about the client-supplied filename or content_type
