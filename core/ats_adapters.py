@@ -28,8 +28,15 @@ the right adapter via the connection's `provider` slug.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Callable
+
+# ENG-44: Greenhouse passthrough interpolates merge_application_id into a
+# REST path. Merge SDK probably sanitises but we don't trust an external
+# library to be the only line of defence — assert the ID matches a safe
+# character class before letting it near a path string.
+_MERGE_APPLICATION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
 # ─────────────────────────── Context + result types ─────────────────────────
@@ -142,6 +149,17 @@ def adapter_greenhouse(client, ctx: AdapterContext) -> AdapterResult:
     import os
     if os.getenv("MERGE_GREENHOUSE_SCORECARD_ENABLED", "").lower() != "true":
         return AdapterResult(success=True, kind="note", detail={"scorecard": "skipped"})
+
+    # ENG-44: validate the application ID before path interpolation so a
+    # corrupted DB row or replay can't escape the path or hit unintended
+    # Greenhouse endpoints. Skip the passthrough rather than fail loud
+    # (the unified note is already posted).
+    if not _MERGE_APPLICATION_ID_RE.fullmatch(str(ctx.merge_application_id or "")):
+        return AdapterResult(
+            success=True,
+            kind="note",
+            detail={"scorecard": "skipped_invalid_application_id"},
+        )
 
     # Passthrough — write a Greenhouse activity-feed entry with structured data.
     # Greenhouse's REST API is documented at https://developers.greenhouse.io;
