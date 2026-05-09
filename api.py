@@ -1229,7 +1229,24 @@ async def upload_recording(
     if not client:
         raise HTTPException(status_code=500, detail="Storage not configured")
 
-    recording_path = f"{assessment_id}/session.webm"
+    # ENG-46: include a high-entropy random suffix in the path so the
+    # storage URL can't be guessed from the assessment_id alone. Storage
+    # RLS deny-all (mig 025) is the primary defence; this is belt-and-
+    # braces for the case where a future signed-URL feature accidentally
+    # exposes paths or the bucket policy is loosened.
+    #
+    # If the assessment already has a recording_path, reuse its random
+    # suffix so a re-upload (network blip, retry) overwrites the same
+    # blob rather than orphaning the previous one.
+    from core.db import get_assessment, update_assessment
+    existing = get_assessment(assessment_id) or {}
+    existing_path = existing.get("recording_path") or ""
+    if existing_path.startswith(f"{assessment_id}/"):
+        recording_path = existing_path
+    else:
+        suffix = secrets.token_urlsafe(12)
+        recording_path = f"{assessment_id}/{suffix}/session.webm"
+
     try:
         client.storage.from_("interview-recordings").upload(
             path=recording_path,
@@ -1239,6 +1256,15 @@ async def upload_recording(
     except Exception as e:
         print(f"  [upload-recording] storage upload failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to store recording")
+
+    # Persist the path so the retention sweep and the finalize step can
+    # find it. Best-effort — failure here means the file is uploaded but
+    # the row isn't pointed at it; retention will treat it as orphan and
+    # is_complete will fail upstream, both visible and recoverable.
+    try:
+        update_assessment(assessment_id, recording_path=recording_path)
+    except Exception as e:
+        print(f"  [upload-recording] db update failed: {e}")
 
     return {"recording_path": recording_path}
 
