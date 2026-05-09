@@ -90,10 +90,28 @@ def run_retention_sweep() -> SweepResult:
         ).data or []
         for row in rows:
             try:
-                client.storage.from_("interview-recordings").remove([row["recording_path"]])
+                # ENG-38: only NULL the column when the storage delete is
+                # confirmed by the SDK. If the SDK doesn't return a list
+                # of removed paths (older clients) the absence isn't
+                # treated as success — we re-raise so the row stays
+                # consistent and the next sweep can retry.
+                #
+                # Previously the storage delete was inside the same try
+                # as the DB UPDATE, so a network blip on remove() would
+                # log + then null the path anyway, leaving an orphan
+                # blob that survived the candidate's right-to-erasure
+                # request indefinitely (GDPR Article 17 violation).
+                removed = client.storage.from_("interview-recordings").remove([row["recording_path"]])
+                # Supabase Python SDK returns a list of dicts describing
+                # what was removed, or raises. Treat anything other than
+                # a non-empty iterable as failure.
+                if not removed:
+                    raise RuntimeError("storage.remove returned empty result")
                 client.table("assessments").update({"recording_path": None}).eq("id", row["id"]).execute()
                 result.deleted_recordings += 1
             except Exception as e:
+                # Leave recording_path intact on any failure so the next
+                # sweep retries. The error rolls up to the run summary.
                 result.errors.append({"stage": "recording_purge", "id": row["id"], "message": str(e)[:200]})
     except Exception as e:
         result.errors.append({"stage": "recording_query", "message": str(e)[:300]})
