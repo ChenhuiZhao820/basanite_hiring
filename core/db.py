@@ -25,6 +25,27 @@ def get_client():
     return _client
 
 
+def _sanitize_user_agent(ua: str | None) -> str | None:
+    """ENG-48: strip control chars and HTML metacharacters before
+    persisting a User-Agent string. Pydantic enforces a 400-char cap on
+    the inbound side; this is the on-write defence so a malicious UA
+    can't survive a future admin UI render unescaped, and a candidate
+    can't sneak null bytes / line terminators that would confuse log
+    parsing.
+
+    Keeps printable ASCII and common UA punctuation. Trims to 400 chars.
+    """
+    if not ua:
+        return None
+    import re
+    # Strip ASCII control chars (0x00-0x1F, 0x7F) and HTML-special chars.
+    cleaned = re.sub(r"[\x00-\x1f\x7f<>\"'`]", "", ua)
+    cleaned = cleaned.strip()
+    if not cleaned:
+        return None
+    return cleaned[:400]
+
+
 # ─── Role helpers ──────────────────────────────────────────────────────────
 
 def create_role(role: dict) -> dict | None:
@@ -1196,7 +1217,7 @@ def log_consent(
             "consent_type": consent_type,
             "granted": bool(granted),
             "policy_version": policy_version,
-            "user_agent": user_agent[:400] if user_agent else None,
+            "user_agent": _sanitize_user_agent(user_agent),
             "ip_hash": ip_hash,
         }
         result = client.table("consent_records").insert(row).execute()
