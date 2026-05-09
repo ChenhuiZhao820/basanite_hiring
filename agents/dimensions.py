@@ -6,7 +6,12 @@ Given a JD, recommends 3-4 dimensions from the 8 available and calibrates techni
 import os
 import yaml
 from core.llm import get_llm_service, MODEL_FAST
+from core.sanitize import sanitize_untrusted
 from core.schemas import DimensionRecommendation, validate_or_error
+
+# Match the cap used by the interview-prompt assembler. Anything beyond
+# ~15K of JD is almost certainly noise or a deliberate exhaustion attempt.
+_JD_MAX_CHARS = 15_000
 
 DIMENSIONS = {
     "judgment_under_ambiguity": {
@@ -73,7 +78,14 @@ async def recommend_dimensions(job_description: str) -> dict:
 
     system = _load_prompt("recommend_dimensions")
 
-    prompt = f"""Analyze the following job description and recommend 3-4 evaluation dimensions from the available set. For technical roles, 'technical_depth' is mandatory.
+    # ENG-32: the JD is hirer-controlled (or pulled verbatim from an ATS),
+    # so it's untrusted input from this agent's point of view. Strip
+    # injection markers and wrap in <job_description> tags. The system
+    # prompt's "Untrusted content boundaries" clause tells Haiku to treat
+    # anything inside the tags as parsed text rather than instructions.
+    jd_safe = sanitize_untrusted(job_description, _JD_MAX_CHARS)
+
+    prompt = f"""Analyze the job description below (inside <job_description> tags) and recommend 3-4 evaluation dimensions from the available set. For technical roles, 'technical_depth' is mandatory.
 
 Also determine the technical depth calibration:
 - "application", roles focused on using existing tools/frameworks to solve business problems (frontend/backend engineer, data analyst, DevOps)
@@ -82,8 +94,9 @@ Also determine the technical depth calibration:
 AVAILABLE DIMENSIONS:
 {dimension_list}
 
-JOB DESCRIPTION:
-{job_description}
+<job_description>
+{jd_safe}
+</job_description>
 
 Respond with JSON:
 {{
