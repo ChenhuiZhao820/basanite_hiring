@@ -22,32 +22,55 @@ export default function CompletePage() {
   }, [])
 
   useEffect(() => {
-    const id = sessionStorage.getItem(`assessment_${token}`)
-    if (!id) return
-    setAssessmentId(id)
+    let interval: ReturnType<typeof setInterval> | null = null
+    let timeout: ReturnType<typeof setTimeout> | null = null
+    let cancelled = false
 
-    // Poll for report (generation takes a few seconds)
-    const interval = setInterval(async () => {
+    ;(async () => {
+      // ENG-45: prefer the httpOnly cookie. Backward-compat falls back
+      // to sessionStorage for sessions that started before the cookie
+      // rollout.
+      let id: string | null = null
       try {
-        const res = await fetch(`/api/assess/${token}/report?assessment_id=${id}`)
-        if (res.ok) {
-          const data = await res.json()
-          if (data.content) {
-            setReport(data.content)
-            setLoading(false)
-            clearInterval(interval)
-          }
+        const w = await fetch(`/api/assess/${token}/whoami`, { cache: 'no-store' })
+        if (w.ok) {
+          const wj = await w.json().catch(() => ({}))
+          if (wj.assessment_id) id = String(wj.assessment_id)
         }
       } catch {}
-    }, 3000)
+      if (!id) {
+        try { id = sessionStorage.getItem(`assessment_${token}`) } catch {}
+      }
+      if (!id || cancelled) return
+      setAssessmentId(id)
 
-    // Timeout after 60 seconds
-    setTimeout(() => {
-      clearInterval(interval)
-      setLoading(false)
-    }, 60000)
+      // Poll for report (generation takes a few seconds)
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/assess/${token}/report?assessment_id=${id}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data.content) {
+              setReport(data.content)
+              setLoading(false)
+              if (interval) clearInterval(interval)
+            }
+          }
+        } catch {}
+      }, 3000)
 
-    return () => clearInterval(interval)
+      // Timeout after 60 seconds
+      timeout = setTimeout(() => {
+        if (interval) clearInterval(interval)
+        setLoading(false)
+      }, 60000)
+    })()
+
+    return () => {
+      cancelled = true
+      if (interval) clearInterval(interval)
+      if (timeout) clearTimeout(timeout)
+    }
   }, [token])
 
   return (

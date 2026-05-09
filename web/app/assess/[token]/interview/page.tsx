@@ -30,15 +30,31 @@ export default function InterviewPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const id = sessionStorage.getItem(`assessment_${token}`)
-    if (!id) {
-      router.push(`/assess/${token}`)
-      return
-    }
-    setAssessmentId(id)
-
     let cancelled = false
     ;(async () => {
+      // ENG-45: prefer the httpOnly cookie set at /start time over the
+      // sessionStorage breadcrumb. The whoami endpoint validates the
+      // candidate's session before returning the assessment_id, so a
+      // forged sessionStorage value can no longer drive routing.
+      let id: string | null = null
+      try {
+        const w = await fetch(`/api/assess/${token}/whoami`, { cache: 'no-store' })
+        if (w.ok) {
+          const wj = await w.json().catch(() => ({}))
+          if (wj.assessment_id) id = String(wj.assessment_id)
+        }
+      } catch { /* fall through to sessionStorage */ }
+      if (!id) {
+        // Backward-compat: pre-cookie sessions. Removed once the
+        // cookie is universal across all live candidates.
+        try { id = sessionStorage.getItem(`assessment_${token}`) } catch {}
+      }
+      if (!id) {
+        router.push(`/assess/${token}`)
+        return
+      }
+      if (!cancelled) setAssessmentId(id)
+
       try {
         const res = await fetch(`/api/assess/${token}/voice-session`, {
           method: 'POST',

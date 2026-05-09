@@ -32,5 +32,24 @@ export async function POST(
   })
 
   const data = await res.json()
-  return NextResponse.json(data, { status: res.status })
+
+  // ENG-45: bind the assessment_id to the candidate via an httpOnly
+  // cookie. sessionStorage was the previous source of truth and was
+  // forge-able from DevTools — backend ownership checks already
+  // protected against forged IDs, but the client-side trust path was
+  // a smell. The cookie is scoped to /assess/{token} so cross-token
+  // leakage is impossible.
+  const response = NextResponse.json(data, { status: res.status })
+  if (res.ok && data?.assessment_id) {
+    response.cookies.set({
+      name: `assessment_${token}`,
+      value: String(data.assessment_id),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: `/assess/${token}`,
+      maxAge: 60 * 60 * 8,  // 8 hours — long enough for the assessment
+    })
+  }
+  return response
 }
