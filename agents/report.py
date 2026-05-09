@@ -77,12 +77,25 @@ def _candidate_text(transcript: list[dict]) -> str:
 
 
 def _normalise_for_match(text: str) -> str:
-    """Lowercase, collapse whitespace, strip punctuation. Loose substring
-    matching tolerates the small edits an LLM commonly applies to a quote
-    (trailing period, smart quotes, capitalisation) without admitting
-    fabricated content. ENG-25.
+    """Lowercase, NFKC-fold, collapse whitespace, strip punctuation.
+
+    Loose substring matching tolerates the small edits an LLM commonly
+    applies to a quote (trailing period, smart quotes, capitalisation)
+    without admitting fabricated content. ENG-25.
+
+    ENG-39: NFKC normalisation collapses fullwidth/halfwidth, ligatures,
+    and other compatibility variants so a transcript with U+FF57 (ｗ) or
+    U+200B (zero-width space) doesn't fail to substring-match an ASCII
+    quote that says the same thing — and equally, a quote written with
+    lookalike chars can't slip past verification when the transcript
+    didn't actually contain it.
     """
-    text = (text or "").lower()
+    import unicodedata
+    text = unicodedata.normalize("NFKC", text or "").lower()
+    # NFKC keeps zero-width chars (ZWSP/ZWNJ/ZWJ/BOM). Replace them with
+    # a space rather than dropping outright, so an injected ZWSP between
+    # two words doesn't smush them into one token after collapse.
+    text = re.sub(r"[​‌‍﻿]", " ", text)
     text = re.sub(r"[‘’“”`'\"]+", " ", text)  # quotes
     text = re.sub(r"[^\w\s]+", " ", text)  # punctuation
     text = re.sub(r"\s+", " ", text).strip()

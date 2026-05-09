@@ -132,6 +132,45 @@ class TestQuoteVerification:
         assert out["top_excerpts"][0]["verified"] is True
         assert out["top_excerpts"][1]["verified"] is False
 
+    async def test_quote_with_zero_width_space_still_verified(
+        self, fake_anthropic, make_response, transcript_with_quotes,
+        role_min, cv_min,
+    ):
+        # ENG-39: a transcript that picked up a zero-width space (or any
+        # NFKC-equivalent variant) shouldn't fail to match an ASCII quote
+        # that says the same thing — and vice versa.
+        payload = {
+            "scoring_summary": [{
+                "dimension": "judgment_under_ambiguity",
+                "score": 4,
+                "quotation_basis": "We chose​Postgres over Cassandra to keep ops simple.",
+                "notes": "",
+            }],
+            "composite_score": 4,
+        }
+        out = await self._run(fake_anthropic, make_response, payload,
+                              transcript_with_quotes, role_min, cv_min)
+        assert out["scoring_summary"][0]["verified"] is True
+
+    async def test_quote_with_fullwidth_chars_still_verified(
+        self, fake_anthropic, make_response, transcript_with_quotes,
+        role_min, cv_min,
+    ):
+        # ENG-39: NFKC folds fullwidth Latin onto ASCII so the substring
+        # match still finds it in the transcript.
+        payload = {
+            "scoring_summary": [{
+                "dimension": "judgment_under_ambiguity",
+                "score": 4,
+                "quotation_basis": "Ｗｅ ｃｈｏｓｅ Ｐｏｓｔｇｒｅｓ over Cassandra to keep ops simple.",
+                "notes": "",
+            }],
+            "composite_score": 4,
+        }
+        out = await self._run(fake_anthropic, make_response, payload,
+                              transcript_with_quotes, role_min, cv_min)
+        assert out["scoring_summary"][0]["verified"] is True
+
     async def test_empty_transcript_marks_all_unverified(self, fake_anthropic,
                                                          make_response,
                                                          role_min, cv_min):
