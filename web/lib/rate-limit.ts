@@ -4,7 +4,29 @@ import { Redis } from '@upstash/redis'
 // ---------------------------------------------------------------------------
 // Upstash Redis-backed rate limiting (distributed, persists across Vercel
 // invocations). Falls back to in-memory when env vars are absent (local dev).
+//
+// ENG-33: in production the in-memory fallback would silently disable
+// every candidate-facing rate limit (each Vercel invocation has its own
+// Map, so an attacker just hits enough cold-start instances to never
+// cross a single instance's threshold). Fail closed at module init when
+// the deploy environment is production and Upstash isn't configured.
 // ---------------------------------------------------------------------------
+
+const _IS_PRODUCTION =
+  process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+
+if (_IS_PRODUCTION && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) {
+  // Throwing at import time hard-fails the deploy: any route that
+  // imports rate-limit.ts (and there are many — every candidate-facing
+  // and ATS endpoint) will 500 until the Upstash creds are wired up.
+  // Better than silently shipping with no limits.
+  throw new Error(
+    'Rate limiter misconfigured: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN ' +
+    'must be set in production. The in-memory fallback is dev-only — using it in ' +
+    'production silently disables every rate limit (per-instance buckets cannot ' +
+    'aggregate across serverless invocations).',
+  )
+}
 
 // Cache Ratelimit instances by config to avoid rebuilding on every request
 const limiters = new Map<string, Ratelimit>()

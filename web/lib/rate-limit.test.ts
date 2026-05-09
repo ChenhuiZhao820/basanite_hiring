@@ -77,3 +77,49 @@ describe('getIP', () => {
     expect(getIP(req({}))).toBe('unknown')
   })
 })
+
+// ENG-33: production deploys must never silently fall back to the
+// per-instance in-memory limiter. The module fails to import when
+// VERCEL_ENV/NODE_ENV is "production" and Upstash creds are missing.
+describe('production fail-closed init', () => {
+  const originalEnv = { ...process.env }
+
+  afterEach(() => {
+    process.env = { ...originalEnv }
+    vi.resetModules()
+  })
+
+  it('throws when production env has no Upstash creds', async () => {
+    process.env.VERCEL_ENV = 'production'
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    vi.resetModules()
+    await expect(import('./rate-limit')).rejects.toThrow(/Rate limiter misconfigured/)
+  })
+
+  it('throws when NODE_ENV=production has no Upstash creds', async () => {
+    delete process.env.VERCEL_ENV
+    process.env.NODE_ENV = 'production'
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    vi.resetModules()
+    await expect(import('./rate-limit')).rejects.toThrow(/Rate limiter misconfigured/)
+  })
+
+  it('imports cleanly in production when Upstash creds are present', async () => {
+    process.env.VERCEL_ENV = 'production'
+    process.env.UPSTASH_REDIS_REST_URL = 'https://example.upstash.io'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token'
+    vi.resetModules()
+    await expect(import('./rate-limit')).resolves.toMatchObject({ allow: expect.any(Function) })
+  })
+
+  it('does not throw outside production even without Upstash creds', async () => {
+    delete process.env.VERCEL_ENV
+    process.env.NODE_ENV = 'development'
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    vi.resetModules()
+    await expect(import('./rate-limit')).resolves.toMatchObject({ allow: expect.any(Function) })
+  })
+})
