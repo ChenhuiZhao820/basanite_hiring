@@ -471,9 +471,14 @@ async def cv_upload(
 
     filename = (file.filename or "").lower()
     content_type = (file.content_type or "").lower()
+    # ENG-40: dropped the "" fallback from the Content-Type whitelist —
+    # browsers and httpx always send a Content-Type for multipart parts,
+    # so allowing the empty string only weakens the layered defence
+    # without enabling any legitimate flow. The %PDF magic-byte check
+    # below remains the authoritative signal.
     is_pdf = (
         filename.endswith(".pdf")
-        and content_type in ("application/pdf", "application/x-pdf", "")
+        and content_type in ("application/pdf", "application/x-pdf")
         and data[:4] == b"%PDF"
     )
     if not is_pdf:
