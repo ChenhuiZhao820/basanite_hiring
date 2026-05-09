@@ -582,11 +582,23 @@ def log_ats_sync_error(
     assessment_id: str | None = None,
     context: dict | None = None,
 ) -> dict | None:
-    """Persist an ATS-touching error so the dashboard can surface it."""
+    """Persist an ATS-touching error so the dashboard can surface it.
+
+    ENG-43: error_message is scrubbed before insert. Render log retention
+    is ~30 days but the DB row is forever; Merge SDK exceptions routinely
+    contain candidate names/emails that we don't want sitting in the
+    ats_sync_errors table indefinitely.
+    """
+    from core.log_safe import scrub
+
     client = get_client()
     if not client:
         return None
     try:
+        # Cap at 1000 chars to bound DB row size, then scrub. scrub() also
+        # truncates by default; we keep the explicit slice as belt-and-
+        # braces in case scrub's defaults change.
+        cleaned = scrub((error_message or "")[:1000], max_len=1000) or None
         row = {
             "org_id": org_id,
             "connection_id": connection_id,
@@ -594,7 +606,7 @@ def log_ats_sync_error(
             "direction": direction,
             "operation": operation,
             "error_class": error_class,
-            "error_message": (error_message or "")[:1000] or None,
+            "error_message": cleaned,
             "context": context,
         }
         result = client.table("ats_sync_errors").insert(row).execute()
