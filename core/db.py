@@ -2,6 +2,7 @@
 Supabase client and data helpers for Basanite.
 """
 import os
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -643,6 +644,13 @@ def set_org_feature_flag(org_id: str, key: str, value) -> bool:
 # ─── Assessment lookups for ATS flow (PR5/PR6) ─────────────────────────────
 
 def get_assessment_by_invite_token(invite_token: str) -> dict | None:
+    """Resolve an ATS-sourced invite token to its assessment row.
+
+    ENG-30: rejects rows where invite_expires_at has passed. NULL expiry
+    is treated as "no expiry" so legacy rows remain valid (the column was
+    backfilled to NULL by migration 040). New ATS invites get a 30-day
+    expiry stamped at creation time.
+    """
     client = get_client()
     if not client:
         return None
@@ -654,7 +662,19 @@ def get_assessment_by_invite_token(invite_token: str) -> dict | None:
             .limit(1)
             .execute()
         )
-        return (result.data or [None])[0]
+        row = (result.data or [None])[0]
+        if not row:
+            return None
+        expires_at = row.get("invite_expires_at")
+        if expires_at:
+            try:
+                exp_dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+                if exp_dt <= datetime.now(timezone.utc):
+                    return None
+            except Exception:
+                # Malformed timestamp — fail closed.
+                return None
+        return row
     except Exception:
         return None
 

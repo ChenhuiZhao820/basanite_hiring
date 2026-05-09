@@ -9,7 +9,7 @@ import asyncio
 import hmac
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File, Form
@@ -52,6 +52,53 @@ def _verify_internal(authorization: str | None):
     expected = f"Bearer {_PIPELINE_SECRET}"
     if not hmac.compare_digest(authorization, expected):
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# ─── Public-endpoint rate limiter ──────────────────────────────────────────
+# ENG-30 / ENG-34: the Next.js wrapper rate-limits each candidate-facing
+# endpoint, but FastAPI is reachable directly if the host is exposed. This
+# is the in-memory sliding-window stop-gap; ENG-34 will move to a shared
+# Redis backend so it survives multi-replica scaling. Single-instance is
+# the current production topology, so per-worker buckets are sufficient.
+
+import time as _time
+from collections import defaultdict, deque
+
+_ratelimit_buckets: dict[str, deque] = defaultdict(deque)
+
+
+def _client_ip(request: Request) -> str:
+    """Extract the originating IP. Render and Vercel both put the real
+    client IP first in X-Forwarded-For; fall back to the socket address.
+    """
+    fwd = request.headers.get("x-forwarded-for") or ""
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _rate_limit(request: Request, *, bucket: str, max_requests: int, window_seconds: float):
+    """Sliding-window per-IP limiter. Raises 429 when the bucket is full.
+
+    `bucket` is the endpoint identifier, so /assess/invite limits are
+    counted independently of /assess/{token}/start, etc.
+    """
+    key = f"{bucket}:{_client_ip(request)}"
+    now = _time.monotonic()
+    cutoff = now - window_seconds
+    q = _ratelimit_buckets[key]
+    while q and q[0] < cutoff:
+        q.popleft()
+    if len(q) >= max_requests:
+        # Surface a Retry-After hint based on the oldest entry in the
+        # window. The candidate UI uses this to back off cleanly.
+        retry_after = max(1, int(q[0] + window_seconds - now))
+        raise HTTPException(
+            status_code=429,
+            detail="Too many requests",
+            headers={"Retry-After": str(retry_after)},
+        )
+    q.append(now)
 
 
 # ─── Upload limits ─────────────────────────────────────────────────────────
@@ -497,12 +544,6 @@ async def voice_session(token: str, body: dict):
     duration_minutes = role.get("interview_duration_minutes") or 15
     max_duration_seconds = int(duration_minutes) * 60
 
-    # NOTE: the full system prompt is returned to the candidate's browser
-    # because the @elevenlabs/react SDK injects per-session overrides from
-    # the client. This exposes `custom_instructions` and the JD to anyone
-    # inspecting the network tab. Closing this cleanly requires either
-    # ElevenLabs' agent-level config API (slow, racy under concurrent
-    # sessions) or a per-session agent — see H3 in the security audit.
     # Per-role voice override. If the role has interviewer_voice_id set
     # AND it's still in the curated catalogue or the role's org has it as
     # a cloned voice, surface it so the browser can pass it via
@@ -515,6 +556,12 @@ async def voice_session(token: str, body: dict):
     role_org_id = role.get("org_id")
     voice_id = role_voice_id if (role_voice_id and is_valid_voice(role_voice_id, org_id=role_org_id)) else None
 
+    # NOTE: the full system prompt is returned to the candidate's browser
+    # because the @elevenlabs/react SDK injects per-session overrides from
+    # the client. This exposes `custom_instructions` and the JD to anyone
+    # inspecting the network tab. Closing this cleanly requires either
+    # ElevenLabs' agent-level config API (slow, racy under concurrent
+    # sessions) or a per-session agent — see ENG-31.
     payload: dict = {
         "signed_url": signed_url,
         "prompt": prompt,
@@ -1685,6 +1732,11 @@ async def _handle_application_event(payload: dict, linked_account_id: str | None
             cv_extracted = {}
 
     invite_token = secrets.token_urlsafe(32)
+    # ENG-30: stamp a 30-day expiry on every freshly minted invite so a
+    # leaked link from a screen-share recording, mail-server backup, or
+    # forwarded email stops working after the candidate's normal apply
+    # window has passed.
+    invite_expires_at = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
     assessment_payload = {
         "role_id": role["id"],
         "candidate_user_id": f"ats:{merge_candidate_id or merge_application_id}",
@@ -1697,6 +1749,7 @@ async def _handle_application_event(payload: dict, linked_account_id: str | None
         "merge_candidate_id": merge_candidate_id,
         "remote_application_id": application.get("remote_id"),
         "invite_token": invite_token,
+        "invite_expires_at": invite_expires_at,
     }
     if cv_extracted:
         assessment_payload["cv_extracted"] = json.dumps(cv_extracted)
@@ -1783,16 +1836,33 @@ def _build_invite_url(invite_token: str) -> str:
 
 
 @app.get("/assess/invite/{invite_token}")
-async def get_invite_info(invite_token: str):
+async def get_invite_info(invite_token: str, request: Request):
     """
     Resolve a unique invite token to the underlying assessment. The candidate
     flow uses this on `/assess/invite/{token}` to skip the CV upload step
     when the assessment was pre-populated from an ATS sync.
+
+    ENG-30: this endpoint is unauthenticated by design (the candidate
+    follows the link from email). Three hardenings:
+
+    - Per-IP rate limit (60/hr) so a leaked-token harvest can't be turned
+      into bulk pipeline-membership reconnaissance.
+    - 30-day expiry on freshly-minted invites (the helper rejects expired
+      rows). Anyone who finds an old invite in a screen-share recording
+      or mail backup gets a generic 404, not the candidate's data.
+    - The unauthenticated response no longer includes candidate_name or
+      candidate_email — those leaked who-was-invited-where to anyone with
+      the URL. The candidate's identity is established server-side after
+      sign-in via assertCandidateOwnsAssessment.
     """
     from core.db import get_assessment_by_invite_token, get_role
 
+    _rate_limit(request, bucket="invite", max_requests=60, window_seconds=3600)
+
     assessment = get_assessment_by_invite_token(invite_token)
     if not assessment:
+        # Covers both "never existed" and "expired". Same response either
+        # way so timing-side-channel can't distinguish the two cases.
         raise HTTPException(status_code=404, detail="Invite not found")
     role = get_role(assessment["role_id"])
     if not role:
@@ -1818,8 +1888,6 @@ async def get_invite_info(invite_token: str):
         "company_name": role.get("company_name"),
         "dimensions_count": len(dims),
         "interview_duration_minutes": role.get("interview_duration_minutes") or 15,
-        "candidate_name": assessment.get("candidate_name"),
-        "candidate_email": assessment.get("candidate_email"),
         "cv_prefilled": bool(cv),
         "experience_path": assessment.get("experience_path"),
     }

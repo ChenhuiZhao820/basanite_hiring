@@ -24,8 +24,6 @@ type Invite = {
   company_name: string | null
   dimensions_count: number
   interview_duration_minutes: number
-  candidate_name: string | null
-  candidate_email: string | null
   cv_prefilled: boolean
 }
 
@@ -88,7 +86,10 @@ export default function InviteLandingPage() {
     )
   }
 
-  const greeting = invite.candidate_name ? `Hi ${invite.candidate_name.split(' ')[0]},` : 'Hi,'
+  // ENG-30: greeting is generic — the invite endpoint no longer returns
+  // candidate_name to anyone holding the URL. The candidate's real name
+  // is shown after sign-in, when ownership is verified.
+  const greeting = 'Hi,'
   const where = invite.company_name
     ? `${invite.role_title} at ${invite.company_name}`
     : invite.role_title
