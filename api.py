@@ -204,6 +204,34 @@ _WEBM_MAGIC = b"\x1a\x45\xdf\xa3"
 _MIN_RECORDING_BYTES = 1024  # < 1KB is not a real recording
 
 
+# ENG-36: voice-clone audio magic-byte whitelist. Even though /voices/clone
+# is gated by the pipeline secret, validating the actual bytes server-side
+# protects ElevenLabs (and us) from a hirer who uploads a PE/ELF/HTML
+# polyglot relabelled "voice.webm". Same defence shape as ENG-27.
+_AUDIO_MAGIC_PREFIXES: tuple[bytes, ...] = (
+    b"\x1a\x45\xdf\xa3",  # WebM / Matroska EBML
+    b"OggS",               # Ogg
+    b"ID3",                # MP3 with ID3v2 tag
+    b"\xff\xfb",           # MPEG-1 Layer 3 audio frame sync (no ID3)
+    b"\xff\xf3",           # MPEG-2 Layer 3 frame sync
+    b"\xff\xf2",           # MPEG-2.5 Layer 3 frame sync
+)
+
+
+def _is_supported_voice_audio(data: bytes) -> bool:
+    """Return True if the byte stream starts with a whitelisted audio
+    magic. WAV is special-cased because it's `RIFF` + 4 size bytes +
+    `WAVE`, not a contiguous prefix.
+    """
+    if not data:
+        return False
+    if any(data.startswith(m) for m in _AUDIO_MAGIC_PREFIXES):
+        return True
+    if data[:4] == b"RIFF" and data[8:12] == b"WAVE":
+        return True
+    return False
+
+
 async def _read_bounded(upload: UploadFile, limit: int) -> bytes:
     """Read an upload into memory, refusing if it exceeds `limit` bytes.
 
@@ -920,6 +948,20 @@ async def clone_voice(
     audio_bytes = await _read_bounded(audio, _MAX_VOICE_CLONE_BYTES)
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Empty audio")
+
+    # ENG-36: validate the magic bytes before forwarding to ElevenLabs.
+    # Trust nothing about the client-supplied filename or content_type
+    # — those are decorative. Same defence pattern as ENG-27 on
+    # /upload-recording. Whitelisted formats:
+    #   WebM/Matroska  EBML magic        \x1a\x45\xdf\xa3
+    #   WAV            "RIFF....WAVE"
+    #   MP3            "ID3" or 0xff 0xfb (MPEG audio frame sync)
+    #   Ogg            "OggS"
+    if not _is_supported_voice_audio(audio_bytes):
+        raise HTTPException(
+            status_code=415,
+            detail="Unsupported audio format. Use WebM, WAV, MP3, or Ogg.",
+        )
 
     # ElevenLabs IVC.
     eleven_voice_id = await _eleven_clone_voice(
