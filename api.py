@@ -387,8 +387,12 @@ async def get_candidates(
 # ─── Assessment (candidate-facing) ─────────────────────────────────────────
 
 @app.get("/assess/{token}")
-async def get_assessment_info(token: str):
+async def get_assessment_info(token: str, request: Request):
     """Public endpoint, returns role info for the assessment landing page."""
+    # ENG-34: belt-and-braces alongside the Next.js layer's 60/hr/IP cap.
+    # Direct FastAPI calls (e.g. by an attacker harvesting tokens leaked
+    # in screen-share recordings) get the same throttle.
+    _rate_limit(request, bucket="assess-landing", max_requests=60, window_seconds=3600)
     from core.db import get_role_by_token
     role = get_role_by_token(token)
     if not role:
@@ -416,6 +420,7 @@ class StartAssessmentRequest(BaseModel):
 @app.post("/assess/{token}/cv-upload")
 async def cv_upload(
     token: str,
+    request: Request,
     file: UploadFile = File(...),
 ):
     """
@@ -423,6 +428,10 @@ async def cv_upload(
     returned to the client, which then POSTs it to /assess/{token}/start
     alongside the other assessment bootstrap fields.
     """
+    # ENG-34: cap CV-upload attempts per IP. PDF parsing is expensive;
+    # without this an attacker armed with a leaked token could exhaust
+    # the worker pool by feeding malformed PDFs in a tight loop.
+    _rate_limit(request, bucket="cv-upload", max_requests=10, window_seconds=3600)
     from core.db import get_role_by_token
     role = get_role_by_token(token)
     if not role or role["status"] != "live":
@@ -472,7 +481,13 @@ async def cv_upload(
 async def start_assessment(
     token: str,
     body: StartAssessmentRequest,
+    request: Request,
 ):
+    # ENG-34: cap assessment-start attempts per IP. Each /start mints
+    # state, charges Haiku for CV extraction, and (once ENG-24 lands in
+    # prod) creates a unique-index entry — limiting to 5/hr keeps a
+    # leaked-token harvester from hammering this path.
+    _rate_limit(request, bucket="assess-start", max_requests=5, window_seconds=3600)
     """Create an assessment and extract CV. Returns assessment_id."""
     from core.db import (
         get_role_by_token,
@@ -573,12 +588,16 @@ def _load_assessment_for_token(token: str, assessment_id: str):
 
 
 @app.post("/assess/{token}/voice-session")
-async def voice_session(token: str, body: dict):
+async def voice_session(token: str, body: dict, request: Request):
     """
     Prepare a fresh ElevenLabs conversation: mint a signed WebSocket URL and
     return the per-session overrides (system prompt + first message) the
     browser SDK will send when it opens the socket.
     """
+    # ENG-34: each /voice-session burns an ElevenLabs signed URL. 10/hr
+    # tolerates legitimate reconnects after a network blip; anything
+    # past that is almost certainly an attacker probing the endpoint.
+    _rate_limit(request, bucket="voice-session", max_requests=10, window_seconds=3600)
     import httpx
     from core.db import update_assessment
     from interview import assemble_interview_prompt
@@ -1135,10 +1154,16 @@ async def director_tick(
 @app.post("/assess/{token}/upload-recording")
 async def upload_recording(
     token: str,
+    request: Request,
     assessment_id: str = Form(...),
     file: UploadFile = File(...),
 ):
     """Store the full-session webm recording in Supabase Storage."""
+    # ENG-34: matches the Next.js cap. Recording uploads are large (up
+    # to 200MB) and trigger storage writes; 5/hr/IP keeps abusive
+    # uploads from saturating the bucket while leaving room for the
+    # legitimate single-recording-per-interview pattern + retries.
+    _rate_limit(request, bucket="upload-recording", max_requests=5, window_seconds=3600)
     from core.db import get_client
 
     role, _assessment, _cv = _load_assessment_for_token(token, assessment_id)
@@ -2118,7 +2143,7 @@ async def get_invite_info(invite_token: str, request: Request):
 
 
 @app.get("/reports/public/{assessment_id}")
-async def download_public_report_pdf(assessment_id: str, token: str):
+async def download_public_report_pdf(assessment_id: str, token: str, request: Request):
     """
     Serve the hirer report PDF when called with a valid signed `token`. The
     URL is what we drop into the ATS note so the customer's reviewers can
@@ -2127,6 +2152,10 @@ async def download_public_report_pdf(assessment_id: str, token: str):
     The signature is HMAC-SHA256 over `assessment_id:expires_at_unix`.
     Tokens expire 90 days after the push (configurable in core/ats.sign).
     """
+    # ENG-34: rate-limit this even though tokens are HMAC-signed —
+    # someone scraping ATS notes could try them all at line rate, and
+    # PDF rendering is non-trivial CPU work.
+    _rate_limit(request, bucket="public-report", max_requests=60, window_seconds=3600)
     from fastapi.responses import Response
     from core import ats
 
@@ -2134,10 +2163,17 @@ async def download_public_report_pdf(assessment_id: str, token: str):
         raise HTTPException(status_code=403, detail="Invalid or expired link")
 
     pdf_bytes, filename = _build_report_pdf(assessment_id, "hirer")
+    # ENG-41: harden the PDF response against framing/MIME-sniff abuse.
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+        headers={
+            "Content-Disposition": f'inline; filename="{filename}"',
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+            "Content-Security-Policy": "frame-ancestors 'none'",
+        },
     )
 
 

@@ -23,6 +23,24 @@ if str(ROOT) not in sys.path:
 
 
 @pytest.fixture(autouse=True)
+def reset_rate_limit_buckets():
+    """ENG-34: the FastAPI rate limiter holds state in a process-global
+    dict. Clear it between tests so a burst of requests inside one test
+    doesn't bleed across test boundaries and trip the limit elsewhere."""
+    try:
+        import api as _api
+        _api._ratelimit_buckets.clear()
+    except (ImportError, AttributeError):
+        pass
+    yield
+    try:
+        import api as _api
+        _api._ratelimit_buckets.clear()
+    except (ImportError, AttributeError):
+        pass
+
+
+@pytest.fixture(autouse=True)
 def env_vars(monkeypatch):
     """Provide deterministic env vars to every test.
 
