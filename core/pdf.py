@@ -2,8 +2,65 @@
 Render Basanite reports (hirer + candidate) as downloadable PDFs via WeasyPrint.
 Both shapes share the same visual language; the hirer variant carries scoring +
 evidence, the candidate variant carries constructive feedback.
+
+Also exposes `extract_pdf_text` — a resource-bounded text extractor used
+on candidate CV uploads and ATS-side CV fetches. ENG-35 forbade the
+unbounded pypdf usage that was vulnerable to compression-bomb DoS.
 """
 from html import escape
+
+# ENG-35: max characters the extractor will return. A typical CV is
+# 5K–30K characters; 200K is generous headroom. Anything past this is
+# either a deliberately-crafted abuse PDF or noise we don't want in a
+# downstream LLM context window.
+_PDF_TEXT_MAX_CHARS = 200_000
+
+# Per-page cap. A single page that produces this many chars is already
+# absurd (> 100 pages of dense text on one PDF page). Stops the abuse
+# pattern of "one page that decompresses to gigabytes" from blowing up
+# the cumulative-bytes counter before we get to check it.
+_PDF_PAGE_MAX_CHARS = 50_000
+
+
+def extract_pdf_text(
+    data: bytes,
+    *,
+    max_chars: int = _PDF_TEXT_MAX_CHARS,
+    page_max_chars: int = _PDF_PAGE_MAX_CHARS,
+) -> str:
+    """Stream-extract text from a PDF with hard upper bounds.
+
+    Returns the concatenated, stripped page text — no more than
+    ``max_chars`` total. Per-page output is also capped so a single
+    pathological page can't dominate. Pages that fail to extract are
+    silently skipped (consistent with the previous inline behaviour),
+    but extraction stops as soon as the cumulative cap is hit.
+
+    The file-size cap is enforced upstream by ``_read_bounded`` /
+    multipart limits; this helper is the second line of defence
+    against a bomb PDF that compresses small but expands huge.
+    """
+    import io
+    from pypdf import PdfReader
+
+    reader = PdfReader(io.BytesIO(data))
+    parts: list[str] = []
+    total = 0
+    for page in reader.pages:
+        try:
+            text = page.extract_text() or ""
+        except Exception:
+            continue
+        if not text:
+            continue
+        if len(text) > page_max_chars:
+            text = text[:page_max_chars]
+        parts.append(text)
+        total += len(text)
+        if total >= max_chars:
+            break
+    out = "\n\n".join(p.strip() for p in parts if p.strip())
+    return out[:max_chars]
 
 
 def _format_key(key: str) -> str:

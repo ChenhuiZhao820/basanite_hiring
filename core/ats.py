@@ -274,15 +274,10 @@ def _download_and_extract_pdf_text(url: str) -> str | None:
         if data[:4] != b"%PDF":
             # Not a PDF — could be docx etc. Skip for v1.
             return None
-        from pypdf import PdfReader
-        reader = PdfReader(io.BytesIO(data))
-        pages = []
-        for page in reader.pages:
-            try:
-                pages.append(page.extract_text() or "")
-            except Exception:
-                continue
-        return "\n\n".join(p.strip() for p in pages if p.strip()) or None
+        # ENG-35: bounded extractor — same compression-bomb defence as
+        # the candidate-side CV upload path.
+        from core.pdf import extract_pdf_text
+        return extract_pdf_text(data) or None
     except Exception as e:
         print(f"  [ats] download/extract failed: {type(e).__name__}: {e}")
         return None

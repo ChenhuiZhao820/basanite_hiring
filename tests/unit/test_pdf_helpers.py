@@ -2,14 +2,70 @@
 
 import sys
 import types
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from core.pdf import (
     _bullets, _candidate_html, _format_key, _header, _hirer_html,
-    render_report_pdf,
+    extract_pdf_text, render_report_pdf,
 )
+
+
+class _FakePage:
+    def __init__(self, text):
+        self._text = text
+
+    def extract_text(self):
+        return self._text
+
+
+class _FakeReader:
+    def __init__(self, *_args, pages=None, **_kwargs):
+        self.pages = pages or []
+
+
+class TestExtractPdfText:
+    """ENG-35: bounded extractor for compression-bomb defence."""
+
+    def _patch(self, pages):
+        return patch(
+            "pypdf.PdfReader",
+            lambda *a, **kw: _FakeReader(pages=[_FakePage(p) for p in pages]),
+        )
+
+    def test_concatenates_page_text_with_blank_line(self):
+        with self._patch(["alpha", "beta"]):
+            assert extract_pdf_text(b"%PDF-fake") == "alpha\n\nbeta"
+
+    def test_skips_pages_that_raise(self):
+        class BadPage:
+            def extract_text(self):
+                raise RuntimeError("malformed")
+        good = _FakePage("good")
+        with patch("pypdf.PdfReader", lambda *a, **kw: _FakeReader(pages=[BadPage(), good])):
+            assert extract_pdf_text(b"%PDF-fake") == "good"
+
+    def test_returns_empty_when_all_pages_blank(self):
+        with self._patch(["", None, "   "]):
+            assert extract_pdf_text(b"%PDF-fake") == ""
+
+    def test_caps_total_chars(self):
+        # Each page is well under the per-page cap but together they'd
+        # exceed the total. Verify the total cap halts extraction.
+        pages = ["B" * 30_000, "C" * 30_000, "D" * 30_000]
+        with self._patch(pages):
+            out = extract_pdf_text(b"%PDF-fake", max_chars=50_000, page_max_chars=50_000)
+            assert len(out) <= 50_000
+            # Third page never processed — its marker char is absent.
+            assert "D" not in out
+
+    def test_per_page_truncation(self):
+        # One huge page, 1M chars. Per-page cap should dominate.
+        with self._patch(["X" * 1_000_000]):
+            out = extract_pdf_text(b"%PDF-fake")
+            # Per-page cap is 50K by default.
+            assert len(out) <= 50_000
 
 
 class TestFormatKey:

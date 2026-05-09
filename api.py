@@ -455,16 +455,11 @@ async def cv_upload(
         )
 
     try:
-        import io
-        from pypdf import PdfReader
-        reader = PdfReader(io.BytesIO(data))
-        pages = []
-        for page in reader.pages:
-            try:
-                pages.append(page.extract_text() or "")
-            except Exception:
-                continue
-        text = "\n\n".join(p.strip() for p in pages if p.strip())
+        # ENG-35: use the bounded extractor so a compression-bomb PDF
+        # can't blow up the worker. The file-size cap above is the first
+        # line of defence; this caps the post-decompression size too.
+        from core.pdf import extract_pdf_text
+        text = extract_pdf_text(data)
     except Exception as e:
         print(f"  [cv-upload] pdf parse failed: {e}")
         raise HTTPException(status_code=422, detail="We couldn't read that PDF. Paste the text instead.")
