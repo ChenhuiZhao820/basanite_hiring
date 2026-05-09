@@ -79,6 +79,31 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def _hash_request_ip(request: Request) -> str | None:
+    """Return a SHA-256-hex of the masked client IP, or None if missing.
+
+    ENG-42 stores this on report_access_log rows so we can spot abuse
+    patterns ("the same IP downloaded 50 reports") without retaining
+    fully-identifying addresses. The IP is partially masked (last octet
+    of v4, last 80 bits of v6) before hashing so the hash space is
+    smaller and collisions are intentional at the /24 level.
+    """
+    ip = _client_ip(request)
+    if not ip or ip == "unknown":
+        return None
+    if ":" in ip:
+        # IPv6 — keep first three groups, zero the rest.
+        parts = ip.split(":")
+        masked = ":".join(parts[:3]) + "::0"
+    else:
+        parts = ip.split(".")
+        if len(parts) != 4:
+            return None
+        parts[3] = "0"
+        masked = ".".join(parts)
+    return hashlib.sha256(masked.encode("utf-8")).hexdigest()[:32]
+
+
 def _rate_limit(request: Request, *, bucket: str, max_requests: int, window_seconds: float):
     """Sliding-window per-IP limiter. Raises 429 when the bucket is full.
 
@@ -1426,6 +1451,8 @@ async def download_assessment_report_pdf(
     token: str,
     report_type: str,
     assessment_id: str,
+    request: Request,
+    x_accessed_by: str | None = Header(default=None, alias="X-Accessed-By"),
 ):
     """Candidate-facing: download a PDF of their report. Token + assessment_id must match.
 
@@ -1435,7 +1462,7 @@ async def download_assessment_report_pdf(
     `/reports/{assessment_id}/{report_type}/pdf`.
     """
     from fastapi.responses import Response
-    from core.db import get_role_by_token, get_assessment
+    from core.db import get_role_by_token, get_assessment, log_report_access
 
     if report_type != "candidate":
         raise HTTPException(status_code=404, detail="Report not found")
@@ -1448,10 +1475,25 @@ async def download_assessment_report_pdf(
         raise HTTPException(status_code=404, detail="Assessment not found for this link")
 
     pdf_bytes, filename = _build_report_pdf(assessment_id, report_type)
+    # ENG-42: audit who reads what. Best-effort — a failure here doesn't
+    # block delivering the PDF to the candidate.
+    log_report_access(
+        assessment_id=assessment_id,
+        report_type=report_type,
+        access_kind="candidate-self",
+        accessed_by=x_accessed_by or assessment.get("candidate_user_id"),
+        ip_hash=_hash_request_ip(request),
+        user_agent=request.headers.get("user-agent"),
+    )
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+        },
     )
 
 
@@ -1459,16 +1501,41 @@ async def download_assessment_report_pdf(
 async def download_internal_report_pdf(
     assessment_id: str,
     report_type: str,
+    request: Request,
     authorization: str | None = Header(default=None),
+    x_accessed_by: str | None = Header(default=None, alias="X-Accessed-By"),
 ):
-    """Hirer-facing (via Next.js auth proxy): download a PDF by assessment_id."""
+    """Hirer-facing (via Next.js auth proxy): download a PDF by assessment_id.
+
+    The Next.js proxy already resolved the hirer's auth.users.id and
+    forwards it as X-Accessed-By so we can attribute the audit row to a
+    person, not just "the pipeline".
+    """
     _verify_internal(authorization)
     from fastapi.responses import Response
+    from core.db import log_report_access
+
     pdf_bytes, filename = _build_report_pdf(assessment_id, report_type)
+    # ENG-42: hirer audit trail. accessed_by may be None if a script
+    # calls the route directly with the pipeline secret; that's still
+    # captured (NULL) and surfaced as "internal-pipeline" in the DSAR.
+    log_report_access(
+        assessment_id=assessment_id,
+        report_type=report_type,
+        access_kind="hirer-dashboard",
+        accessed_by=x_accessed_by,
+        ip_hash=_hash_request_ip(request),
+        user_agent=request.headers.get("user-agent"),
+    )
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+        },
     )
 
 
@@ -2226,11 +2293,24 @@ async def download_public_report_pdf(assessment_id: str, token: str, request: Re
     _rate_limit(request, bucket="public-report", max_requests=60, window_seconds=3600)
     from fastapi.responses import Response
     from core import ats
+    from core.db import log_report_access
 
     if not ats.verify_public_report_url(assessment_id, token):
         raise HTTPException(status_code=403, detail="Invalid or expired link")
 
     pdf_bytes, filename = _build_report_pdf(assessment_id, "hirer")
+    # ENG-42: signed-URL access has no authenticated user, so accessed_by
+    # is null. The IP-hash + user-agent give enough fingerprint to spot
+    # the pattern of "every reviewer at acme.com pulled the report" vs
+    # "one outside scraper hit it 50 times".
+    log_report_access(
+        assessment_id=assessment_id,
+        report_type="hirer",
+        access_kind="public-signed-url",
+        accessed_by=None,
+        ip_hash=_hash_request_ip(request),
+        user_agent=request.headers.get("user-agent"),
+    )
     # ENG-41: harden the PDF response against framing/MIME-sniff abuse.
     return Response(
         content=pdf_bytes,
@@ -2500,6 +2580,10 @@ def _build_dsar_export(dsar_id: str) -> dict:
         "assessments": [],
         "consent_records": [],
         "dsar_audit_trail": [],
+        # ENG-42: who has viewed your report. Article 15(1)(c) — the
+        # data subject is entitled to know the recipients to whom their
+        # personal data has been disclosed.
+        "report_access_log": [],
     }
 
     # Assessments + their related rows.
@@ -2537,6 +2621,16 @@ def _build_dsar_export(dsar_id: str) -> dict:
             .execute()
         ).data or []
         out["dsar_audit_trail"] = rows
+    except Exception:
+        pass
+
+    # ENG-42: report_access_log entries for every assessment we surfaced.
+    try:
+        from core.db import list_report_accesses_for_assessment
+        access_rows: list[dict] = []
+        for a in out.get("assessments", []):
+            access_rows.extend(list_report_accesses_for_assessment(a["id"]))
+        out["report_access_log"] = access_rows
     except Exception:
         pass
 

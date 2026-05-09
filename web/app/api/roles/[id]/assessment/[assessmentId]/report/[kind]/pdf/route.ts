@@ -38,9 +38,15 @@ export async function GET(
     return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } })
   }
 
+  // ENG-42: forward the authenticated hirer's user_id so the FastAPI
+  // tier can attribute the audit-log row to a person, not just to the
+  // pipeline credential.
   const res = await fetch(`${PIPELINE_URL}/reports/${assessmentId}/${kind}/pdf`, {
     method: 'GET',
-    headers: { Authorization: `Bearer ${PIPELINE_SECRET}` },
+    headers: {
+      Authorization: `Bearer ${PIPELINE_SECRET}`,
+      'X-Accessed-By': user.id,
+    },
   })
 
   if (!res.ok || !res.body) {

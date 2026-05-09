@@ -1225,3 +1225,71 @@ def log_consent(
     except Exception as e:
         print(f"  DB log_consent error: {e}")
         return None
+
+
+# ─── Report access audit (ENG-42) ──────────────────────────────────────────
+
+def log_report_access(
+    *,
+    assessment_id: str,
+    report_type: str,
+    access_kind: str,
+    accessed_by: str | None = None,
+    ip_hash: str | None = None,
+    user_agent: str | None = None,
+) -> dict | None:
+    """Insert a row into report_access_log.
+
+    ``access_kind`` is one of: 'hirer-dashboard', 'candidate-self',
+    'public-signed-url'. Failures are logged but don't propagate — an
+    audit-log write that fails shouldn't block the candidate or hirer
+    from seeing the report; the next call will try again.
+    """
+    if access_kind not in ("hirer-dashboard", "candidate-self", "public-signed-url"):
+        return None
+    if report_type not in ("hirer", "candidate"):
+        return None
+
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "assessment_id": assessment_id,
+            "accessed_by": accessed_by,
+            "report_type": report_type,
+            "access_kind": access_kind,
+            "ip_hash": ip_hash,
+            "user_agent": _sanitize_user_agent(user_agent),
+        }
+        result = client.table("report_access_log").insert(row).execute()
+        return (result.data or [None])[0]
+    except Exception as e:
+        print(f"  DB log_report_access error: {e}")
+        return None
+
+
+def list_report_accesses_for_assessment(assessment_id: str) -> list[dict]:
+    """Return the access audit trail for an assessment, newest first.
+
+    Used by the DSAR export to surface "who has viewed your report" to
+    the candidate. Service-role bypasses RLS, so this returns the full
+    trail regardless of caller; the API tier is responsible for
+    authorising before invoking it.
+    """
+    client = get_client()
+    if not client:
+        return []
+    try:
+        result = (
+            client.table("report_access_log")
+            .select("id, accessed_by, accessed_at, report_type, access_kind")
+            .eq("assessment_id", assessment_id)
+            .order("accessed_at", desc=True)
+            .limit(500)
+            .execute()
+        )
+        return result.data or []
+    except Exception as e:
+        print(f"  DB list_report_accesses error: {e}")
+        return []

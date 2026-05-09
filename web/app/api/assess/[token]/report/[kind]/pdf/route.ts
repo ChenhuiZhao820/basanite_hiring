@@ -69,9 +69,15 @@ export async function GET(
     })
   }
 
+  // ENG-42: forward the candidate's user_id so the audit-log row can
+  // attribute the access to a person rather than relying on the
+  // candidate_user_id stored on the assessment.
   const upstream = new URL(`${PIPELINE_URL}/assess/${token}/report/${kind}/pdf`)
   upstream.searchParams.set('assessment_id', assessmentId)
-  const res = await fetch(upstream.toString(), { method: 'GET' })
+  const res = await fetch(upstream.toString(), {
+    method: 'GET',
+    headers: { 'X-Accessed-By': user.id },
+  })
 
   if (!res.ok || !res.body) {
     const text = await res.text().catch(() => '')
