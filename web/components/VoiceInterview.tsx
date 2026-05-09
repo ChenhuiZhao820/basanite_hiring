@@ -13,7 +13,14 @@ type Props = {
   token: string
   assessmentId: string
   signedUrl: string
-  prompt: string
+  /** Legacy override path: full system prompt sent to the browser. Kept
+   *  for backward compat until ENG-31's Conversation Initiation Webhook
+   *  is configured on the ElevenLabs agent side. Prefer `sessionToken`. */
+  prompt?: string
+  /** ENG-31 path: opaque per-session token. The browser sends it as a
+   *  dynamic variable; ElevenLabs hits /elevenlabs/conv-init server-to-
+   *  server to fetch the real prompt. The browser never sees the rubric. */
+  sessionToken?: string
   firstMessage: string
   targetSeconds: number
   /** Optional ElevenLabs voice ID. When set, overrides the agent's
@@ -86,6 +93,7 @@ export default function VoiceInterview({
   assessmentId,
   signedUrl,
   prompt,
+  sessionToken,
   firstMessage,
   voiceId,
   targetSeconds,
@@ -323,23 +331,48 @@ export default function VoiceInterview({
         recorderRef.current = mr
         mr.start(1000)
 
-        // Build the overrides object. The agent.prompt + firstMessage
-        // overrides are always set; tts.voiceId is set conditionally so
-        // a missing/cleared role.interviewer_voice_id keeps the agent's
-        // default voice (the existing behaviour pre this feature).
-        const overridesObj: {
-          agent: { prompt: { prompt: string }; firstMessage: string }
-          tts?: { voiceId: string }
+        // Two paths exist while ENG-31 rolls out:
+        //
+        // - sessionToken (preferred): the prompt lives server-side. We
+        //   pass the token via dynamicVariables; ElevenLabs forwards it
+        //   to /elevenlabs/conv-init which returns the real prompt as
+        //   conversation_config_override. The browser never sees the
+        //   rubric/JD/custom_instructions.
+        //
+        // - prompt (legacy): the full prompt is in the browser bundle
+        //   and is set as an agent.prompt override here. This path stays
+        //   active until the ElevenLabs agent's Conversation Initiation
+        //   Webhook URL is configured. Tracked as ENG-31.
+        const startArgs: {
+          signedUrl: string
+          connectionType: 'websocket'
+          overrides?: {
+            agent?: { prompt?: { prompt: string }; firstMessage?: string }
+            tts?: { voiceId: string }
+          }
+          dynamicVariables?: Record<string, string>
         } = {
-          agent: { prompt: { prompt }, firstMessage },
-        }
-        if (voiceId) overridesObj.tts = { voiceId }
-
-        const id = await conversation.startSession({
           signedUrl,
           connectionType: 'websocket',
-          overrides: overridesObj,
-        })
+        }
+
+        if (sessionToken) {
+          startArgs.dynamicVariables = { session_token: sessionToken }
+          // firstMessage stays a client override so the candidate sees
+          // their name in the opener even if the webhook is briefly
+          // slow; the server-side prompt still wins for everything else.
+          if (voiceId) startArgs.overrides = { agent: { firstMessage }, tts: { voiceId } }
+          else startArgs.overrides = { agent: { firstMessage } }
+        } else if (prompt) {
+          startArgs.overrides = {
+            agent: { prompt: { prompt }, firstMessage },
+            ...(voiceId ? { tts: { voiceId } } : {}),
+          }
+        } else {
+          throw new Error('Voice session missing both prompt and sessionToken')
+        }
+
+        const id = await conversation.startSession(startArgs)
         if (id) conversationIdRef.current = id
       } catch (e: any) {
         if (cancelled) return

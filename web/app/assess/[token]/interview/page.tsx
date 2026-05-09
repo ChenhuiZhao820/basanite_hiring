@@ -8,7 +8,11 @@ import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
 type SessionConfig = {
   signed_url: string
-  prompt: string
+  // Two mutually-exclusive fields, depending on whether the ENG-31
+  // Conversation Initiation Webhook is configured on the ElevenLabs
+  // agent. The component prefers session_token when both are present.
+  prompt?: string
+  session_token?: string
   first_message: string
   max_duration_seconds?: number
   // Optional ElevenLabs voice ID. When set, VoiceInterview will pass it
@@ -83,6 +87,7 @@ export default function InterviewPage() {
       assessmentId={assessmentId}
       signedUrl={config.signed_url}
       prompt={config.prompt}
+      sessionToken={config.session_token}
       firstMessage={config.first_message}
       voiceId={config.voice_id}
       targetSeconds={config.max_duration_seconds ?? 20 * 60}

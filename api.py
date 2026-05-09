@@ -6,9 +6,11 @@ Run with:
     uvicorn api:app --reload --port 8000
 """
 import asyncio
+import hashlib
 import hmac
 import json
 import os
+import secrets
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
@@ -99,6 +101,93 @@ def _rate_limit(request: Request, *, bucket: str, max_requests: int, window_seco
             headers={"Retry-After": str(retry_after)},
         )
     q.append(now)
+
+
+# ─── Per-session prompt-token signing (ENG-31) ─────────────────────────────
+# The 638-line interview prompt + the role JD + the hirer's
+# `custom_instructions` used to be returned to the candidate's browser so
+# the @elevenlabs/react SDK could inject them as overrides. Anyone hitting
+# F12 saw the rubric and the company's confidential instructions.
+#
+# New flow: mint an opaque per-session token tied to the assessment_id,
+# return only the token to the browser, and have ElevenLabs fetch the
+# real prompt server-to-server via the Conversation Initiation Webhook
+# at /elevenlabs/conv-init. The browser passes the token via the SDK's
+# `dynamicVariables` field; ElevenLabs forwards it to the webhook.
+#
+# Rolling this out requires a one-time admin step in the ElevenLabs UI
+# (configure the agent's Conversation Initiation Webhook URL). Until
+# that's done, the legacy prompt-on-browser behaviour is preserved by
+# leaving INTERVIEW_PROMPT_VIA_WEBHOOK unset/false. Once the webhook is
+# wired up, set:
+#
+#   INTERVIEW_PROMPT_VIA_WEBHOOK=true
+#   INTERVIEW_SESSION_SECRET=<32+ random bytes>
+#   ELEVENLABS_WEBHOOK_SECRET=<shared with ElevenLabs agent config>
+#
+# and the prompt will stop being shipped to candidates.
+
+_INTERVIEW_SESSION_SECRET = os.getenv("INTERVIEW_SESSION_SECRET", "")
+_USE_PROMPT_WEBHOOK = os.getenv("INTERVIEW_PROMPT_VIA_WEBHOOK", "").lower() in {"1", "true", "yes"}
+_ELEVENLABS_WEBHOOK_SECRET = os.getenv("ELEVENLABS_WEBHOOK_SECRET", "")
+
+if _USE_PROMPT_WEBHOOK and not _INTERVIEW_SESSION_SECRET:
+    print(
+        "  [startup] WARN: INTERVIEW_PROMPT_VIA_WEBHOOK is on but "
+        "INTERVIEW_SESSION_SECRET is missing — falling back to legacy "
+        "prompt-on-browser flow. ENG-31 vulnerability remains live."
+    )
+    _USE_PROMPT_WEBHOOK = False
+
+
+def _mint_session_prompt_token(assessment_id: str, ttl_seconds: int = 3600) -> str:
+    """Sign an opaque token tying a session to an assessment_id.
+
+    Format: `<assessment_id>:<expires_unix>:<hmac_sha256_hex>`. The
+    Conversation Initiation Webhook at /elevenlabs/conv-init verifies
+    the signature and uses the assessment_id to regenerate the prompt
+    server-side.
+    """
+    if not _INTERVIEW_SESSION_SECRET:
+        raise HTTPException(
+            status_code=500,
+            detail="INTERVIEW_SESSION_SECRET not configured",
+        )
+    expires = int((datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)).timestamp())
+    payload = f"{assessment_id}:{expires}"
+    sig = hmac.new(
+        _INTERVIEW_SESSION_SECRET.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"{payload}:{sig}"
+
+
+def _verify_session_prompt_token(token: str) -> str | None:
+    """Returns the assessment_id if the token is valid and unexpired,
+    None otherwise. Constant-time signature compare to prevent timing
+    side-channels on the secret.
+    """
+    if not _INTERVIEW_SESSION_SECRET or not token:
+        return None
+    parts = token.rsplit(":", 2)
+    if len(parts) != 3:
+        return None
+    assessment_id, expires_str, sig = parts
+    payload = f"{assessment_id}:{expires_str}"
+    expected = hmac.new(
+        _INTERVIEW_SESSION_SECRET.encode("utf-8"),
+        payload.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected, sig):
+        return None
+    try:
+        if int(expires_str) < int(datetime.now(timezone.utc).timestamp()):
+            return None
+    except ValueError:
+        return None
+    return assessment_id
 
 
 # ─── Upload limits ─────────────────────────────────────────────────────────
@@ -556,21 +645,153 @@ async def voice_session(token: str, body: dict):
     role_org_id = role.get("org_id")
     voice_id = role_voice_id if (role_voice_id and is_valid_voice(role_voice_id, org_id=role_org_id)) else None
 
-    # NOTE: the full system prompt is returned to the candidate's browser
-    # because the @elevenlabs/react SDK injects per-session overrides from
-    # the client. This exposes `custom_instructions` and the JD to anyone
-    # inspecting the network tab. Closing this cleanly requires either
-    # ElevenLabs' agent-level config API (slow, racy under concurrent
-    # sessions) or a per-session agent — see ENG-31.
     payload: dict = {
         "signed_url": signed_url,
-        "prompt": prompt,
         "first_message": first_message,
         "max_duration_seconds": max_duration_seconds,
     }
+    # ENG-31: prefer the webhook flow when configured. The browser gets
+    # an opaque session_token; ElevenLabs fetches the real prompt server-
+    # to-server. Until the ElevenLabs admin step (Conversation Initiation
+    # Webhook URL) is done, the env var stays unset and we fall back to
+    # the legacy prompt-on-browser path so candidates can still interview.
+    if _USE_PROMPT_WEBHOOK:
+        payload["session_token"] = _mint_session_prompt_token(assessment_id)
+    else:
+        # Legacy path. The prompt + role JD + custom_instructions are
+        # visible in the candidate's network tab. Tracked as ENG-31; this
+        # branch will be removed once the webhook is configured.
+        payload["prompt"] = prompt
     if voice_id:
         payload["voice_id"] = voice_id
     return payload
+
+
+# ─── ElevenLabs Conversation Initiation Webhook (ENG-31) ───────────────────
+# Configured at the agent level in the ElevenLabs UI:
+#   Settings → Security → Conversation Initiation Webhook URL
+#   = https://api.basanite.co.uk/elevenlabs/conv-init
+#   = (shared secret stored in ELEVENLABS_WEBHOOK_SECRET on both sides)
+#
+# When a candidate's browser opens a WebSocket, ElevenLabs forwards the
+# `dynamicVariables` payload (which contains our signed session_token)
+# to this endpoint. We verify the token, regenerate the system prompt
+# server-side from the assessment row, and return the overrides JSON.
+# The prompt never leaves the server.
+
+@app.post("/elevenlabs/conv-init")
+async def elevenlabs_conv_init(request: Request):
+    """Resolve a per-session token to the system prompt + first message.
+
+    Authenticated via:
+    1. ElevenLabs HMAC signature on the request body (when configured),
+       which proves the request originated from ElevenLabs and not from
+       a candidate trying to harvest prompts.
+    2. The session_token itself, signed by us at /voice-session and
+       carrying a 1-hour TTL.
+    """
+    body_bytes = await request.body()
+
+    # Verify ElevenLabs signature when the shared secret is configured.
+    # ElevenLabs sends the header as `t=<unix>,v0=<hex_hmac>`. We compute
+    # HMAC over `<unix>.<body>` and compare in constant time.
+    if _ELEVENLABS_WEBHOOK_SECRET:
+        sig_header = request.headers.get("ElevenLabs-Signature", "")
+        ok = False
+        try:
+            parts = dict(p.split("=", 1) for p in sig_header.split(",") if "=" in p)
+            ts = parts.get("t", "")
+            their_sig = parts.get("v0", "")
+            if ts and their_sig:
+                signed = f"{ts}.{body_bytes.decode('utf-8', errors='replace')}"
+                expected = hmac.new(
+                    _ELEVENLABS_WEBHOOK_SECRET.encode("utf-8"),
+                    signed.encode("utf-8"),
+                    hashlib.sha256,
+                ).hexdigest()
+                ok = hmac.compare_digest(expected, their_sig)
+                # Replay-window: reject anything older than 5 minutes.
+                if ok:
+                    try:
+                        ts_int = int(ts)
+                        now_ts = int(datetime.now(timezone.utc).timestamp())
+                        if abs(now_ts - ts_int) > 300:
+                            ok = False
+                    except ValueError:
+                        ok = False
+        except Exception:
+            ok = False
+        if not ok:
+            raise HTTPException(status_code=401, detail="Invalid signature")
+
+    try:
+        payload = json.loads(body_bytes)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    # ElevenLabs nests our dynamicVariables under
+    # conversation_initiation_client_data.dynamic_variables. Tolerate a
+    # couple of shapes since the field has shifted across SDK versions.
+    client_data = (
+        payload.get("conversation_initiation_client_data")
+        or payload.get("client_data")
+        or {}
+    )
+    dynamic_vars = client_data.get("dynamic_variables") or client_data.get("dynamicVariables") or client_data
+    session_token = (
+        dynamic_vars.get("session_token")
+        if isinstance(dynamic_vars, dict)
+        else None
+    )
+    if not session_token:
+        raise HTTPException(status_code=400, detail="Missing session_token")
+
+    assessment_id = _verify_session_prompt_token(session_token)
+    if not assessment_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired session_token")
+
+    # Regenerate the prompt from authoritative DB state. We don't trust
+    # any field carried in the webhook body other than the verified
+    # assessment_id from the signed token.
+    from core.db import get_assessment, get_role
+    from interview import assemble_interview_prompt
+
+    assessment = get_assessment(assessment_id)
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    role = get_role(assessment["role_id"])
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    role["dimensions"] = _coerce_json_field(role.get("dimensions", [])) or []
+    if not isinstance(role["dimensions"], list):
+        role["dimensions"] = []
+    role["eligibility_constraints"] = _coerce_json_field(role.get("eligibility_constraints", {})) or {}
+
+    cv = assessment.get("cv_extracted") or {}
+    if isinstance(cv, str):
+        try:
+            cv = json.loads(cv)
+        except Exception:
+            cv = {}
+
+    canonical_name = assessment.get("candidate_name") or cv.get("name") or ""
+    prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
+    first_name = (canonical_name or "there").split()[0]
+    first_message = (
+        f"Hi {first_name}, I'm Baz, I'll be your interviewer today. "
+        f"Can you let me know if you can hear me clearly?"
+    )
+
+    # Shape matches ElevenLabs' agent overrides schema.
+    return {
+        "type": "conversation_initiation_client_data",
+        "conversation_config_override": {
+            "agent": {
+                "prompt": {"prompt": prompt},
+                "first_message": first_message,
+            },
+        },
+    }
 
 
 @app.get("/voices")
