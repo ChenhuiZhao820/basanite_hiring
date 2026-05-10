@@ -1952,23 +1952,18 @@ async def ats_webhook_merge(request: Request):
         # Best-effort: log without idempotency.
         event_id = f"unknown-{datetime.now(timezone.utc).isoformat()}"
 
-    if db.webhook_event_seen(event_id):
-        return {"status": "duplicate", "event_id": event_id}
-
     hook_type = payload.get("hook", {}).get("event") or payload.get("event") or payload.get("type")
     linked_account_id = (payload.get("linked_account") or {}).get("id")
 
-    # Log receipt; we'll update to processed/failed at the end.
-    db.log_webhook_event(
-        event_id=event_id,
-        hook_type=hook_type,
-        linked_account_id=linked_account_id,
-        status="received",
-        payload_summary={
-            "hook": hook_type,
-            "model_type": payload.get("data", {}).get("model_type") if isinstance(payload.get("data"), dict) else None,
-        },
-    )
+    # ENG-55: atomic dedup. The old check-then-act pattern
+    # (webhook_event_seen → log_webhook_event) had a TOCTOU window
+    # that let two concurrent deliveries of the same event_id both
+    # proceed. claim_webhook_event uses the UNIQUE constraint on
+    # event_id as the arbiter, so exactly one caller wins.
+    if not db.claim_webhook_event(
+        event_id, hook_type=hook_type, linked_account_id=linked_account_id
+    ):
+        return {"status": "duplicate", "event_id": event_id}
 
     # We currently care about Application created/updated. Other events are
     # acknowledged-and-ignored so Merge stops retrying.
@@ -2396,50 +2391,62 @@ async def dsar_verify(
         {"status": "invalid"} (404)
     """
     _verify_internal(authorization)
-    from core.db import get_client
+    from core.db import get_client, claim_dsar_for_action
     from datetime import datetime as _dt
 
     client = get_client()
     if not client:
         raise HTTPException(status_code=503, detail="Database unavailable")
 
+    # ENG-55: atomic claim — only the caller that flips the row from
+    # 'pending' to 'verified' proceeds. The previous SELECT-then-UPDATE
+    # pattern allowed two concurrent /verify calls with the same token
+    # to both pass the "not yet verified" check and both run the
+    # action (erasure twice, multiple fresh export URLs, etc.). The
+    # token is single-use after this — even if the same caller retries,
+    # the second attempt sees status != 'pending' and gets a 404.
+    #
+    # Pre-flight: peek at expiry so we can return a clean 410 instead
+    # of a generic 404 for expired tokens. This peek isn't a TOCTOU
+    # risk: if the token was already consumed concurrently, the atomic
+    # update below returns None and we 404.
     try:
-        result = (
+        peek = (
             client.table("dsar_requests")
-            .select("*")
+            .select("id, status, verification_expires_at")
             .eq("verification_token", body.token)
             .single()
             .execute()
         )
-        row = result.data
+        peek_row = peek.data or {}
     except Exception:
-        raise HTTPException(status_code=404, detail="Token not found")
+        peek_row = {}
 
-    if not row:
-        raise HTTPException(status_code=404, detail="Token not found")
-    if row.get("status") in ("completed", "rejected"):
-        raise HTTPException(status_code=404, detail="Already actioned")
-
-    expires = row.get("verification_expires_at")
+    expires = peek_row.get("verification_expires_at") if peek_row else None
     if expires:
         try:
             exp_dt = _dt.fromisoformat(expires.replace("Z", "+00:00"))
             if exp_dt < datetime.now(timezone.utc):
-                client.table("dsar_requests").update({"status": "expired"}).eq(
-                    "id", row["id"]
-                ).execute()
+                # Best-effort status flip so the row reflects the
+                # truth. Even if it races, the atomic claim below
+                # protects against double-action.
+                if peek_row.get("id"):
+                    client.table("dsar_requests").update({"status": "expired"}).eq(
+                        "id", peek_row["id"]
+                    ).execute()
                 raise HTTPException(status_code=410, detail="Token expired")
         except (ValueError, TypeError):
             pass
 
+    row = claim_dsar_for_action(body.token)
+    if not row:
+        # Token unknown OR already consumed by a concurrent /verify
+        # call OR moved to a non-pending state by an admin. Same 404
+        # for all so timing-side-channel can't distinguish.
+        raise HTTPException(status_code=404, detail="Token not found")
+
     request_type = row["request_type"]
     email = row["email"]
-
-    # Mark verified before doing the work — even if the work fails, we
-    # don't want a stale token re-usable.
-    client.table("dsar_requests").update({"status": "verified"}).eq(
-        "id", row["id"]
-    ).execute()
 
     if request_type == "erasure":
         _action_erasure(email)
@@ -2989,6 +2996,10 @@ async def accept_invite(body: _AcceptInviteRequest, authorization: str | None = 
     _verify_internal(authorization)
     from core import db
 
+    # Pre-flight: read for expiry/cancellation/email-match checks. The
+    # atomic claim below is what actually consumes the token, so a stale
+    # read here can only cause us to 410 when we'd otherwise atomically
+    # reject — never a false-accept.
     inv = db.get_invitation_by_token(body.token)
     if not inv:
         raise HTTPException(status_code=404, detail="Invitation not found")
@@ -3005,7 +3016,8 @@ async def accept_invite(body: _AcceptInviteRequest, authorization: str | None = 
         except (ValueError, TypeError):
             pass
 
-    # Email match check.
+    # Email match check. Done BEFORE the atomic claim so a wrong-email
+    # caller doesn't burn the token.
     invited_email = (inv.get("email") or "").lower()
     try:
         u = db.get_client().auth.admin.get_user_by_id(body.user_id)
@@ -3023,8 +3035,16 @@ async def accept_invite(body: _AcceptInviteRequest, authorization: str | None = 
     if not org_id:
         raise HTTPException(status_code=500, detail="Invitation missing org reference")
 
+    # ENG-55: atomic claim. The previous mark_invitation_accepted-after
+    # -add_org_member pattern raced: two concurrent /accept-invite calls
+    # for the same token both passed the read-side checks and both
+    # added member rows. Now exactly one caller transitions the
+    # invitation to 'accepted'; the loser gets a 410.
+    claimed = db.claim_invitation(body.token)
+    if not claimed:
+        raise HTTPException(status_code=410, detail="Already accepted")
+
     db.add_org_member(org_id, body.user_id, role=inv.get("role") or "member")
-    db.mark_invitation_accepted(inv["id"])
     db.set_active_org_id(body.user_id, org_id)
 
     # Audit consent (Article 7) — joining an org via invitation is a

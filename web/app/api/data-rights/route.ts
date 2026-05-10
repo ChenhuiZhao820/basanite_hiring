@@ -8,6 +8,7 @@
 
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { allow, getIP } from '@/lib/rate-limit'
 import crypto from 'crypto'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
@@ -33,6 +34,23 @@ export async function POST(req: Request) {
   const email = (body.email || '').trim().toLowerCase()
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
+  }
+
+  // ENG-56: every DSAR submission fires a verification email through
+  // Resend on Basanite's domain. Without a cap this is an email-bomb
+  // relay: an attacker hits this endpoint with a target's email
+  // address to spam their inbox with Basanite-branded mail. Cap to
+  // 3/hr per IP (reasonable for legitimate retry behaviour) and
+  // 1/hr per email (one DSAR for any given address per hour is
+  // enough — a victim doesn't need 60 verification emails).
+  const ip = getIP(req)
+  const ipOk = await allow(`dsar-submit:ip:${ip}`, 3, 60 * 60 * 1000)
+  const emailOk = await allow(`dsar-submit:email:${email}`, 1, 60 * 60 * 1000)
+  if (!ipOk || !emailOk) {
+    // Generic message — don't disclose which key tripped, so a
+    // probing attacker can't distinguish "this email already has a
+    // pending DSAR" from "I've been throttled by IP".
+    return NextResponse.json({ error: 'Please try again later' }, { status: 429 })
   }
 
   const service = createServiceClient()

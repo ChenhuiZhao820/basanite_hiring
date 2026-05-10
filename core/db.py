@@ -539,7 +539,12 @@ def delete_ats_job_mapping(mapping_id: str, org_id: str) -> bool:
 # ─── ATS webhook event log (PR5) ───────────────────────────────────────────
 
 def webhook_event_seen(event_id: str) -> bool:
-    """True if we have already processed this Merge event (idempotency)."""
+    """True if we have already processed this Merge event (idempotency).
+
+    DEPRECATED for the dedup gate — see ``claim_webhook_event``. Kept
+    for read-only callers (admin dashboards, retention sweeps) that
+    want to know whether an event has already been observed.
+    """
     client = get_client()
     if not client:
         return False
@@ -554,6 +559,112 @@ def webhook_event_seen(event_id: str) -> bool:
         return bool(result.data)
     except Exception:
         return False
+
+
+def claim_webhook_event(
+    event_id: str,
+    *,
+    hook_type: str | None = None,
+    linked_account_id: str | None = None,
+) -> bool:
+    """ENG-55: atomically reserve an event_id against the UNIQUE
+    constraint on ats_webhook_events.event_id. Returns True if we won
+    the race (this caller now owns processing) or False if a row already
+    exists (duplicate; caller should ack and skip).
+
+    The previous check-then-insert pattern (``webhook_event_seen``
+    followed by ``log_webhook_event``) had a TOCTOU window: two
+    concurrent deliveries with the same event_id both saw "not seen"
+    and both proceeded to process the event, hitting the ATS twice
+    and emailing the candidate twice. This helper closes the window
+    by relying on the database UNIQUE to be the arbiter.
+    """
+    client = get_client()
+    if not client:
+        # Fail closed: if we can't reach the DB we can't dedup, so the
+        # safer call is to skip rather than maybe-double-process.
+        return False
+    row = {
+        "event_id": event_id,
+        "hook_type": hook_type,
+        "linked_account_id": linked_account_id,
+        "status": "received",
+    }
+    try:
+        result = client.table("ats_webhook_events").insert(row).execute()
+        return bool(result.data)
+    except Exception as e:
+        # PostgresUniqueViolation surfaces with code 23505 in the
+        # supabase-py exception path. Treat any "duplicate"-shaped
+        # error as a lost race and let the caller ack.
+        msg = str(e).lower()
+        if any(t in msg for t in ("duplicate", "unique", "23505", "conflict")):
+            return False
+        # Anything else is an unexpected DB error. Fail closed (ack as
+        # duplicate) rather than risk double-processing — Merge will
+        # retry only on non-2xx, so we ack and the operator sees the
+        # log.
+        print(f"  DB claim_webhook_event error: {e}")
+        return False
+
+
+def claim_dsar_for_action(token: str) -> dict | None:
+    """ENG-55: atomically advance a DSAR row from status='pending' to
+    status='verified', keyed on a verification token. Returns the row
+    if we won the race; None if the token is unknown, expired into a
+    different status, or already consumed.
+
+    Replaces the old SELECT-then-UPDATE pattern that allowed two
+    concurrent /data-rights/verify calls with the same token to both
+    pass the "not yet verified" check and then both run the action
+    (erasure twice, fresh export URLs minted twice, etc.).
+    """
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("dsar_requests")
+            .update({"status": "verified"})
+            .eq("verification_token", token)
+            .eq("status", "pending")
+            .execute()
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+    except Exception as e:
+        print(f"  DB claim_dsar_for_action error: {e}")
+        return None
+
+
+def claim_invitation(token: str) -> dict | None:
+    """ENG-55: atomically mark an org invitation as accepted, keyed on
+    the token. Only the row that's still pending (not accepted, not
+    cancelled) will match — concurrent claims by the same caller race
+    here, and the loser gets None so the API can return 410.
+
+    Caller is still responsible for verifying expiry + email match
+    BEFORE inviting them to call this; failures after the atomic claim
+    leave the row marked accepted, which is acceptable because the
+    token is single-use either way.
+    """
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("org_invitations")
+            .update({"accepted_at": datetime.now(timezone.utc).isoformat()})
+            .eq("token", token)
+            .is_("accepted_at", "null")
+            .is_("cancelled_at", "null")
+            .execute()
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+    except Exception as e:
+        print(f"  DB claim_invitation error: {e}")
+        return None
 
 
 def log_webhook_event(
