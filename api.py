@@ -2410,11 +2410,16 @@ async def dsar_verify(
     # of a generic 404 for expired tokens. This peek isn't a TOCTOU
     # risk: if the token was already consumed concurrently, the atomic
     # update below returns None and we 404.
+    #
+    # ENG-60: lookup keyed on the peppered hash, not the plaintext
+    # token. The DB never sees plaintext.
+    from core.db import hash_auth_token
+    token_hash = hash_auth_token(body.token)
     try:
         peek = (
             client.table("dsar_requests")
             .select("id, status, verification_expires_at")
-            .eq("verification_token", body.token)
+            .eq("verification_token_hash", token_hash)
             .single()
             .execute()
         )

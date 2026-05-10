@@ -9,6 +9,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { allow, getIP } from '@/lib/rate-limit'
+import { hashAuthToken } from '@/lib/auth-tokens'
 import crypto from 'crypto'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
@@ -57,11 +58,14 @@ export async function POST(req: Request) {
   const verificationToken = crypto.randomBytes(32).toString('base64url')
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
+  // ENG-60: only the hash is persisted. The plaintext token lives in
+  // the candidate's email link; we never need it on the server again
+  // except to verify it (where we re-hash and look up by hash).
   const { error: ierr } = await service.from('dsar_requests').insert({
     email,
     request_type: body.type,
     status: 'pending',
-    verification_token: verificationToken,
+    verification_token_hash: hashAuthToken(verificationToken),
     verification_expires_at: expiresAt,
     details: body.details ? { details: body.details.slice(0, 4000) } : null,
   })

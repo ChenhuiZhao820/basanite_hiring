@@ -25,6 +25,23 @@ def get_client():
     return _client
 
 
+def hash_auth_token(token: str) -> str:
+    """ENG-60: peppered SHA-256 of an auth token. The pepper makes a
+    read-only DB breach insufficient for forgery — the attacker also
+    needs TOKEN_HASH_PEPPER to recompute hashes. Falls back to plain
+    SHA-256 in dev/test when the pepper isn't set."""
+    import hashlib
+    import hmac as _hmac
+    pepper = os.getenv("TOKEN_HASH_PEPPER", "")
+    if not pepper:
+        return hashlib.sha256((token or "").encode("utf-8")).hexdigest()
+    return _hmac.new(
+        pepper.encode("utf-8"),
+        (token or "").encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+
 def _sanitize_user_agent(ua: str | None) -> str | None:
     """ENG-48: strip control chars and HTML metacharacters before
     persisting a User-Agent string. Pydantic enforces a 400-char cap on
@@ -609,15 +626,16 @@ def claim_webhook_event(
 
 
 def claim_dsar_for_action(token: str) -> dict | None:
-    """ENG-55: atomically advance a DSAR row from status='pending' to
-    status='verified', keyed on a verification token. Returns the row
-    if we won the race; None if the token is unknown, expired into a
-    different status, or already consumed.
+    """ENG-55 + ENG-60: atomically advance a DSAR row from
+    status='pending' to status='verified', keyed on the hash of the
+    verification token. Returns the row if we won the race; None if
+    the token is unknown, the row is in a non-pending state, or
+    already consumed.
 
-    Replaces the old SELECT-then-UPDATE pattern that allowed two
-    concurrent /data-rights/verify calls with the same token to both
-    pass the "not yet verified" check and then both run the action
-    (erasure twice, fresh export URLs minted twice, etc.).
+    The DB stores only the peppered hash (mig 043). The plaintext
+    token from the candidate's email link is hashed here; a read-only
+    DB breach can't be turned into mass token forgery without the
+    pepper.
     """
     client = get_client()
     if not client:
@@ -626,7 +644,7 @@ def claim_dsar_for_action(token: str) -> dict | None:
         result = (
             client.table("dsar_requests")
             .update({"status": "verified"})
-            .eq("verification_token", token)
+            .eq("verification_token_hash", hash_auth_token(token))
             .eq("status", "pending")
             .execute()
         )
@@ -638,10 +656,11 @@ def claim_dsar_for_action(token: str) -> dict | None:
 
 
 def claim_invitation(token: str) -> dict | None:
-    """ENG-55: atomically mark an org invitation as accepted, keyed on
-    the token. Only the row that's still pending (not accepted, not
-    cancelled) will match — concurrent claims by the same caller race
-    here, and the loser gets None so the API can return 410.
+    """ENG-55 + ENG-60: atomically mark an org invitation as accepted,
+    keyed on the peppered hash of the token. Only the row that's still
+    pending (not accepted, not cancelled) will match — concurrent
+    claims by the same caller race here, and the loser gets None so
+    the API can return 410.
 
     Caller is still responsible for verifying expiry + email match
     BEFORE inviting them to call this; failures after the atomic claim
@@ -655,7 +674,7 @@ def claim_invitation(token: str) -> dict | None:
         result = (
             client.table("org_invitations")
             .update({"accepted_at": datetime.now(timezone.utc).isoformat()})
-            .eq("token", token)
+            .eq("token_hash", hash_auth_token(token))
             .is_("accepted_at", "null")
             .is_("cancelled_at", "null")
             .execute()
@@ -1122,6 +1141,10 @@ def set_active_org_id(user_id: str, org_id: str) -> bool:
 def create_org_invitation(
     *, org_id: str, email: str, role: str, token: str, expires_at: str, created_by: str
 ) -> dict | None:
+    """ENG-60: persist the peppered hash of the token, never the
+    plaintext. The plaintext stays in the recipient's email URL; the
+    DB only ever sees the hash.
+    """
     client = get_client()
     if not client:
         return None
@@ -1130,7 +1153,7 @@ def create_org_invitation(
             "org_id": org_id,
             "email": email.lower().strip(),
             "role": role,
-            "token": token,
+            "token_hash": hash_auth_token(token),
             "expires_at": expires_at,
             "created_by": created_by,
         }).execute()
@@ -1160,6 +1183,10 @@ def list_pending_invitations(org_id: str) -> list[dict]:
 
 
 def get_invitation_by_token(token: str) -> dict | None:
+    """ENG-60: lookup by peppered hash. The plaintext token comes off
+    the recipient's email link; we re-hash it here and match against
+    the column populated at create_org_invitation time.
+    """
     client = get_client()
     if not client:
         return None
@@ -1167,7 +1194,7 @@ def get_invitation_by_token(token: str) -> dict | None:
         r = (
             client.table("org_invitations")
             .select("*, orgs(id, name)")
-            .eq("token", token)
+            .eq("token_hash", hash_auth_token(token))
             .limit(1)
             .execute()
         )
