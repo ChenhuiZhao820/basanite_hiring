@@ -92,11 +92,25 @@ export default function OnboardPage() {
     }
     setError('')
     setLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/set-password`,
-    })
+    // ENG-58: route through the rate-limited Next.js endpoint instead
+    // of calling supabase.auth.resetPasswordForEmail directly, so a
+    // script can't spam the victim's inbox before Supabase's per-user
+    // cap kicks in. The endpoint always returns 200 to prevent
+    // account-existence enumeration.
+    try {
+      await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          redirect_to: `${window.location.origin}/auth/callback?next=/set-password`,
+        }),
+      })
+    } catch {
+      // Network error — the user can retry. We don't surface upstream
+      // error details so we don't leak account state.
+    }
     setLoading(false)
-    if (error) { setError(error.message); return }
     setError('Check your inbox for a password reset link.')
   }
 

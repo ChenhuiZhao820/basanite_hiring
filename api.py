@@ -3035,6 +3035,25 @@ async def accept_invite(body: _AcceptInviteRequest, authorization: str | None = 
     if not org_id:
         raise HTTPException(status_code=500, detail="Invitation missing org reference")
 
+    # ENG-59: don't let an existing higher-privilege member be silently
+    # demoted by accepting an invitation sent to their own email. This
+    # is the "owner invites their own email as 'member' and clicks the
+    # link" footgun — without this guard the owner upserts to 'member'
+    # and loses the ability to manage the org. The atomic claim below
+    # would still consume the token, so we 409 *before* the claim and
+    # let the operator cancel-and-reissue at a higher role if needed.
+    _RANK = {"member": 1, "admin": 2, "owner": 3}
+    invited_role = inv.get("role") or "member"
+    current_role = db.is_org_member(body.user_id, org_id)
+    if current_role and _RANK.get(current_role, 0) > _RANK.get(invited_role, 0):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "You're already a higher-privilege member of this organisation. "
+                "Have an owner cancel and re-issue the invitation if you want to change role."
+            ),
+        )
+
     # ENG-55: atomic claim. The previous mark_invitation_accepted-after
     # -add_org_member pattern raced: two concurrent /accept-invite calls
     # for the same token both passed the read-side checks and both
@@ -3044,7 +3063,7 @@ async def accept_invite(body: _AcceptInviteRequest, authorization: str | None = 
     if not claimed:
         raise HTTPException(status_code=410, detail="Already accepted")
 
-    db.add_org_member(org_id, body.user_id, role=inv.get("role") or "member")
+    db.add_org_member(org_id, body.user_id, role=invited_role)
     db.set_active_org_id(body.user_id, org_id)
 
     # Audit consent (Article 7) — joining an org via invitation is a

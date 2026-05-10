@@ -28,7 +28,17 @@ export async function PATCH(request: NextRequest) {
     if (authError) return NextResponse.json({ error: 'Incorrect password.' }, { status: 403 })
     const { error } = await supabase.auth.updateUser({ email })
     if (error) return NextResponse.json({ error: 'Failed to update email.' }, { status: 400 })
-    return NextResponse.json({ success: true, message: 'Verification email sent to new address.' })
+    // ENG-58: revoke all sessions on email change so the verification
+    // step is the only re-entry. Without this, a brief account
+    // compromise could be turned into long-term access by setting an
+    // attacker-controlled email — the original session would persist
+    // regardless of whether the new email was ever verified, and the
+    // attacker would gain a parallel verified path on top.
+    await supabase.auth.signOut({ scope: 'global' })
+    return NextResponse.json({
+      success: true,
+      message: 'Verification email sent. You\'ve been signed out — sign in again with your new email after verifying it.',
+    })
   }
 
   if (body.type === 'password') {
