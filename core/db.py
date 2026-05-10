@@ -1283,15 +1283,27 @@ def create_org_custom_voice(
 
 
 def soft_delete_org_custom_voice(custom_voice_id: str, org_id: str) -> bool:
-    """Mark deleted; retention sweep handles the cascade to ElevenLabs."""
+    """Mark deleted; retention sweep handles the cascade to ElevenLabs.
+
+    ENG-61: returns True only if a row was actually flipped, so the
+    handler can distinguish "voice doesn't exist or doesn't belong to
+    your org" from "DB error". Without this the previous version
+    returned True even when zero rows matched, which let an attacker
+    confirm True for any UUID they probed.
+    """
     client = get_client()
     if not client:
         return False
     try:
-        client.table("org_custom_voices").update(
-            {"deleted_at": "now()"}
-        ).eq("id", custom_voice_id).eq("org_id", org_id).execute()
-        return True
+        result = (
+            client.table("org_custom_voices")
+            .update({"deleted_at": "now()"})
+            .eq("id", custom_voice_id)
+            .eq("org_id", org_id)
+            .is_("deleted_at", "null")
+            .execute()
+        )
+        return bool(result.data)
     except Exception as e:
         print(f"  DB soft_delete_org_custom_voice error: {e}")
         return False

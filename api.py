@@ -943,9 +943,13 @@ async def delete_custom_voice(
     org_id = db.get_or_create_personal_org(user_id)
     if not org_id:
         raise HTTPException(status_code=404, detail="Voice not found")
+    # ENG-61: 404 for both "doesn't exist" and "not in your org" so a
+    # probing caller can't enumerate other orgs' voice IDs by timing
+    # or response shape. The DB-side update touches zero rows in
+    # either case; this branch turns that into the correct status.
     ok = db.soft_delete_org_custom_voice(custom_voice_id, org_id)
     if not ok:
-        raise HTTPException(status_code=500, detail="Failed to delete voice")
+        raise HTTPException(status_code=404, detail="Voice not found")
     return {"ok": True}
 
 
@@ -2359,11 +2363,24 @@ class _DsarEmailVerifyRequest(BaseModel):
 @app.post("/data-rights/email-verification")
 async def dsar_send_verification_email(
     body: _DsarEmailVerifyRequest,
+    request: Request,
     authorization: str | None = Header(default=None),
 ):
     """Send the data subject a one-time verification link by email."""
     _verify_internal(authorization)
     from core.email import send_dsar_verification_email
+
+    # ENG-61: defence-in-depth rate limit. The Next.js layer already
+    # caps to 3/hr/email + 5/hr/IP (ENG-56), but if PIPELINE_API_SECRET
+    # leaks an attacker could call here directly. Cap per recipient
+    # email (5/hr) — generous for legitimate retries, tight enough to
+    # blunt a leaked-secret email-bomb relay.
+    _rate_limit(
+        request,
+        bucket=f"dsar-email:{(body.to or '').lower()}",
+        max_requests=5,
+        window_seconds=3600,
+    )
 
     sent = send_dsar_verification_email(
         to=body.to,

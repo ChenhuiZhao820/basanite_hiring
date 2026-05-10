@@ -68,6 +68,12 @@ export async function DELETE() {
 
   const service = createServiceClient()
 
+  // ENG-61: revoke every session before tearing down the user record.
+  // admin.deleteUser invalidates new auth attempts, but in-flight
+  // refresh tokens on other devices could otherwise stay usable for a
+  // brief window — explicit signOut({ scope: 'global' }) closes that.
+  await supabase.auth.signOut({ scope: 'global' })
+
   // Roles (and their assessments, sessions, scores, reports) cascade via FK on user_id.
   const { error } = await service.auth.admin.deleteUser(user.id)
   if (error) {
