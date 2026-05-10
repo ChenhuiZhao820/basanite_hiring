@@ -89,12 +89,13 @@ export async function middleware(request: NextRequest) {
 
   const role = user?.app_metadata?.role as string | undefined
   const isAdmin = user?.app_metadata?.is_admin === true
-  // user_metadata.is_candidate is set during the /assess/[token]/onboard
-  // signup. We treat it as authoritative on the candidate side: if it's
-  // true, the account is a candidate regardless of what app_metadata.role
-  // happens to say. Defends against legacy accounts where role got set to
-  // 'hirer' before the tag-candidate flow was wired up.
-  const isCandidate = user?.user_metadata?.is_candidate === true
+  // ENG-57: is_candidate must live in app_metadata, never user_metadata.
+  // Supabase exposes auth.updateUser({ data: ... }) to clients (writes
+  // user_metadata) — a candidate could otherwise call it from the
+  // browser console with `{ is_candidate: false }` and bypass this
+  // gate. app_metadata is service-role-only; the only writer is the
+  // /api/auth/tag-candidate route.
+  const isCandidate = user?.app_metadata?.is_candidate === true
 
   // Dashboard routes require auth
   if (isDashboard && !user) {
