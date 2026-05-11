@@ -15,27 +15,22 @@ type Org = {
   role: string
 }
 
-export function WorkspaceSwitcher() {
-  const [orgs, setOrgs] = useState<Org[] | null>(null)
-  const [activeId, setActiveId] = useState<string | null>(null)
+type Props = {
+  initialOrgs: Org[]
+  initialActiveOrgId: string | null
+}
+
+export function WorkspaceSwitcher({ initialOrgs, initialActiveOrgId }: Props) {
+  // Seeded server-side from dashboard/layout.tsx so the org name paints with
+  // the rest of the page. Avoids the post-hydration "…" → name flash that
+  // happens when this is fetched in a useEffect on the client.
+  // Switching orgs hard-reloads, so the list and active id never need to
+  // mutate within a single mount — initial props are the whole story.
+  const orgs = initialOrgs
+  const activeId = initialActiveOrgId
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    void Promise.all([
-      fetch('/api/orgs', { cache: 'no-store' }).then(r => r.ok ? r.json() : { orgs: [] }),
-      fetch('/api/orgs/active', { cache: 'no-store' }).then(r => r.ok ? r.json() : { active_org_id: null }),
-    ]).then(([orgsResp, activeResp]) => {
-      if (cancelled) return
-      setOrgs((orgsResp?.orgs ?? []) as Org[])
-      setActiveId(activeResp?.active_org_id ?? null)
-    }).catch(() => {
-      if (!cancelled) setOrgs([])
-    })
-    return () => { cancelled = true }
-  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -51,7 +46,7 @@ export function WorkspaceSwitcher() {
     }
   }, [open])
 
-  const active = orgs?.find(o => o.id === activeId) ?? orgs?.[0] ?? null
+  const active = orgs.find(o => o.id === activeId) ?? orgs[0] ?? null
   const label = active?.name ?? '…'
 
   async function switchTo(orgId: string) {
@@ -88,7 +83,7 @@ export function WorkspaceSwitcher() {
         </svg>
       </button>
 
-      {open && orgs && (
+      {open && (
         <div role="menu" className="absolute left-0 top-9 z-30 min-w-[260px] border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 shadow-lg">
           <div className="py-1 max-h-72 overflow-y-auto">
             {orgs.length === 0 ? (
