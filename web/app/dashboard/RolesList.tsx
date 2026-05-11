@@ -25,10 +25,10 @@ const STATUS_FILTERS: Array<{ key: 'all' | 'live' | 'draft' | 'paused' | 'closed
 ]
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-earth-200 text-basanite-600 dark:text-earth-300',
-  live: 'bg-green-100 text-green-700',
-  paused: 'bg-yellow-100 text-yellow-700',
-  closed: 'bg-slate-200 text-slate-600 dark:text-earth-300',
+  draft: 'bg-earth-200 text-basanite-600 dark:bg-basanite-700 dark:text-earth-300',
+  live: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  paused: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
+  closed: 'bg-slate-200 text-slate-600 dark:bg-basanite-700 dark:text-earth-400',
 }
 
 export default function RolesList({

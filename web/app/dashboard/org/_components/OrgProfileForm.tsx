@@ -11,10 +11,11 @@ type Props = {
   initialName: string
   initialDescription: string | null
   initialAutoJoinDomain: string | null
+  userEmailDomain?: string | null
   canEdit: boolean
 }
 
-export function OrgProfileForm({ orgId, initialName, initialDescription, initialAutoJoinDomain, canEdit }: Props) {
+export function OrgProfileForm({ orgId, initialName, initialDescription, initialAutoJoinDomain, userEmailDomain, canEdit }: Props) {
   const router = useRouter()
   const [name, setName] = useState(initialName)
   const [description, setDescription] = useState(initialDescription ?? '')
@@ -92,7 +93,7 @@ export function OrgProfileForm({ orgId, initialName, initialDescription, initial
           onChange={e => setAutoJoinDomain(e.target.value)}
           disabled={!canEdit}
           maxLength={200}
-          placeholder="maxwellbond.com"
+          placeholder={userEmailDomain || 'maxwellbond.com'}
           className="w-full max-w-md border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors disabled:opacity-60"
         />
         <p className="text-xs text-basanite-500 dark:text-earth-400 mt-1.5 max-w-md">

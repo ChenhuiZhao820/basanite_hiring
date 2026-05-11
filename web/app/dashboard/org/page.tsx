@@ -3,7 +3,7 @@
 
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getAuthUserId } from '@/lib/supabase/server'
+import { getAuthUserEmail, getAuthUserId } from '@/lib/supabase/server'
 import { OrgProfileForm } from './_components/OrgProfileForm'
 import { MembersTable } from './_components/MembersTable'
 import { InviteForm } from './_components/InviteForm'
@@ -51,6 +51,9 @@ export default async function OrgSettingsPage() {
   const userId = await getAuthUserId()
   if (!userId) redirect('/login')
 
+  const email = await getAuthUserEmail()
+  const userEmailDomain = email?.split('@')[1]?.toLowerCase() ?? null
+
   const data = await loadActiveOrg(userId)
   if (!data) {
     return (
@@ -70,6 +73,9 @@ export default async function OrgSettingsPage() {
 
   return (
     <div className="max-w-3xl space-y-8">
+      <Link href="/dashboard" className="text-xs text-basanite-400 dark:text-earth-500 hover:text-basanite-600 dark:hover:text-earth-300 transition-colors -mb-4 inline-block">
+        &larr; Back to dashboard
+      </Link>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-1">{org.name}</h1>
@@ -106,6 +112,7 @@ export default async function OrgSettingsPage() {
           initialName={org.name}
           initialDescription={org.description}
           initialAutoJoinDomain={org.auto_join_domain}
+          userEmailDomain={userEmailDomain}
           canEdit={canManage}
         />
       </section>

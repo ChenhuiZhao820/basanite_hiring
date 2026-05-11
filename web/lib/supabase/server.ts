@@ -77,3 +77,30 @@ export async function getAuthUserId(): Promise<string | null> {
     return null
   }
 }
+
+/** Same JWT decode as getAuthUserId, but returns the email claim. */
+export async function getAuthUserEmail(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies()
+    const all = cookieStore.getAll()
+    const authParts = all
+      .filter(c => /sb-.+-auth-token(\.\d+)?$/.test(c.name))
+      .sort((a, b) => a.name.localeCompare(b.name))
+    if (authParts.length === 0) return null
+
+    let raw = authParts.map(c => c.value).join('')
+    if (raw.startsWith('base64-')) {
+      raw = Buffer.from(raw.slice('base64-'.length), 'base64').toString('utf-8')
+    }
+    const session = JSON.parse(raw)
+    const accessToken: string | undefined = session?.access_token
+    if (!accessToken) return null
+
+    const payload = accessToken.split('.')[1]
+    if (!payload) return null
+    const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'))
+    return typeof claims.email === 'string' ? claims.email : null
+  } catch {
+    return null
+  }
+}

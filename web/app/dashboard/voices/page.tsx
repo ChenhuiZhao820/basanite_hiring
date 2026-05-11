@@ -37,6 +37,9 @@ export default async function VoicesPage() {
 
   return (
     <div className="max-w-3xl">
+      <Link href="/dashboard" className="text-xs text-basanite-400 dark:text-earth-500 hover:text-basanite-600 dark:hover:text-earth-300 transition-colors mb-2 inline-block">
+        &larr; Back to dashboard
+      </Link>
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-1">Cloned voices</h1>
