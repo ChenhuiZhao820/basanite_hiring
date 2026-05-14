@@ -130,6 +130,14 @@ Do NOT ask "should I open the browser?" — just do it. The user expects seamles
 3. **Use `wait_for_selector` to wait for async page changes** (build completion, modals,
    toasts). Never poll with repeated `take_screenshot` calls.
 
+4. **Never automate GitHub or attempt GitHub 2FA.** Do NOT use chromeflow to log in to
+   github.com, fill GitHub credentials, click through GitHub auth screens, or enter 2FA /
+   OTP / passkey / recovery codes on GitHub. The user must do all GitHub authentication
+   personally. If a flow lands on a GitHub login or 2FA page, stop, tell the user, and
+   wait — use `find_and_highlight` + `wait_for_click` at most, never `fill_input` /
+   `type_text` / `click_element` on the auth form itself. This applies to GitHub OAuth
+   consent screens reached from third-party sites too.
+
 ## Guided flow pattern
 
 ```
