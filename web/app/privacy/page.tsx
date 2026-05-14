@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/Logo'
+import { buildMetadata } from '@/lib/seo'
 
-export const metadata = { title: 'Basanite — Privacy Notice' }
+export const metadata: Metadata = buildMetadata({
+  title: 'Privacy Notice',
+  description: 'How Basanite handles candidate and hirer data — what we collect, why, where it goes, how long we keep it, and your UK GDPR rights including the right to human review of automated decisions.',
+  path: '/privacy',
+})
 
 // Last review date — bump when material changes ship.
 const POLICY_VERSION = '2026-05-07'

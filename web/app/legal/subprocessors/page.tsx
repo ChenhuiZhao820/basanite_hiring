@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/Logo'
+import { buildMetadata } from '@/lib/seo'
 
-export const metadata = { title: 'Basanite — Sub-processors' }
+export const metadata: Metadata = buildMetadata({
+  title: 'Sub-processors',
+  description: 'Every third-party service Basanite uses, the data it sees, where the servers live, and how the cross-border transfer is legitimised under UK GDPR.',
+  path: '/legal/subprocessors',
+})
 
 type SubProcessor = {
   name: string

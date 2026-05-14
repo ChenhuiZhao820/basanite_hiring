@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LogoMark } from '@/components/Logo'
+import { buildMetadata } from '@/lib/seo'
 
-export const metadata = { title: 'Basanite — Terms of Service' }
+export const metadata: Metadata = buildMetadata({
+  title: 'Terms of Service',
+  description: 'Terms governing use of Basanite — eligibility, account responsibilities, AI assessment scope, acceptable use, IP ownership, and governing law.',
+  path: '/terms',
+})
 
 const TERMS_VERSION = '2026-05-07'
 

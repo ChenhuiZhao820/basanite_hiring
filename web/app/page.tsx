@@ -88,11 +88,11 @@ function Nav() {
           <LogoMark size={26} dark />
           <span className="font-display text-basanite-900 text-lg">Basanite</span>
         </a>
-        <div className="hidden sm:flex items-center gap-8 text-sm text-basanite-600">
+        <div className="hidden sm:flex items-center gap-7 text-sm text-basanite-600">
           <a href="#how-it-works" className="hover:text-basanite-900 transition-colors">How it works</a>
-          <a href="#research" className="hover:text-basanite-900 transition-colors">Research</a>
-          <a href="#philosophy" className="hover:text-basanite-900 transition-colors">Philosophy</a>
-          <a href="#team" className="hover:text-basanite-900 transition-colors">Team</a>
+          <a href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</a>
+          <a href="/about" className="hover:text-basanite-900 transition-colors">About</a>
+          <a href="/blog" className="hover:text-basanite-900 transition-colors">Blog</a>
           <a href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</a>
         </div>
         <div className="flex items-center gap-3">
@@ -245,6 +245,8 @@ function CompanyMarquee() {
                 src={c.src}
                 alt={c.name}
                 height={c.h}
+                loading="lazy"
+                decoding="async"
                 className="shrink-0 w-auto select-none opacity-80"
                 style={{ height: `${c.h}px` }}
                 draggable={false}
@@ -257,6 +259,8 @@ function CompanyMarquee() {
                 alt=""
                 aria-hidden="true"
                 height={c.h}
+                loading="lazy"
+                decoding="async"
                 className="shrink-0 w-auto select-none opacity-80"
                 style={{ height: `${c.h}px` }}
                 draggable={false}
@@ -750,6 +754,16 @@ function Footer() {
           </p>
         </div>
         <div className="border-t border-basanite-800 mt-6 pt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-basanite-500">
+          <a href="/about" className="hover:text-earth-200">About</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/contact" className="hover:text-earth-200">Contact</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/pricing" className="hover:text-earth-200">Pricing</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/blog" className="hover:text-earth-200">Blog</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/faq" className="hover:text-earth-200">FAQ</a>
+          <span className="text-basanite-700">·</span>
           <a href="/privacy" className="hover:text-earth-200">Privacy</a>
           <span className="text-basanite-700">·</span>
           <a href="/terms" className="hover:text-earth-200">Terms</a>
@@ -757,8 +771,20 @@ function Footer() {
           <a href="/legal/subprocessors" className="hover:text-earth-200">Sub-processors</a>
           <span className="text-basanite-700">·</span>
           <a href="/data-rights" className="hover:text-earth-200">Your data rights</a>
+        </div>
+        <div className="border-t border-basanite-800 mt-4 pt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-basanite-600">
+          <span className="text-basanite-500">Compare:</span>
+          <a href="/compare/hackerrank-vs-basanite" className="hover:text-earth-200">vs HackerRank</a>
           <span className="text-basanite-700">·</span>
-          <a href="/faq" className="hover:text-earth-200">FAQ</a>
+          <a href="/compare/hirevue-vs-basanite" className="hover:text-earth-200">vs HireVue</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/compare/karat-vs-basanite" className="hover:text-earth-200">vs Karat</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/compare/codesignal-vs-basanite" className="hover:text-earth-200">vs CodeSignal</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/alternatives/hackerrank" className="hover:text-earth-200">HackerRank alternatives</a>
+          <span className="text-basanite-700">·</span>
+          <a href="/alternatives/hirevue" className="hover:text-earth-200">HireVue alternatives</a>
         </div>
       </div>
     </footer>

@@ -10,9 +10,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { headers } from 'next/headers'
 import { LogoMark } from '@/components/Logo'
+import { buildMetadata, faqPageJsonLd, breadcrumbJsonLd } from '@/lib/seo'
 
-export const metadata: Metadata = { title: 'FAQ' }
+export const metadata: Metadata = buildMetadata({
+  title: 'FAQ',
+  description: 'Answers to common questions about Basanite — how the two-round AI interview works, what the eight dimensions measure, how scoring works, and how we keep candidate data private.',
+  path: '/faq',
+})
 
 type FaqItem = { q: string; a: ReactNode }
 type FaqGroup = { id: string; title: string; eyebrow?: string; items: FaqItem[] }
@@ -305,9 +311,45 @@ const GROUPS: FaqGroup[] = [
 
 // ─── Page ────────────────────────────────────────────────────────────────
 
-export default function FaqPage() {
+// FAQ entries flattened to plain text for FAQPage JSON-LD. Google reads only
+// `text` values, so we strip JSX to a single string per answer.
+function faqEntriesForSchema() {
+  return [
+    { question: 'What is Basanite, in one sentence?', answer: 'Basanite is the technical layer of the interview, rebuilt for the AI era. We run a two-round assessment that measures whether a candidate can actually do the work — both in conversation and at a keyboard, alongside an AI agent.' },
+    { question: 'Why do you say the technical interview is broken?', answer: 'Coding tests have collapsed into a cheating arms race: capable AI agents and interview-coder overlays make take-homes and live-coding screens trivial to pass without exercising the underlying skill. And the capability that does matter — engineering effectiveness in an AI-augmented workflow — is not measured anywhere.' },
+    { question: 'How is this different from coding tests like HackerRank or Codility?', answer: 'Conventional coding tests measure how well a candidate solves isolated puzzles under artificial constraints. Basanite measures how a candidate ships calibrated, complete work in a real codebase, alongside an AI agent — the way the actual job is done. Round 2 deliberately inverts the standard anti-cheating posture: rather than preventing AI use, we require and instrument it.' },
+    { question: 'How is this different from AI interview platforms like Maki or HireVue?', answer: 'Existing AI interview tools deliver pre-configured question sequences and score the transcript. They do not adapt follow-ups based on what the candidate actually says, and they have no mechanism for distinguishing genuine capability from interview preparedness. Basanite uses Construct-Templated Adaptive Interviewing: different questions per candidate, identical underlying constructs and scoring rubrics — plus a second round in a real coding environment that no transcript-based tool can replicate.' },
+    { question: 'How long does the assessment take?', answer: 'Round 1 (conversational) typically runs 20 to 30 minutes. Round 2 (AI Collaboration Workbench) is time-boxed by seniority: 35 minutes for junior, 60 for mid, 90 for senior. Both rounds terminate on signal saturation, not question or task count.' },
+    { question: 'Which AI coding agent can a candidate use?', answer: 'The candidate has their choice — Claude Code, Cursor, Copilot, Aider, or a local CLI agent. Basanite is tooling-agnostic. Forcing candidates into a custom UI distorts the signal.' },
+    { question: 'If AI use is required in Round 2, how do you prevent cheating?', answer: 'We invert the standard posture. The did-the-candidate-use-AI cheating vector is gone — we require it and we instrument it. Remaining risks (substituted operator, session takeover) are addressed through identity verification at session start, behavioural biometrics compared against a Round 1 baseline, and a randomised in-session check-in where the candidate must explain a specific decision they just made.' },
+    { question: 'Does Basanite recommend hire or no-hire?', answer: 'No. We produce evidence; the human interviewer makes the decision. The hirer report is a briefing document for the final human-led interview.' },
+    { question: 'Does Basanite integrate with our ATS?', answer: 'Yes. We connect to Greenhouse, Lever, Ashby, and 50+ other ATS providers via Merge.dev. Candidates flow into Basanite assessments automatically as they enter a mapped role, and results push back to the candidate ATS record.' },
+    { question: 'Will I get feedback as a candidate?', answer: 'Every candidate receives a personal feedback report regardless of outcome. It is a brief, neutral plain-language summary: what you demonstrated well, areas for development, constructive suggestions.' },
+    { question: 'What about my privacy?', answer: 'Before any recording starts you will see a consent screen explaining what we capture, where it goes (Anthropic, ElevenLabs, Supabase), and how long it is kept (recordings 6 months, transcripts and reports 12 months, then automatically deleted). You can access, export, or erase your data at any time. We do not sell candidate data and we do not use it to train AI models.' },
+    { question: 'Is the interview AI? Can I ask for human review?', answer: 'Yes — the interview is conducted and scored by AI. Under UK GDPR Article 22 you have the right not to be subject to a decision based solely on automated processing. A tickbox on the consent screen, and a self-serve form, flag your assessment so the hirer must apply human review before acting on the score.' },
+  ]
+}
+
+export default async function FaqPage() {
+  const nonce = (await headers()).get('x-nonce') ?? undefined
+  const ldFaq = faqPageJsonLd(faqEntriesForSchema())
+  const ldCrumbs = breadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'FAQ', path: '/faq' },
+  ])
+
   return (
     <div className="min-h-screen bg-earth-50 text-basanite-900">
+      <script
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ldFaq) }}
+      />
+      <script
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ldCrumbs) }}
+      />
       <FaqNav />
 
       <main className="max-w-4xl mx-auto px-6 pt-24 pb-32">

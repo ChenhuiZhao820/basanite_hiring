@@ -19,17 +19,25 @@ function csp(nonce: string, isDev: boolean): string {
   const mergeScript = "https://*.merge.dev https://merge-link-cdn-prod.s3.amazonaws.com"
   const mergeFrame = "https://*.merge.dev"
   const mergeApi = "https://*.merge.dev"
+  // Google Analytics 4 — gtag.js script, data collection endpoint, and the
+  // optional Tag Manager container that some installs route through. Only
+  // active when NEXT_PUBLIC_GA_MEASUREMENT_ID is set, but allowing them here
+  // unconditionally is safe — they don't activate without the inline gtag
+  // init script, which is gated in app/layout.tsx.
+  const gaScript = "https://www.googletagmanager.com https://*.googletagmanager.com"
+  const gaConnect = "https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com"
+  const gaImg = "https://www.google-analytics.com https://*.google-analytics.com https://*.googletagmanager.com"
   const scriptSrc = isDev
-    ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' blob: ${mergeScript}`
-    : `script-src 'self' 'nonce-${nonce}' blob: ${mergeScript}`
+    ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' blob: ${mergeScript} ${gaScript}`
+    : `script-src 'self' 'nonce-${nonce}' blob: ${mergeScript} ${gaScript}`
   return [
     "default-src 'self'",
     scriptSrc,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://images.unsplash.com",
+    `img-src 'self' data: blob: https://images.unsplash.com ${gaImg}`,
     "font-src 'self'",
     "media-src 'self' blob:",
-    `connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://*.elevenlabs.io wss://*.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud ${mergeApi}`,
+    `connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co https://*.elevenlabs.io wss://*.elevenlabs.io https://*.livekit.cloud wss://*.livekit.cloud ${mergeApi} ${gaConnect}`,
     `frame-src 'self' ${mergeFrame}`,
     "worker-src 'self' blob:",
     "frame-ancestors 'none'",
