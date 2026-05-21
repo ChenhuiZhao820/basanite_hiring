@@ -212,3 +212,4 @@ web/.next/
 web/out/
 !web/lib/.mcp.json
 .DS_Store
+.claude/

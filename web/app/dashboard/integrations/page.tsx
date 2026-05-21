@@ -256,7 +256,7 @@ export default function IntegrationsPage() {
         <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-1">Integrations</h1>
         <p className="text-sm text-slate-500 dark:text-earth-400">
           Connect your applicant tracking system to send candidates into Basanite assessments
-          automatically. Greenhouse, Lever, Ashby and 50+ others via Merge.dev.
+          automatically. Greenhouse, Lever, Ashby, Workday, Bullhorn and 50+ others via Merge.dev.
         </p>
       </div>
 

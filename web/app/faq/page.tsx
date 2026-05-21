@@ -229,7 +229,7 @@ const GROUPS: FaqGroup[] = [
         q: 'Does Basanite integrate with our ATS?',
         a: (
           <>
-            Yes. We connect to Greenhouse, Lever, Ashby, and 50+ other ATS providers via Merge.dev. Candidates flow into Basanite assessments automatically as they enter a mapped role, and results push back to the candidate&rsquo;s ATS record as a structured note plus a link to the full report PDF. Recruiters never have to leave their ATS.
+            Yes. We connect to Greenhouse, Lever, Ashby, Workday, Bullhorn, and 50+ other ATS providers via Merge.dev. Candidates flow into Basanite assessments automatically as they enter a mapped role, and results push back to the candidate&rsquo;s ATS record as a structured note plus a link to the full report PDF. Recruiters never have to leave their ATS.
           </>
         ),
       },

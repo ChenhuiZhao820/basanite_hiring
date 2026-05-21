@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
+import { SpiderChart } from '@/components/SpiderChart'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
 
@@ -209,121 +210,85 @@ function DemoVideo() {
   )
 }
 
-// ─── Company marquee ─────────────────────────────────────────────────────
-// Per-logo visual height. All sit on the same baseline; widths vary naturally
-// by aspect ratio. Heights are tuned so wordmarks look similarly weighted.
-const COMPANIES = [
-  { name: 'The Trade Desk',     src: '/logos/the-trade-desk.svg',    h: 28 },
-  { name: 'Cisco',              src: '/logos/cisco.svg',             h: 34 },
-  { name: 'Rothschild & Co',    src: '/logos/rothschild.png',        h: 24 },
-  { name: 'Virgin Media O2',    src: '/logos/virgin-media-o2.svg',   h: 36 },
-  { name: 'Exclusive Networks', src: '/logos/exclusive-networks.svg', h: 30 },
-  { name: 'Data Annotations',   src: '/logos/dataannotation.svg',    h: 22 },
-  { name: 'Outlier AI',         src: '/logos/outlier.svg',           h: 22 },
-  { name: 'BlueDot Impact',     src: '/logos/bluedot.svg',           h: 18 },
-]
-
-function CompanyMarquee() {
+// ─── Stripe Startups badge ───────────────────────────────────────────────
+// Replaces the old "Team experience spans" company marquee. Basanite is an
+// enrolled member of the Stripe Startups Programme; this is a single, clean
+// trust signal under the hero rather than a list of past employers.
+//
+// The "stripe" wordmark is currently rendered as styled text using the
+// system sans-serif stack at Stripe's brand purple. Swap to an <Image>
+// of the official wordmark SVG (drop at /public/logos/stripe.svg) once it
+// arrives from the Stripe Startups team.
+function StripeStartupsBadge() {
   return (
     <section
-      aria-label="Companies our team has worked at"
-      className="bg-white border-b border-earth-200/80 py-10 overflow-hidden"
+      aria-label="Partnered with Stripe VC"
+      className="bg-white border-b border-earth-200/80 py-10"
     >
-      <div className="max-w-6xl mx-auto px-6">
-        <p className="text-center text-basanite-500 text-[10px] sm:text-xs uppercase tracking-[0.25em] mb-7">
-          Team experience spans
-        </p>
-        <div
-          className="relative overflow-hidden
-            [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]
-            [-webkit-mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+      <div className="max-w-6xl mx-auto px-6 flex items-baseline justify-center gap-3">
+        <span className="text-basanite-600 text-base sm:text-lg">
+          Partnered with
+        </span>
+        <img
+          src="/logos/stripe.svg"
+          alt="Stripe"
+          className="h-9 sm:h-10 w-auto select-none translate-y-[6px]"
+          draggable={false}
+        />
+        <span
+          className="font-semibold"
+          style={{
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", "Segoe UI", Arial, sans-serif',
+            color: '#635BFF',
+            fontSize: '24px',
+            letterSpacing: '0.01em',
+            marginLeft: '-4px',
+          }}
         >
-          <div className="flex motion-safe:animate-marquee whitespace-nowrap items-center gap-16 sm:gap-20 will-change-transform">
-            {COMPANIES.map(c => (
-              <img
-                key={`a-${c.name}`}
-                src={c.src}
-                alt={c.name}
-                height={c.h}
-                loading="lazy"
-                decoding="async"
-                className="shrink-0 w-auto select-none opacity-80"
-                style={{ height: `${c.h}px` }}
-                draggable={false}
-              />
-            ))}
-            {COMPANIES.map(c => (
-              <img
-                key={`b-${c.name}`}
-                src={c.src}
-                alt=""
-                aria-hidden="true"
-                height={c.h}
-                loading="lazy"
-                decoding="async"
-                className="shrink-0 w-auto select-none opacity-80"
-                style={{ height: `${c.h}px` }}
-                draggable={false}
-              />
-            ))}
-          </div>
-        </div>
+          VC
+        </span>
       </div>
     </section>
   )
 }
 
 // ─── Research ────────────────────────────────────────────────────────────
-// Eight metacognitive dimensions, V2.1 §4. Listed in the order V2.1 lists
-// them. We surface all eight on the page now that the V2.1 product overview
-// formalises them with literature anchors — no longer just four pillars.
-const RESEARCH_AREAS = [
-  { name: 'Judgment Under Ambiguity', note: 'committing to a defensible course of action when information is incomplete' },
-  { name: 'Tacit-Knowledge Articulation', note: 'surfacing knowledge that lives in practice rather than in text' },
-  { name: 'Intuition Under Data Scarcity', note: 'recognition-primed judgment that distinguishes real expertise from vocabulary' },
-  { name: 'Psychological Safety & Collective Learning', note: 'creating conditions where errors surface and dissent is voiced' },
-  { name: 'Creative Problem Reframing', note: 'recognising when the team is solving the wrong problem' },
-  { name: 'Ethical Reasoning in Practice', note: 'feeling the weight of real tradeoffs and navigating them with integrity' },
-  { name: 'Transformative Learning From Experience', note: 'updating prior beliefs in proportion to disconfirming evidence' },
-  { name: 'Human–AI Collaboration Intelligence', note: 'fluent, calibrated orchestration of AI tooling — the dimension no other interview measures' },
-]
-
+// Slim, motion-led section. The animated SpiderChart communicates the shape
+// of evaluation; the long-form methodology and per-dimension provenance now
+// live on /methodology.
 function Research() {
   const ref = useReveal()
   return (
-    <section id="research" className="py-24 sm:py-32 px-6 bg-earth-50 border-b border-earth-200/80">
-      <div ref={ref} className="reveal max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-12 md:gap-16 items-start">
-        <div className="md:col-span-3">
-          <div className="inline-flex items-center gap-2 text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 3 1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-            </svg>
-            Backed by PhD research
-          </div>
-          <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-tight mb-6">
-            Grounded in the academic study of tacit expertise.
-          </h2>
-          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
-            Basanite operationalises eight metacognitive dimensions drawn from cognitive science, philosophy of knowledge, and the emerging literature on human–AI collaboration. Each has a formal construct definition, intellectual provenance, and an empirical reference list.
-          </p>
-          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-4">
-            These are the qualities that distinguish high performers in complex, AI-era engineering work — and the ones that conventional technical-interview instruments cannot detect. They cannot be retrieved from a knowledge base. They are forged through real experience and legible only to evaluators who know what to look for.
-          </p>
-          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
-            We call the methodology <span className="font-semibold text-basanite-900">Construct-Templated Adaptive Interviewing</span>, or CTAI. Every candidate is asked different questions, drawn from their own CV — but the underlying constructs and scoring rubrics are identical. A self-taught engineer is evaluated against the same evidence bar as a Cambridge graduate.
-          </p>
+    <section
+      id="research"
+      className="py-24 sm:py-32 px-6 bg-earth-50 border-b border-earth-200/80"
+    >
+      <div
+        ref={ref}
+        className="reveal max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center"
+      >
+        <div className="md:order-1">
+          <SpiderChart />
         </div>
-
-        <div className="md:col-span-2 border-l-2 border-gold-500/50 pl-6 sm:pl-8 py-2">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.2em] mb-5">The eight dimensions</p>
-          <ul className="space-y-4">
-            {RESEARCH_AREAS.map(a => (
-              <li key={a.name}>
-                <div className="font-display text-basanite-900 text-base leading-snug">{a.name}</div>
-                <div className="text-basanite-500 text-sm mt-0.5 leading-snug">{a.note}</div>
-              </li>
-            ))}
-          </ul>
+        <div className="md:order-2 text-center md:text-left">
+          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5">
+            The research
+          </p>
+          <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-tight mb-5">
+            Eight dimensions of engineering judgment.
+          </h2>
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-8">
+            Capability is a shape, not a number. Basanite scores every
+            candidate across eight metacognitive dimensions drawn from
+            cognitive science and the literature on human–AI collaboration.
+          </p>
+          <a
+            href="/methodology"
+            className="text-gold-700 hover:text-gold-600 underline underline-offset-4 decoration-gold-500/60 font-medium text-base"
+          >
+            Read the methodology &rarr;
+          </a>
         </div>
       </div>
     </section>
@@ -797,7 +762,7 @@ export default function HomePage() {
     <>
       <Nav />
       <Hero />
-      <CompanyMarquee />
+      <StripeStartupsBadge />
       <DemoVideo />
       <Research />
       <HowItWorks />
