@@ -93,7 +93,13 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isDashboard = path.startsWith('/dashboard')
-  const isAssessProtected = /^\/assess\/[^/]+\/(onboard|interview|complete)/.test(path)
+  // NOTE: /onboard is intentionally NOT protected — it hosts the candidate
+  // sign-up / sign-in form, so a brand-new (unauthenticated) candidate must
+  // be able to reach it. Locking it behind auth bounced new candidates to the
+  // landing page and made self-serve onboarding impossible. The sensitive
+  // actions invoked from onboard (/cv-upload, /start) are independently
+  // auth-gated server-side via assertCandidateSession, so this is safe.
+  const isAssessProtected = /^\/assess\/[^/]+\/(interview|complete)/.test(path)
 
   const role = user?.app_metadata?.role as string | undefined
   const isAdmin = user?.app_metadata?.is_admin === true
@@ -123,7 +129,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Assessment routes (onboard/interview/complete) require auth
+  // Assessment routes (interview/complete) require auth
   // But redirect to the assessment landing page, not /login
   if (isAssessProtected && !user) {
     const url = request.nextUrl.clone()

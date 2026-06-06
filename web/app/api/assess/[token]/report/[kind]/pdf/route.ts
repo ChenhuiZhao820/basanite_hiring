@@ -32,13 +32,14 @@ export async function GET(
   }
 
   const service = createServiceClient()
-  // ENG-20: include the optional expiry column so we can reject expired
-  // tokens here instead of letting the lookup pass.
+  // ENG-20: optional expiry column (migration 037). select('*') so a database
+  // without that column doesn't 400 here (which surfaced as a spurious 404);
+  // the expiry guard below treats an absent field as "never expires".
   const { data: role } = await service
     .from('roles')
-    .select('id, assessment_link_token_expires_at')
+    .select('*')
     .eq('assessment_link_token', token)
-    .single()
+    .maybeSingle()
   if (!role) {
     return new Response(JSON.stringify({ error: 'Not found' }), {
       status: 404,

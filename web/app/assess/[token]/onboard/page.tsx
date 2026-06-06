@@ -39,7 +39,10 @@ export default function OnboardPage() {
       form.append('file', file)
       const res = await fetch(`/api/assess/${token}/cv-upload`, { method: 'POST', body: form })
       const data = await res.json().catch(() => ({} as any))
-      if (!res.ok) throw new Error(data.detail ?? 'We couldn\'t read that file.')
+      // FastAPI errors arrive as { detail }, the Next.js proxy layer
+      // (auth / rate-limit) as { error } — read both so the real reason
+      // isn't masked by a generic fallback.
+      if (!res.ok) throw new Error(data.detail ?? data.error ?? 'We couldn\'t read that file.')
       setCvText(data.cv_text ?? '')
     } catch (e: any) {
       setError(e.message ?? 'Failed to read that file.')
@@ -138,8 +141,12 @@ export default function OnboardPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to start assessment')
+        const data = await res.json().catch(() => ({} as any))
+        // Backend (FastAPI) errors are { detail }; the proxy layer's own
+        // errors are { error }. Surface whichever is present so the
+        // candidate sees the real cause (e.g. "Assessment not found or not
+        // active", "An assessment already exists") instead of a generic line.
+        throw new Error(data.detail || data.error || 'Failed to start assessment')
       }
 
       const data = await res.json()
@@ -267,7 +274,7 @@ export default function OnboardPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="application/pdf.pdf"
+                accept="application/pdf,.pdf"
                 className="hidden"
                 onChange={e => {
                   const f = e.target.files?.[0]

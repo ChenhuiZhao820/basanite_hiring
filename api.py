@@ -494,22 +494,19 @@ async def cv_upload(
     if not data:
         raise HTTPException(status_code=400, detail="Empty file")
 
-    filename = (file.filename or "").lower()
-    content_type = (file.content_type or "").lower()
-    # ENG-40: dropped the "" fallback from the Content-Type whitelist —
-    # browsers and httpx always send a Content-Type for multipart parts,
-    # so allowing the empty string only weakens the layered defence
-    # without enabling any legitimate flow. The %PDF magic-byte check
-    # below remains the authoritative signal.
-    is_pdf = (
-        filename.endswith(".pdf")
-        and content_type in ("application/pdf", "application/x-pdf")
-        and data[:4] == b"%PDF"
-    )
+    # The %PDF magic bytes are the authoritative signal — a non-PDF cannot
+    # forge them and still be parseable by pypdf. The browser/OS-reported
+    # Content-Type and even the filename are unreliable (real PDFs arrive as
+    # application/octet-stream, an empty type, or vendor variants depending
+    # on platform), so gating on them only rejected legitimate CVs. Resource
+    # limits (size cap in _read_bounded, bounded extraction in core.pdf, and
+    # the per-IP rate limit above) carry the abuse-defence load, not the
+    # Content-Type check.
+    is_pdf = data[:4] == b"%PDF"
     if not is_pdf:
         raise HTTPException(
             status_code=415,
-            detail="Upload a PDF, or paste the CV text directly.",
+            detail="That doesn't look like a PDF. Upload a PDF, or paste the CV text directly.",
         )
 
     try:

@@ -37,7 +37,13 @@ export default function NewRolePage() {
   const [jobDescription, setJobDescription] = useState('')
   const [dimensions, setDimensions] = useState<string[]>([])
   const [technicalDepth, setTechnicalDepth] = useState<'application' | 'research_architecture'>('application')
-  const [interviewDurationMinutes, setInterviewDurationMinutes] = useState(DEFAULT_TARGET_MINUTES)
+  // Backed by a raw string so the user can type freely (e.g. clear the
+  // field, then type "1" then "0" to reach 10). Clamping happens on blur,
+  // not on every keystroke — the old onChange clamp made "10" impossible to
+  // type because a lone "1" was instantly corrected up to the 5-min minimum.
+  const [durationInput, setDurationInput] = useState(String(DEFAULT_TARGET_MINUTES))
+  const interviewDurationMinutes = parseInt(durationInput, 10)
+  const durationTooShort = Number.isFinite(interviewDurationMinutes) && interviewDurationMinutes < MIN_MINUTES
   const [customInstructions, setCustomInstructions] = useState('')
   const [voiceId, setVoiceId] = useState<string | null>(null)
   const [recommendLoading, setRecommendLoading] = useState(false)
@@ -99,8 +105,8 @@ export default function NewRolePage() {
       setError('Please select at least 2 dimensions.')
       return
     }
-    if (interviewDurationMinutes < 5 || interviewDurationMinutes > 30) {
-      setError('Interview duration must be between 5 and 30 minutes.')
+    if (!Number.isFinite(interviewDurationMinutes) || interviewDurationMinutes < 1 || interviewDurationMinutes > MAX_MINUTES) {
+      setError(`Target length must be a number between 1 and ${MAX_MINUTES} minutes.`)
       return
     }
     if (!roleId) return
@@ -261,15 +267,21 @@ export default function NewRolePage() {
             <div className="flex items-center gap-3">
               <input
                 type="number"
-                min={MIN_MINUTES}
+                min={1}
                 max={MAX_MINUTES}
                 step={1}
-                value={interviewDurationMinutes}
-                onChange={e =>
-                  setInterviewDurationMinutes(
-                    Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, Number(e.target.value) || DEFAULT_TARGET_MINUTES)),
-                  )
-                }
+                value={durationInput}
+                onChange={e => setDurationInput(e.target.value)}
+                onBlur={() => {
+                  const n = parseInt(durationInput, 10)
+                  if (!Number.isFinite(n)) {
+                    setDurationInput(String(DEFAULT_TARGET_MINUTES))
+                    return
+                  }
+                  // Clamp to a sane range on blur only; short-but-valid values
+                  // are kept and surfaced with a warning rather than corrected.
+                  setDurationInput(String(Math.max(1, Math.min(MAX_MINUTES, n))))
+                }}
                 className="w-24 border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-3 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
               />
               <span className="text-sm text-basanite-500 dark:text-earth-400">minutes</span>
@@ -277,6 +289,11 @@ export default function NewRolePage() {
             <p className="text-xs text-basanite-400 dark:text-earth-500 mt-2">
               Just a target, the AI ends the interview when it has enough signal. Typical 15 to 25 min; can extend to {MAX_MINUTES} for complex candidates.
             </p>
+            {durationTooShort && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                Interviews shorter than {MIN_MINUTES} minutes rarely gather enough signal to score reliably. We recommend at least {MIN_MINUTES}.
+              </p>
+            )}
           </div>
 
           {/* Custom instructions */}

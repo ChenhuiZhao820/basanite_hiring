@@ -21,11 +21,26 @@ async function lookupRoleByToken(
   service: ReturnType<typeof createServiceClient>,
   token: string,
 ): Promise<{ id: string } | null> {
-  const { data: role } = await service
+  // ENG-20's expiry column (migration 037) is optional and may not be
+  // present on every database. Selecting a non-existent column makes
+  // PostgREST 400, which previously surfaced here as `data: null` →
+  // a spurious 404 / "Not found" for EVERY candidate (cv-upload, start,
+  // voice-session …). Try with the expiry column first; if the migration
+  // hasn't been applied, fall back to a column-agnostic lookup so the
+  // flow keeps working. Self-optimises back to one query once 037 lands.
+  let res = await service
     .from('roles')
     .select('id, assessment_link_token_expires_at')
     .eq('assessment_link_token', token)
-    .single()
+    .maybeSingle()
+  if (res.error) {
+    res = await service
+      .from('roles')
+      .select('id')
+      .eq('assessment_link_token', token)
+      .maybeSingle()
+  }
+  const role = res.data as { id: string; assessment_link_token_expires_at?: string | null } | null
   if (!role) return null
   if (isTokenExpired(role.assessment_link_token_expires_at)) return null
   return { id: role.id }

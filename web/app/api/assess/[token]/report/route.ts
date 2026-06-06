@@ -40,11 +40,14 @@ export async function GET(
   // (which only needs the role_id and expiry) stays on service-role.
   // We never expose role internals back to the candidate from here.
   const service = createServiceClient()
+  // ENG-20's expiry column (migration 037) is optional — select('*') so the
+  // lookup doesn't 400 (→ spurious 404) on databases where it isn't present.
+  // The expiry guard below treats an absent field as "never expires".
   const { data: role } = await service
     .from('roles')
-    .select('id, assessment_link_token_expires_at')
+    .select('*')
     .eq('assessment_link_token', token)
-    .single()
+    .maybeSingle()
   if (!role) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }

@@ -19,7 +19,37 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+
+
+def _coerce_str_list(v: Any) -> Any:
+    """Coerce an LLM-emitted list into a list of plain strings.
+
+    Anthropic JSON mode frequently returns list-of-string fields (anchor
+    points, skills) as list-of-objects instead — e.g. anchor_points as
+    [{"experience": "...", "relevance": "..."}] rather than ["..."]. That
+    type drift previously failed validation outright, and the resulting
+    error sentinel got persisted as the candidate's cv_extracted, leaving
+    the interview with NO CV grounding. Rather than reject, flatten each
+    item to a readable string so the extraction survives the drift.
+    """
+    if not isinstance(v, list):
+        return v
+    out: list[str] = []
+    for item in v:
+        if isinstance(item, str):
+            s = item.strip()
+        elif isinstance(item, dict):
+            # Join the dict's string-ish values into one readable line.
+            parts = [str(val).strip() for val in item.values() if val not in (None, "")]
+            s = " — ".join(parts)
+        elif item is None:
+            s = ""
+        else:
+            s = str(item).strip()
+        if s:
+            out.append(s)
+    return out
 
 
 # ───────────────────────── CV extraction ──────────────────────────
@@ -67,6 +97,13 @@ class CvExtracted(_LooseModel):
     experience_path: Literal["path_a", "path_b"] = "path_a"
     experience_path_rationale: str = ""
     anchor_points: list[str] = Field(default_factory=list)
+
+    # Haiku often returns these list-of-string fields as list-of-objects;
+    # coerce before validation so the drift doesn't void the whole extraction.
+    @field_validator("anchor_points", "skills", mode="before")
+    @classmethod
+    def _coerce_string_lists(cls, v: Any) -> Any:
+        return _coerce_str_list(v)
 
 
 # ───────────────────────── Dimension recommendation ───────────────

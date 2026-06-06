@@ -94,8 +94,18 @@ export async function allow(key: string, limit: number, windowMs: number): Promi
     // Dev fallback, in-memory, best-effort
     return allowInMemory(key, limit, windowMs)
   }
-  const { success } = await limiter.limit(key)
-  return success
+  try {
+    const { success } = await limiter.limit(key)
+    return success
+  } catch (e) {
+    // Upstash unreachable (DNS/network blip, instance outage). Throwing here
+    // would bubble an uncaught 500 out of every rate-limited route — taking
+    // the whole candidate funnel (cv-upload, start, …) down with the limiter.
+    // Degrade to the per-instance in-memory limiter instead: weaker (buckets
+    // don't aggregate across serverless invocations) but keeps the flow alive.
+    console.error('[rate-limit] Upstash limiter failed, falling back to in-memory:', (e as Error)?.message)
+    return allowInMemory(key, limit, windowMs)
+  }
 }
 
 /** Extract the real client IP from a Next.js request.
