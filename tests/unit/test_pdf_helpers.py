@@ -68,6 +68,92 @@ class TestExtractPdfText:
             assert len(out) <= 50_000
 
 
+class TestExtractPdfTextFallback:
+    """The pypdf-then-pdfminer cascade. pypdf silently mis-handles a
+    long tail of real CV PDFs (LaTeX, Pages, custom font encodings);
+    pdfminer.six is the second-chance extractor for those.
+    """
+
+    def _fake_miner(self, payload):
+        """Install a fake pdfminer.high_level.extract_text_to_fp that
+        writes ``payload`` into the caller's buffer. Returns the patch
+        context manager."""
+        def _impl(_in, out, **_kw):
+            out.write(payload)
+        from unittest.mock import patch
+        return patch("pdfminer.high_level.extract_text_to_fp", _impl)
+
+    def test_uses_pdfminer_when_pypdf_raises(self):
+        class _Boom:
+            def __init__(self, *a, **kw):
+                raise RuntimeError("pypdf cannot parse this file")
+        miner_text = "Senior engineer with experience in distributed systems. " * 5
+        with patch("pypdf.PdfReader", _Boom), self._fake_miner(miner_text):
+            out = extract_pdf_text(b"%PDF-fake")
+            assert "distributed systems" in out
+            assert len(out) >= 80
+
+    def test_uses_pdfminer_when_pypdf_returns_nothing(self):
+        # The common failure mode in the wild: pypdf opens the file
+        # fine but pulls back empty pages because the font encoding
+        # isn't recoverable. We should still rescue the CV.
+        miner_text = "Curriculum Vitae. Built and shipped X. Led the Y team. " * 4
+        with patch("pypdf.PdfReader", lambda *a, **kw: _FakeReader(pages=[_FakePage("")])), \
+             self._fake_miner(miner_text):
+            out = extract_pdf_text(b"%PDF-fake")
+            assert "Curriculum Vitae" in out
+
+    def test_uses_pdfminer_when_pypdf_returns_trivial(self):
+        # Pypdf sometimes returns a handful of garbled chars (page
+        # numbers, single-glyph headers) that satisfy "non-empty" but
+        # carry no real signal. Anything under the 80-char minimum
+        # should trigger the fallback.
+        miner_text = "Full CV body, ten years of backend Python. " * 3
+        with patch("pypdf.PdfReader", lambda *a, **kw: _FakeReader(pages=[_FakePage("p.1")])), \
+             self._fake_miner(miner_text):
+            out = extract_pdf_text(b"%PDF-fake")
+            assert "ten years of backend Python" in out
+
+    def test_prefers_pypdf_output_when_it_is_good(self):
+        # If pypdf already gives us plenty of text, don't bother with
+        # the slower fallback even if pdfminer would yield more.
+        miner_text = "Z" * 5_000
+        with patch(
+            "pypdf.PdfReader",
+            lambda *a, **kw: _FakeReader(pages=[_FakePage("A" * 200)]),
+        ), self._fake_miner(miner_text):
+            out = extract_pdf_text(b"%PDF-fake")
+            assert "A" * 200 in out
+            assert "Z" not in out
+
+    def test_returns_empty_when_both_paths_yield_nothing(self):
+        # Truly unreadable: pypdf opens but every page is blank, and
+        # pdfminer returns the empty string. Caller surfaces the
+        # "paste the text instead" message; we must not raise.
+        with patch("pypdf.PdfReader", lambda *a, **kw: _FakeReader(pages=[_FakePage("")])), \
+             self._fake_miner(""):
+            assert extract_pdf_text(b"%PDF-fake") == ""
+
+    def test_returns_pypdf_partial_when_miner_unavailable(self):
+        # Defensive: if pdfminer isn't importable in some environment,
+        # we should still return whatever pypdf managed to scrape so
+        # the candidate isn't stranded.
+        import sys
+        from unittest.mock import patch as _patch
+        # Make any pdfminer.* import raise ImportError so the fallback
+        # gracefully returns "" without bringing the whole call down.
+        real_import = __builtins__["__import__"] if isinstance(__builtins__, dict) else __builtins__.__import__
+        def _stub_import(name, *a, **kw):
+            if name.startswith("pdfminer"):
+                raise ImportError("pdfminer not installed")
+            return real_import(name, *a, **kw)
+        with patch("pypdf.PdfReader", lambda *a, **kw: _FakeReader(pages=[_FakePage("short")])), \
+             _patch.dict(sys.modules, {}, clear=False), \
+             _patch("builtins.__import__", _stub_import):
+            out = extract_pdf_text(b"%PDF-fake")
+            assert out == "short"
+
+
 class TestFormatKey:
     @pytest.mark.parametrize("raw,expected", [
         ("technical_depth", "Technical Depth"),

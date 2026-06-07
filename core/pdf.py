@@ -22,6 +22,13 @@ _PDF_TEXT_MAX_CHARS = 200_000
 _PDF_PAGE_MAX_CHARS = 50_000
 
 
+# Minimum char count below which we treat pypdf's output as a failed
+# extraction and try the pdfminer fallback. Many real CVs (LaTeX,
+# Pages, InDesign exports) parse to a handful of garbled characters
+# under pypdf but extract cleanly under pdfminer.six.
+_PDF_PYPDF_MIN_USEFUL_CHARS = 80
+
+
 def extract_pdf_text(
     data: bytes,
     *,
@@ -30,37 +37,114 @@ def extract_pdf_text(
 ) -> str:
     """Stream-extract text from a PDF with hard upper bounds.
 
-    Returns the concatenated, stripped page text — no more than
+    Returns the concatenated, stripped page text, no more than
     ``max_chars`` total. Per-page output is also capped so a single
     pathological page can't dominate. Pages that fail to extract are
     silently skipped (consistent with the previous inline behaviour),
     but extraction stops as soon as the cumulative cap is hit.
 
+    Tries pypdf first (fast, pure-Python, low memory). Falls back to
+    pdfminer.six when pypdf raises OR returns implausibly little text,
+    because pypdf silently mis-handles a long tail of real-world CVs:
+    LaTeX exports with custom font encodings, Pages and InDesign
+    PDFs without ToUnicode CMaps, and PDFs whose text stream is
+    structured in ways pypdf's layout heuristic can't recover. The
+    fallback path keeps the same per-page and total caps.
+
     The file-size cap is enforced upstream by ``_read_bounded`` /
     multipart limits; this helper is the second line of defence
     against a bomb PDF that compresses small but expands huge.
     """
-    import io
-    from pypdf import PdfReader
+    pypdf_out, pypdf_err = _extract_with_pypdf(data, max_chars, page_max_chars)
+    if pypdf_out and len(pypdf_out) >= _PDF_PYPDF_MIN_USEFUL_CHARS:
+        return pypdf_out
 
-    reader = PdfReader(io.BytesIO(data))
+    miner_out = _extract_with_pdfminer(data, max_chars, page_max_chars)
+    if miner_out and len(miner_out) >= _PDF_PYPDF_MIN_USEFUL_CHARS:
+        return miner_out
+
+    # Neither yielded useful text. Prefer the longer of the two so the
+    # downstream "too little text, paste instead" path sees the best
+    # signal available, rather than empty when pypdf actually got
+    # *something*.
+    candidates = [c for c in (pypdf_out, miner_out) if c]
+    if candidates:
+        return max(candidates, key=len)
+    if pypdf_err is not None:
+        raise pypdf_err
+    return ""
+
+
+def _extract_with_pypdf(
+    data: bytes,
+    max_chars: int,
+    page_max_chars: int,
+) -> tuple[str, Exception | None]:
+    """Return (text, exception). text is "" if extraction raised."""
+    import io
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(io.BytesIO(data))
+        parts: list[str] = []
+        total = 0
+        for page in reader.pages:
+            try:
+                text = page.extract_text() or ""
+            except Exception:
+                continue
+            if not text:
+                continue
+            if len(text) > page_max_chars:
+                text = text[:page_max_chars]
+            parts.append(text)
+            total += len(text)
+            if total >= max_chars:
+                break
+        out = "\n\n".join(p.strip() for p in parts if p.strip())
+        return out[:max_chars], None
+    except Exception as e:
+        return "", e
+
+
+def _extract_with_pdfminer(
+    data: bytes,
+    max_chars: int,
+    page_max_chars: int,
+) -> str:
+    """pdfminer.six fallback. Returns "" on any failure (incl. missing dep)."""
+    import io
+    try:
+        from pdfminer.high_level import extract_text_to_fp
+        from pdfminer.layout import LAParams
+    except Exception:
+        return ""
+    try:
+        buf = io.StringIO()
+        extract_text_to_fp(
+            io.BytesIO(data),
+            buf,
+            laparams=LAParams(),
+            output_type="text",
+        )
+        text = buf.getvalue() or ""
+    except Exception:
+        return ""
+    # pdfminer hands back the whole document as one string. Split by
+    # form-feed (its page separator) so the per-page cap applies, then
+    # reapply the total cap the way the pypdf path does.
     parts: list[str] = []
     total = 0
-    for page in reader.pages:
-        try:
-            text = page.extract_text() or ""
-        except Exception:
+    for raw in text.split("\f"):
+        page = raw.strip()
+        if not page:
             continue
-        if not text:
-            continue
-        if len(text) > page_max_chars:
-            text = text[:page_max_chars]
-        parts.append(text)
-        total += len(text)
+        if len(page) > page_max_chars:
+            page = page[:page_max_chars]
+        parts.append(page)
+        total += len(page)
         if total >= max_chars:
             break
-    out = "\n\n".join(p.strip() for p in parts if p.strip())
-    return out[:max_chars]
+    return "\n\n".join(parts)[:max_chars]
 
 
 def _format_key(key: str) -> str:
