@@ -15,7 +15,14 @@ import { Redis } from '@upstash/redis'
 const _IS_PRODUCTION =
   process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
 
-if (_IS_PRODUCTION && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) {
+// Trim whitespace/newlines from env vars. Copy-paste into the Vercel
+// dashboard reliably introduces a trailing "\n" on the URL, which the
+// @upstash/redis constructor rejects with a UrlError, taking down every
+// candidate-facing endpoint that imports this module.
+const _UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL?.trim() || ''
+const _UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN?.trim() || ''
+
+if (_IS_PRODUCTION && (!_UPSTASH_URL || !_UPSTASH_TOKEN)) {
   // Throwing at import time hard-fails the deploy: any route that
   // imports rate-limit.ts (and there are many — every candidate-facing
   // and ATS endpoint) will 500 until the Upstash creds are wired up.
@@ -30,25 +37,37 @@ if (_IS_PRODUCTION && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTA
 
 // Cache Ratelimit instances by config to avoid rebuilding on every request
 const limiters = new Map<string, Ratelimit>()
+// Set when getLimiter throws during Redis construction (bad URL, bad token,
+// SDK version skew). Once flipped, every subsequent call short-circuits to
+// the in-memory fallback so we don't repeatedly attempt a doomed connection.
+let _construction_failed = false
 
 function getLimiter(limit: number, windowMs: number): Ratelimit | null {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (!_UPSTASH_URL || !_UPSTASH_TOKEN || _construction_failed) {
     return null
   }
   const key = `${limit}:${windowMs}`
   if (!limiters.has(key)) {
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
-    limiters.set(
-      key,
-      new Ratelimit({
-        redis,
-        limiter: Ratelimit.slidingWindow(limit, `${windowMs}ms` as `${number}ms`),
-        prefix: 'rl',
-      }),
-    )
+    try {
+      const redis = new Redis({ url: _UPSTASH_URL, token: _UPSTASH_TOKEN })
+      limiters.set(
+        key,
+        new Ratelimit({
+          redis,
+          limiter: Ratelimit.slidingWindow(limit, `${windowMs}ms` as `${number}ms`),
+          prefix: 'rl',
+        }),
+      )
+    } catch (e) {
+      // The @upstash/redis constructor validates the URL synchronously,
+      // so a misconfigured env var lands here. Throwing would bubble an
+      // uncaught 500 out of every rate-limited route (cv-upload, start,
+      // voice-session, …). Degrade to the per-instance in-memory limiter
+      // and log loudly so the bad env var gets noticed.
+      console.error('[rate-limit] Redis construction failed, falling back to in-memory:', (e as Error)?.message)
+      _construction_failed = true
+      return null
+    }
   }
   return limiters.get(key)!
 }

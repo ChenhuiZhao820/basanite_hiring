@@ -123,3 +123,73 @@ describe('production fail-closed init', () => {
     await expect(import('./rate-limit')).resolves.toMatchObject({ allow: expect.any(Function) })
   })
 })
+
+// Real production regression: Lynn's deploy had a trailing "\n" on
+// UPSTASH_REDIS_REST_URL (copy-paste artefact). @upstash/redis rejects
+// the URL synchronously inside `new Redis(...)`, the route returned 500
+// in 6.6s, and zero candidates could upload a CV. The module must
+// tolerate this — by trimming on read AND by catching construction
+// errors and degrading to the in-memory limiter.
+describe('hardening against bad env-var values', () => {
+  const originalEnv = { ...process.env }
+
+  afterEach(() => {
+    process.env = { ...originalEnv }
+    vi.resetModules()
+  })
+
+  it('trims trailing whitespace from the Upstash URL before passing it to Redis', async () => {
+    process.env.VERCEL_ENV = 'production'
+    process.env.UPSTASH_REDIS_REST_URL = 'https://relaxing-cobra-83032.upstash.io\n'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'tok\n'
+    vi.resetModules()
+    let received: { url?: string; token?: string } = {}
+    vi.doMock('@upstash/redis', () => ({
+      Redis: class {
+        constructor(opts: { url: string; token: string }) {
+          received = { url: opts.url, token: opts.token }
+        }
+      },
+    }))
+    vi.doMock('@upstash/ratelimit', () => ({
+      Ratelimit: class {
+        static slidingWindow() { return {} }
+        async limit() { return { success: true } }
+      },
+    }))
+    const { allow } = await import('./rate-limit')
+    await allow('k', 1, 1000)
+    expect(received.url).toBe('https://relaxing-cobra-83032.upstash.io')
+    expect(received.token).toBe('tok')
+  })
+
+  it('degrades to in-memory when Redis construction throws (bad URL)', async () => {
+    process.env.VERCEL_ENV = 'production'
+    process.env.UPSTASH_REDIS_REST_URL = 'not a real url'
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'tok'
+    vi.resetModules()
+    vi.doMock('@upstash/redis', () => ({
+      Redis: class {
+        constructor() {
+          throw new Error('UrlError: invalid URL')
+        }
+      },
+    }))
+    vi.doMock('@upstash/ratelimit', () => ({
+      Ratelimit: class {
+        static slidingWindow() { return {} }
+        async limit() { return { success: true } }
+      },
+    }))
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { allow } = await import('./rate-limit')
+    // First call surfaces the failure and falls back; result must be true (in-memory allows the 1st).
+    await expect(allow('k1', 3, 1000)).resolves.toBe(true)
+    // Subsequent calls also go to in-memory without re-attempting Redis.
+    await expect(allow('k1', 3, 1000)).resolves.toBe(true)
+    await expect(allow('k1', 3, 1000)).resolves.toBe(true)
+    await expect(allow('k1', 3, 1000)).resolves.toBe(false)
+    expect(errSpy).toHaveBeenCalled()
+    errSpy.mockRestore()
+  })
+})
