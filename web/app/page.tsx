@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
 import { SpiderChart } from '@/components/SpiderChart'
+import { AuthFragmentHandler } from '@/components/AuthFragmentHandler'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
 
@@ -760,6 +761,11 @@ function Footer() {
 export default function HomePage() {
   return (
     <>
+      {/* Catches Supabase auth tokens left in the URL fragment by admin-
+          generated magic / invite / recovery links (Supabase strips the
+          intended redirect_to back to the bare Site URL, so they land
+          here). Persists the session and routes the user onward. */}
+      <AuthFragmentHandler />
       <Nav />
       <Hero />
       <StripeStartupsBadge />
