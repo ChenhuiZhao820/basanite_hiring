@@ -165,12 +165,53 @@ class ComprehensiveAssessment(_LooseModel):
     one_sentence_summary: str = ""
 
 
+# Next-round routing tier. This is NOT a hire/no-hire signal — the
+# hiring decision stays with humans. It's a tier the hirer can use to
+# triage their pipeline: who advances to the next interview round, who
+# gets a courtesy decline. Five levels mirror the rubric Lynn agreed
+# on; rationale is a short justification rooted in the dimension scores.
+RecommendationTier = Literal[
+    "strongly_recommended",
+    "recommended",
+    "can_progress",
+    "not_recommended",
+    "strongly_not_recommended",
+]
+
+
+def derive_recommendation(composite_score: float | None) -> RecommendationTier:
+    """Map a 1-5 composite score to a routing tier.
+
+    Used as a fallback for legacy reports written before the model
+    emitted `recommendation` directly. The bands are deliberately wide
+    at the extremes (a 4.5+ is unambiguously a strong yes; a sub-2 is
+    unambiguously a no) and narrower in the middle where the model
+    should ideally be picking between "recommended" and "can_progress"
+    on more than just the number.
+    """
+    s = float(composite_score if composite_score is not None else 3.0)
+    if s >= 4.25:
+        return "strongly_recommended"
+    if s >= 3.5:
+        return "recommended"
+    if s >= 2.75:
+        return "can_progress"
+    if s >= 2.0:
+        return "not_recommended"
+    return "strongly_not_recommended"
+
+
 class HirerReport(_LooseModel):
     scoring_summary: list[ScoringRow] = Field(default_factory=list)
     top_excerpts: list[TopExcerpt] = Field(default_factory=list)
     capability_map: CapabilityMap = Field(default_factory=CapabilityMap)
     comprehensive_assessment: ComprehensiveAssessment = Field(default_factory=ComprehensiveAssessment)
     composite_score: float = Field(default=3.0, ge=1, le=5)
+    # Routing recommendation for the next interview round, NOT a
+    # hire/no-hire call. Optional so legacy rows still validate; the
+    # `derive_recommendation` fallback fills the gap on read.
+    recommendation: RecommendationTier | None = None
+    recommendation_rationale: str = ""
 
 
 # ───────────────────────── Candidate report ───────────────────────

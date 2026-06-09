@@ -2,6 +2,8 @@ import { createServiceClient, getAuthUserId } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatDimensionKey } from '@/lib/format'
+import { ScoreSpider } from '@/components/ScoreSpider'
+import { TIER_META, resolveRecommendation } from '@/lib/recommendation'
 
 export const metadata = { title: 'Assessment report' }
 
@@ -131,10 +133,65 @@ export default async function AssessmentReportPage({
         </div>
       )}
 
+      {/* Headline: next-round routing recommendation. Lives ABOVE the
+          dimension detail so the hirer sees the top-level conclusion
+          before the supporting evidence. Falls back to a composite-score
+          derivation for legacy reports without an explicit tier. */}
+      {assessment.status === 'completed' && (scores.length > 0 || content.composite_score != null) && (() => {
+        const tier = resolveRecommendation(content)
+        const meta = TIER_META[tier]
+        const composite = typeof content.composite_score === 'number'
+          ? content.composite_score
+          : null
+        const rationale = (content.recommendation_rationale as string | undefined)?.trim()
+          || (content.comprehensive_assessment?.one_sentence_summary as string | undefined)?.trim()
+          || ''
+        return (
+          <section className={`mb-10 border ${meta.border} ${meta.bg} px-6 py-5`}>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex-1">
+                <p className={`text-xs font-medium uppercase tracking-wide ${meta.accent} mb-2`}>
+                  Routing recommendation, next round
+                </p>
+                <h2 className={`font-display text-xl ${meta.text} leading-tight`}>
+                  {meta.label}
+                </h2>
+                <p className={`text-sm ${meta.text} opacity-80 mt-2 leading-relaxed`}>
+                  {rationale || meta.blurb}
+                </p>
+              </div>
+              {composite !== null && (
+                <div className="sm:text-right">
+                  <p className={`text-xs font-medium uppercase tracking-wide ${meta.accent}`}>Composite</p>
+                  <p className={`font-display text-3xl ${meta.text}`}>{composite.toFixed(1)}<span className="text-base opacity-60">/5</span></p>
+                </div>
+              )}
+            </div>
+            <p className={`text-xs ${meta.accent} opacity-70 mt-3`}>
+              Routing call only. The hire/no-hire decision sits with the human interviewer.
+            </p>
+          </section>
+        )
+      })()}
+
+      {/* Dimension profile chart. Renders only when there are at least
+          three scored dimensions; otherwise ScoreSpider shows a stub. */}
+      {scores.length >= 3 && (
+        <section className="mb-10">
+          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Dimension Profile</h2>
+          <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-6">
+            <ScoreSpider scores={scores.map((s: any) => ({ dimension_key: s.dimension_key, score: s.score }))} />
+            <p className="text-xs text-basanite-400 dark:text-earth-500 text-center mt-3">
+              Each axis is a dimension; further from the centre means higher score (1, 5).
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* Scoring Summary */}
       {scores.length > 0 && (
         <section className="mb-10">
-          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Dimension Scores</h2>
+          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Dimension Scores, Reasoning &amp; Evidence</h2>
           <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-earth-100">
             {scores.map((s: any) => (
               <div key={s.dimension_key} className="px-5 py-4">

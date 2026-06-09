@@ -54,7 +54,42 @@ class TestGenerateHirerReport:
             row.pop("verified", None)
         for ex in out["top_excerpts"]:
             ex.pop("verified", None)
+        # Lynn 2026-06-09: the agent now also stamps a routing
+        # `recommendation` derived from composite_score when the model
+        # didn't emit one. Strip it for the equality check; the
+        # behaviour is covered explicitly by test_derives_recommendation.
+        out.pop("recommendation", None)
+        out.pop("recommendation_rationale", None)
         assert out == hirer_payload
+
+    async def test_derives_recommendation_when_model_omits_it(
+        self, fake_anthropic, make_response, hirer_payload,
+        sample_role, sample_cv_extracted, sample_transcript,
+    ):
+        # composite_score=3.5 lands in the "recommended" band. The
+        # agent should backfill the routing tier so the dashboard and
+        # PDF banner always have a value to render.
+        fake_anthropic.messages.create = AsyncMock(
+            return_value=make_response(json.dumps(hirer_payload)))
+        out = await report.generate_hirer_report(
+            sample_transcript, sample_role, sample_cv_extracted)
+        assert out["recommendation"] == "recommended"
+
+    async def test_preserves_model_emitted_recommendation(
+        self, fake_anthropic, make_response, hirer_payload,
+        sample_role, sample_cv_extracted, sample_transcript,
+    ):
+        # When the model emits a tier directly, the fallback must not
+        # overwrite it — even if the composite-score band would say
+        # something different.
+        payload = {**hirer_payload, "recommendation": "strongly_recommended",
+                   "recommendation_rationale": "Top of the pile."}
+        fake_anthropic.messages.create = AsyncMock(
+            return_value=make_response(json.dumps(payload)))
+        out = await report.generate_hirer_report(
+            sample_transcript, sample_role, sample_cv_extracted)
+        assert out["recommendation"] == "strongly_recommended"
+        assert out["recommendation_rationale"] == "Top of the pile."
 
     async def test_scores_in_range(self, fake_anthropic, make_response,
                                    hirer_payload, sample_role,

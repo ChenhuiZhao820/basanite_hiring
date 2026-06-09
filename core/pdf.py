@@ -183,6 +183,19 @@ blockquote { border-left: 3px solid #c49a2f; margin: 8px 0 12px 0; padding: 6px 
 .notes { color: #8a7a5e; font-size: 10pt; margin-top: 2px; font-style: italic; }
 footer.doc { margin-top: 28px; padding-top: 10px; border-top: 1px solid #eee;
              color: #8a7a5e; font-size: 8.5pt; }
+section.reco { border: 1px solid; padding: 16px 20px; margin: 0 0 24px 0; }
+.reco-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.reco-text { flex: 1; }
+.reco-eyebrow { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75;
+                margin-bottom: 6px; }
+.reco-label { font-family: 'DM Serif Display', Georgia, serif; font-size: 15pt; line-height: 1.2; }
+.reco-rationale { font-size: 10pt; margin: 8px 0 0 0; opacity: 0.85; line-height: 1.5; }
+.reco-score { text-align: right; min-width: 110px; }
+.reco-score-label { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; }
+.reco-score-value { font-family: 'DM Serif Display', Georgia, serif; font-size: 22pt; line-height: 1.1; }
+.reco-score-denom { font-size: 12pt; opacity: 0.6; }
+.reco-footnote { font-size: 8.5pt; opacity: 0.7; margin: 10px 0 0 0; }
+.spider-wrap { padding: 8px 0 4px 0; }
 """
 
 
@@ -244,15 +257,196 @@ def _candidate_html(role_title: str, candidate_name: str, report: dict) -> str:
 """
 
 
+_TIER_LABELS: dict[str, str] = {
+    "strongly_recommended": "Strongly recommended for next round",
+    "recommended": "Recommended for next round",
+    "can_progress": "Can progress to next round",
+    "not_recommended": "Not recommended for next round",
+    "strongly_not_recommended": "Strongly not recommended for next round",
+}
+
+# Banner accent colours per tier. Kept in the same gold/earth palette
+# as the rest of the report but tinted toward red as the tier
+# weakens, so a skim-reader can route on colour alone.
+_TIER_COLOURS: dict[str, tuple[str, str, str]] = {
+    "strongly_recommended": ("#e9f5ec", "#1f7a3a", "#1f7a3a"),
+    "recommended": ("#edf6ee", "#3a8a4d", "#3a8a4d"),
+    "can_progress": ("#faf3e2", "#8a6a14", "#8a6a14"),
+    "not_recommended": ("#fbe9e3", "#8c3c14", "#8c3c14"),
+    "strongly_not_recommended": ("#f8dcd6", "#8a2210", "#8a2210"),
+}
+
+
+def _derive_recommendation_pdf(composite: float | None) -> str:
+    """Same bands as core.schemas.derive_recommendation; duplicated
+    locally so the PDF module stays import-cheap (no pydantic chain)."""
+    s = float(composite if composite is not None else 3.0)
+    if s >= 4.25:
+        return "strongly_recommended"
+    if s >= 3.5:
+        return "recommended"
+    if s >= 2.75:
+        return "can_progress"
+    if s >= 2.0:
+        return "not_recommended"
+    return "strongly_not_recommended"
+
+
+def _recommendation_banner(report: dict) -> str:
+    """Top-of-document routing tier. Falls back to a composite-score
+    derivation for legacy reports that pre-date the explicit field.
+
+    Returns "" for the truly-empty {} report so the "No report content
+    available." fallback path still fires; rendering a banner on an
+    empty report would tell the hirer "can progress" with no evidence.
+    """
+    has_recommendation = bool(str(report.get("recommendation") or "").strip())
+    has_composite = isinstance(report.get("composite_score"), (int, float))
+    if not has_recommendation and not has_composite:
+        return ""
+    tier = str(report.get("recommendation") or "").strip()
+    if tier not in _TIER_LABELS:
+        tier = _derive_recommendation_pdf(report.get("composite_score"))
+    bg, accent, label_colour = _TIER_COLOURS[tier]
+    label = _TIER_LABELS[tier]
+    composite = report.get("composite_score")
+    composite_html = ""
+    if isinstance(composite, (int, float)):
+        composite_html = (
+            f'<div class="reco-score">'
+            f'<div class="reco-score-label">Composite</div>'
+            f'<div class="reco-score-value">{composite:.1f}<span class="reco-score-denom">/5</span></div>'
+            f'</div>'
+        )
+    summary = report.get("comprehensive_assessment") or {}
+    rationale_raw = (
+        str(report.get("recommendation_rationale") or "").strip()
+        or str(summary.get("one_sentence_summary") or "").strip()
+    )
+    rationale_html = f'<p class="reco-rationale">{escape(rationale_raw)}</p>' if rationale_raw else ""
+    return (
+        f'<section class="reco" style="background:{bg};border-color:{accent};color:{label_colour};">'
+        f'<div class="reco-row">'
+        f'<div class="reco-text">'
+        f'<div class="reco-eyebrow">Routing recommendation, next round</div>'
+        f'<div class="reco-label">{escape(label)}</div>'
+        f'{rationale_html}'
+        f'</div>'
+        f'{composite_html}'
+        f'</div>'
+        f'<p class="reco-footnote">Routing call only. The hire/no-hire decision sits with the human interviewer.</p>'
+        f'</section>'
+    )
+
+
+def _spider_svg(scoring: list[dict]) -> str:
+    """Inline SVG radar chart over the scored dimensions. Same maths
+    the React `ScoreSpider` uses on the web side so the two render the
+    same shape for the same scores. Falls back to empty string when
+    there are fewer than three usable rows; the PDF then skips the
+    chart section entirely.
+    """
+    import math
+
+    rows: list[tuple[str, float]] = []
+    for s in scoring or []:
+        if not isinstance(s, dict):
+            continue
+        score = s.get("score")
+        if not isinstance(score, (int, float)) or score <= 0:
+            continue
+        dim = str(s.get("dimension") or s.get("name") or "").strip()
+        if not dim:
+            continue
+        rows.append((dim, float(score)))
+    if len(rows) < 3:
+        return ""
+
+    vb = 480
+    center = vb / 2
+    r = 168
+    label_r_factor = 1.18
+    rings = [0.2, 0.4, 0.6, 0.8, 1.0]
+    n = len(rows)
+
+    def angle(i: int) -> float:
+        return (i / n) * (2 * math.pi) - math.pi / 2
+
+    def point(i: int, frac: float) -> tuple[float, float]:
+        a = angle(i)
+        return center + math.cos(a) * r * frac, center + math.sin(a) * r * frac
+
+    # 1, 5 → 0, 1 normalised polygon vertices.
+    polygon_pts: list[str] = []
+    for i, (_dim, score) in enumerate(rows):
+        frac = max(0.02, min(1.0, (score - 1) / 4))
+        x, y = point(i, frac)
+        polygon_pts.append(f"{x:.2f},{y:.2f}")
+    polygon = " ".join(polygon_pts)
+
+    ring_circles = "".join(
+        f'<circle cx="{center}" cy="{center}" r="{r * ring:.2f}" '
+        f'fill="none" stroke="#b3a99e" '
+        f'stroke-opacity="{0.55 if ring == 1 else 0.22}" '
+        f'stroke-width="{1.25 if ring == 1 else 1}"/>'
+        for ring in rings
+    )
+    axes = "".join(
+        f'<line x1="{center}" y1="{center}" x2="{point(i, 1)[0]:.2f}" y2="{point(i, 1)[1]:.2f}" '
+        f'stroke="#b3a99e" stroke-opacity="0.3" stroke-width="1"/>'
+        for i in range(n)
+    )
+    dots = ""
+    labels = ""
+    for i, (dim, score) in enumerate(rows):
+        frac = max(0.02, min(1.0, (score - 1) / 4))
+        dx, dy = point(i, frac)
+        dots += f'<circle cx="{dx:.2f}" cy="{dy:.2f}" r="4" fill="#c49a2f"/>'
+        lx, ly = point(i, label_r_factor)
+        a = angle(i)
+        cos_a, sin_a = math.cos(a), math.sin(a)
+        anchor = "start" if cos_a > 0.35 else "end" if cos_a < -0.35 else "middle"
+        baseline = "auto" if sin_a < -0.35 else "hanging" if sin_a > 0.35 else "middle"
+        labels += (
+            f'<text x="{lx:.2f}" y="{ly:.2f}" text-anchor="{anchor}" '
+            f'dominant-baseline="{baseline}" font-size="13" fill="#3d3a36">'
+            f'{escape(_format_key(dim))}</text>'
+        )
+
+    return (
+        f'<svg viewBox="0 0 {vb} {vb}" preserveAspectRatio="xMidYMid meet" '
+        f'overflow="visible" width="420" height="420" '
+        f'style="display:block;margin:0 auto;">'
+        f'{ring_circles}{axes}'
+        f'<polygon points="{polygon}" fill="#c49a2f" fill-opacity="0.22" '
+        f'stroke="#c49a2f" stroke-opacity="0.9" stroke-width="1.5" stroke-linejoin="round"/>'
+        f'{dots}{labels}'
+        f'</svg>'
+    )
+
+
 def _hirer_html(role_title: str, candidate_name: str, report: dict) -> str:
     body: list[str] = []
 
+    # 1. Top-level routing recommendation banner. Skipped on the truly
+    #    empty `{}` report so the "no content" fallback at the bottom
+    #    still fires.
+    banner = _recommendation_banner(report)
+    if banner:
+        body.append(banner)
+
     summary = report.get("comprehensive_assessment") or {}
     one_liner = escape(summary.get("one_sentence_summary") or "")
-    if one_liner:
-        body.append(f"<blockquote>{one_liner}</blockquote>")
 
     scoring = report.get("scoring_summary") or []
+
+    # 2. Dimension profile chart, only when there are >= 3 scored rows.
+    spider = _spider_svg(scoring)
+    if spider:
+        body.append(f'<h2>Dimension profile</h2><div class="spider-wrap">{spider}</div>')
+
+    if one_liner:
+        body.append(f"<blockquote>{one_liner}</blockquote>")
     if scoring:
         rows = []
         for s in scoring:

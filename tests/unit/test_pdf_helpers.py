@@ -318,6 +318,160 @@ class TestHirerHtml:
         assert "<script>x</script>" not in out
 
 
+class TestHirerHtmlRecommendation:
+    """Lynn 2026-06-09: hirer report must lead with the routing call,
+    then the dimension chart, then the per-dimension cards. The model
+    emits `recommendation` explicitly; legacy reports without it fall
+    back to a composite-score derivation."""
+
+    def test_renders_explicit_recommendation_label(self):
+        report = {
+            "recommendation": "strongly_recommended",
+            "recommendation_rationale": "Sustained signal across every priority dimension.",
+            "composite_score": 4.6,
+        }
+        out = _hirer_html("Role", "Jane", report)
+        assert "Strongly recommended for next round" in out
+        assert "Sustained signal across every priority dimension." in out
+        # Composite renders alongside the tier.
+        assert "4.6" in out
+
+    def test_derives_recommendation_for_legacy_report(self):
+        # No `recommendation` field; the banner must derive one from
+        # the composite score so older reports still get the headline.
+        report = {"composite_score": 2.2}
+        out = _hirer_html("Role", "Jane", report)
+        assert "Not recommended for next round" in out
+
+    def test_recommendation_appears_before_dimension_detail(self):
+        report = {
+            "recommendation": "recommended",
+            "recommendation_rationale": "Strong on priority dims; one area to probe.",
+            "scoring_summary": [
+                {"dimension": "technical_depth", "score": 4,
+                 "quotation_basis": "I built X.", "notes": "Concrete."},
+            ],
+            "composite_score": 3.8,
+        }
+        out = _hirer_html("Role", "Jane", report)
+        # The headline tier must appear before the dimension-scores
+        # section, mirroring the hierarchy Lynn asked for.
+        reco_at = out.index("Recommended for next round")
+        scores_at = out.index("Dimension scores")
+        assert reco_at < scores_at
+
+    def test_falls_back_to_one_sentence_when_rationale_missing(self):
+        # Legacy reports won't have `recommendation_rationale` yet.
+        # The comprehensive_assessment one-liner stands in so the
+        # banner is never bare.
+        report = {
+            "composite_score": 3.6,
+            "comprehensive_assessment": {"one_sentence_summary": "Pragmatic builder."},
+        }
+        out = _hirer_html("Role", "Jane", report)
+        assert "Pragmatic builder." in out
+        # And the one-liner still also renders below the spider as
+        # the existing blockquote — keeping the regression assertion
+        # in test_renders_one_liner_summary alive.
+
+    def test_empty_report_still_falls_back(self):
+        # A `{}` report has no recommendation AND no composite_score,
+        # so the banner is suppressed and the page-bottom "no content"
+        # fallback path keeps firing as it did before.
+        out = _hirer_html("Role", "Jane", {})
+        assert "No report content available." in out
+        assert "Routing recommendation" not in out
+
+    def test_escapes_rationale(self):
+        report = {
+            "recommendation": "can_progress",
+            "recommendation_rationale": "<script>alert(1)</script>",
+            "composite_score": 3.0,
+        }
+        out = _hirer_html("R", "J", report)
+        assert "<script>alert(1)</script>" not in out
+        assert "&lt;script&gt;" in out
+
+
+class TestSpiderSvg:
+    """The inline radar chart shipped inside the hirer PDF. Same shape
+    as the React `ScoreSpider` so PDF and web view never disagree."""
+
+    def test_renders_when_three_or_more_scored_rows(self):
+        from core.pdf import _spider_svg
+        rows = [
+            {"dimension": "technical_depth", "score": 4},
+            {"dimension": "tacit_knowledge", "score": 3},
+            {"dimension": "ethical_reasoning", "score": 5},
+        ]
+        svg = _spider_svg(rows)
+        assert svg.startswith("<svg")
+        # Axis labels are rendered via _format_key so the human form
+        # of the dimension key shows up.
+        assert "Technical Depth" in svg
+        assert "Tacit Knowledge" in svg
+        assert "Ethical Reasoning" in svg
+
+    def test_suppressed_below_three_rows(self):
+        from core.pdf import _spider_svg
+        assert _spider_svg([
+            {"dimension": "a", "score": 4},
+            {"dimension": "b", "score": 3},
+        ]) == ""
+
+    def test_ignores_unscored_or_zero_rows(self):
+        from core.pdf import _spider_svg
+        rows = [
+            {"dimension": "a", "score": 4},
+            {"dimension": "b", "score": 0},
+            {"dimension": "c", "score": None},
+            {"dimension": "d", "score": 3},
+        ]
+        # Only two usable rows after filtering — chart is suppressed.
+        assert _spider_svg(rows) == ""
+
+    def test_escapes_label(self):
+        from core.pdf import _spider_svg
+        rows = [
+            {"dimension": "<bad>", "score": 4},
+            {"dimension": "ok_b", "score": 3},
+            {"dimension": "ok_c", "score": 5},
+        ]
+        svg = _spider_svg(rows)
+        assert "<bad>" not in svg
+        assert "&lt;bad&gt;" in svg
+
+
+class TestDeriveRecommendation:
+    """Bands in the PDF helper must agree with core.schemas exactly so
+    the dashboard banner and the PDF banner show the same tier for the
+    same composite score."""
+
+    def test_bands(self):
+        from core.pdf import _derive_recommendation_pdf
+        assert _derive_recommendation_pdf(4.6) == "strongly_recommended"
+        assert _derive_recommendation_pdf(4.25) == "strongly_recommended"
+        assert _derive_recommendation_pdf(4.0) == "recommended"
+        assert _derive_recommendation_pdf(3.5) == "recommended"
+        assert _derive_recommendation_pdf(3.0) == "can_progress"
+        assert _derive_recommendation_pdf(2.75) == "can_progress"
+        assert _derive_recommendation_pdf(2.4) == "not_recommended"
+        assert _derive_recommendation_pdf(2.0) == "not_recommended"
+        assert _derive_recommendation_pdf(1.5) == "strongly_not_recommended"
+
+    def test_agrees_with_schemas_module(self):
+        from core.pdf import _derive_recommendation_pdf
+        from core.schemas import derive_recommendation
+        for s in [1.0, 1.5, 2.0, 2.4, 2.75, 3.0, 3.5, 3.99, 4.25, 4.6, 5.0]:
+            assert _derive_recommendation_pdf(s) == derive_recommendation(s), \
+                f"PDF and schemas disagree at composite={s}"
+
+    def test_handles_none(self):
+        from core.pdf import _derive_recommendation_pdf
+        # None → default 3.0 → can_progress.
+        assert _derive_recommendation_pdf(None) == "can_progress"
+
+
 class TestRenderReportPdf:
     def _install_fake_weasyprint(self, monkeypatch, calls):
         class FakeHTML:
