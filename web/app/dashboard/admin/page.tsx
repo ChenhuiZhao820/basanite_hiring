@@ -19,7 +19,21 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [approving, setApproving] = useState<string | null>(null)
   const [rejecting, setRejecting] = useState<string | null>(null)
+  const [linking, setLinking] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [toast, setToast] = useState('')
+
+  // Inline invite form. Lets the admin invite a hirer directly by
+  // email without going through the public-waitlist round trip.
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteName, setInviteName] = useState('')
+  const [inviteCompany, setInviteCompany] = useState('')
+  const [inviting, setInviting] = useState(false)
+
+  // Single-use sign-in link surface. Shown in a small inline panel
+  // so the admin can copy it and paste into Telegram / Signal / SMS
+  // when Supabase's email gets junked by the recipient's provider.
+  const [generatedLink, setGeneratedLink] = useState<{ email: string; url: string } | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/waitlist')
@@ -27,6 +41,47 @@ export default function AdminPage() {
       .then(data => { setEntries(data.entries ?? []); setLoading(false) })
       .catch(() => { setError('Failed to load waitlist.'); setLoading(false) })
   }, [])
+
+  function flash(msg: string) {
+    setToast(msg)
+    window.setTimeout(() => setToast(''), 3500)
+  }
+
+  async function invite(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setInviting(true)
+    try {
+      const res = await fetch('/api/admin/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: inviteEmail.trim(),
+          name: inviteName.trim() || undefined,
+          company: inviteCompany.trim() || undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to send invite.')
+      } else {
+        flash(
+          data.mode === 'magic_link'
+            ? `${inviteEmail} already had an account; sent a fresh sign-in link.`
+            : `Invite emailed to ${inviteEmail}.`,
+        )
+        setInviteEmail('')
+        setInviteName('')
+        setInviteCompany('')
+        // Refresh so the new approved row appears in the list.
+        const r2 = await fetch('/api/admin/waitlist')
+        const d2 = await r2.json()
+        setEntries(d2.entries ?? [])
+      }
+    } finally {
+      setInviting(false)
+    }
+  }
 
   async function approve(entry: WaitlistEntry) {
     setApproving(entry.id)
@@ -41,6 +96,7 @@ export default function AdminPage() {
       setError(data.error ?? 'Failed to approve.')
     } else {
       setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'approved' } : e))
+      flash(`Invite emailed to ${entry.email}.`)
     }
     setApproving(null)
   }
@@ -63,6 +119,31 @@ export default function AdminPage() {
     setRejecting(null)
   }
 
+  async function generateLink(entry: WaitlistEntry) {
+    setLinking(entry.id)
+    setError('')
+    const res = await fetch('/api/admin/generate-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: entry.email }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error ?? 'Failed to generate link.')
+    } else {
+      setGeneratedLink({ email: entry.email, url: data.action_link })
+      // Best-effort copy. clipboard.writeText is gated on a user gesture;
+      // since this fires from a click handler, it will normally succeed.
+      try {
+        await navigator.clipboard.writeText(data.action_link)
+        flash(`Sign-in link for ${entry.email} copied to clipboard.`)
+      } catch {
+        flash(`Sign-in link generated; copy from the panel below.`)
+      }
+    }
+    setLinking(null)
+  }
+
   const pending = entries.filter(e => e.status === 'pending')
   const approved = entries.filter(e => e.status === 'approved')
 
@@ -71,17 +152,96 @@ export default function AdminPage() {
       <Link href="/dashboard" className="text-xs text-slate-400 dark:text-earth-500 hover:text-[#0b1f3d] dark:text-earth-100 transition-colors mb-2 inline-block">
         &larr; Back to dashboard
       </Link>
-      <h1 className="font-display text-2xl font-bold text-[#0b1f3d] dark:text-earth-100 mb-1">Waitlist</h1>
-      <p className="text-slate-500 dark:text-earth-400 text-sm mb-8">Approve requests to send an invite email.</p>
+      <h1 className="font-display text-2xl font-bold text-[#0b1f3d] dark:text-earth-100 mb-1">Admin</h1>
+      <p className="text-slate-500 dark:text-earth-400 text-sm mb-8">Invite hirers directly, approve waitlist requests, or copy a sign-in link when an invite email doesn't land.</p>
 
       {error && (
         <p className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-2 mb-6">{error}</p>
       )}
 
+      {toast && (
+        <p className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-2 mb-6">{toast}</p>
+      )}
+
+      {/* Direct-invite form. The single highest-friction admin task
+          was Drew having to curl the waitlist API to invite someone
+          new; this collapses it to one form. */}
+      <section className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 mb-10">
+        <h2 className="text-sm font-semibold text-[#0b1f3d] dark:text-earth-100 mb-1">Invite a hirer</h2>
+        <p className="text-xs text-slate-500 dark:text-earth-400 mb-4">Sends a Supabase invite email immediately. If the email is already registered, sends a fresh magic link instead.</p>
+        <form onSubmit={invite} className="grid gap-3 sm:grid-cols-3">
+          <input
+            type="email"
+            placeholder="email@company.com"
+            required
+            value={inviteEmail}
+            onChange={e => setInviteEmail(e.target.value)}
+            className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-900 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 outline-none focus:border-[#1d4ed8]"
+          />
+          <input
+            type="text"
+            placeholder="Full name (optional)"
+            value={inviteName}
+            onChange={e => setInviteName(e.target.value)}
+            className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-900 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 outline-none focus:border-[#1d4ed8]"
+          />
+          <input
+            type="text"
+            placeholder="Company (optional)"
+            value={inviteCompany}
+            onChange={e => setInviteCompany(e.target.value)}
+            className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-900 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 outline-none focus:border-[#1d4ed8]"
+          />
+          <button
+            type="submit"
+            disabled={inviting || !inviteEmail.trim()}
+            className="sm:col-span-3 sm:justify-self-start bg-[#0b1f3d] hover:bg-[#1d4ed8] dark:bg-[#1d4ed8] dark:hover:bg-[#3b82f6] text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-50"
+          >
+            {inviting ? 'Sending…' : 'Send invite'}
+          </button>
+        </form>
+      </section>
+
+      {generatedLink && (
+        <section className="border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/40 p-4 mb-10">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Sign-in link for {generatedLink.email}</p>
+            <button
+              onClick={() => setGeneratedLink(null)}
+              className="text-xs text-amber-700 hover:underline"
+            >
+              Dismiss
+            </button>
+          </div>
+          <p className="text-[11px] text-amber-800 dark:text-amber-200 mb-2">Single use, expires in ~1 hour. Send via Telegram, Signal, SMS, or any out-of-band channel.</p>
+          <textarea
+            readOnly
+            value={generatedLink.url}
+            onClick={e => (e.currentTarget as HTMLTextAreaElement).select()}
+            className="w-full text-[11px] font-mono bg-white dark:bg-basanite-900 border border-amber-200 dark:border-amber-500/30 p-2 break-all resize-none"
+            rows={3}
+          />
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(generatedLink.url)
+                flash('Copied.')
+              } catch {
+                flash('Could not copy; select and copy manually.')
+              }
+            }}
+            className="mt-2 bg-amber-700 hover:bg-amber-800 text-white text-xs font-medium px-3 py-1.5 transition-colors"
+          >
+            Copy link
+          </button>
+        </section>
+      )}
+
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-3">Waitlist</h2>
       {loading ? (
         <p className="text-slate-400 dark:text-earth-500 text-sm">Loading…</p>
       ) : pending.length === 0 ? (
-        <p className="text-slate-400 dark:text-earth-500 text-sm">No pending requests.</p>
+        <p className="text-slate-400 dark:text-earth-500 text-sm mb-10">No pending requests.</p>
       ) : (
         <div className="border border-slate-200 dark:border-basanite-700 divide-y divide-slate-100 dark:divide-basanite-700 mb-10">
           {pending.map(entry => (
@@ -124,7 +284,17 @@ export default function AdminPage() {
                   <div className="text-sm text-[#0b1f3d] dark:text-earth-100 truncate">{entry.name}</div>
                   <div className="text-xs text-slate-500 dark:text-earth-400 truncate">{entry.email}{entry.company ? ` · ${entry.company}` : ''}</div>
                 </div>
-                <span className="shrink-0 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5">Invited</span>
+                <div className="shrink-0 flex items-center gap-2">
+                  <button
+                    onClick={() => generateLink(entry)}
+                    disabled={linking === entry.id}
+                    title="Generate a fresh single-use sign-in link to send via another channel"
+                    className="text-[11px] text-slate-600 dark:text-earth-300 hover:text-[#0b1f3d] dark:hover:text-earth-100 font-medium px-3 py-1.5 border border-slate-200 dark:border-basanite-700 hover:border-slate-400 transition-colors disabled:opacity-50"
+                  >
+                    {linking === entry.id ? 'Generating…' : 'Copy sign-in link'}
+                  </button>
+                  <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5">Invited</span>
+                </div>
               </div>
             ))}
           </div>
