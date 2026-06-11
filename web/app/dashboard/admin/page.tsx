@@ -13,6 +13,30 @@ type WaitlistEntry = {
   created_at: string
 }
 
+type IssueReport = {
+  id: string
+  category: string
+  message: string
+  page: string | null
+  status: string
+  created_at: string
+  token: string | null
+  assessments: {
+    candidate_name: string | null
+    candidate_email: string | null
+    roles: { title: string | null; company_name: string | null } | null
+  } | null
+}
+
+const ISSUE_CATEGORY_LABELS: Record<string, string> = {
+  audio_mic: "Microphone not working",
+  cant_hear: "Can't hear interviewer",
+  no_response: 'Interviewer not responding',
+  frozen: 'Page froze or crashed',
+  connection: 'Connection dropping',
+  other: 'Something else',
+}
+
 export default function AdminPage() {
   useDocumentTitle('Admin')
   const [entries, setEntries] = useState<WaitlistEntry[]>([])
@@ -35,12 +59,39 @@ export default function AdminPage() {
   // when Supabase's email gets junked by the recipient's provider.
   const [generatedLink, setGeneratedLink] = useState<{ email: string; url: string } | null>(null)
 
+  // Candidate-reported interview issues ("Having issues?" button).
+  const [issues, setIssues] = useState<IssueReport[]>([])
+  const [resolvingIssue, setResolvingIssue] = useState<string | null>(null)
+
   useEffect(() => {
     fetch('/api/admin/waitlist')
       .then(r => r.json())
       .then(data => { setEntries(data.entries ?? []); setLoading(false) })
       .catch(() => { setError('Failed to load waitlist.'); setLoading(false) })
+    fetch('/api/admin/issue-reports')
+      .then(r => r.json())
+      .then(data => setIssues(data.reports ?? []))
+      .catch(() => {/* non-fatal: the waitlist is the primary admin surface */})
   }, [])
+
+  async function setIssueStatus(id: string, status: 'new' | 'resolved') {
+    setResolvingIssue(id)
+    try {
+      const res = await fetch('/api/admin/issue-reports', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status }),
+      })
+      if (res.ok) {
+        setIssues(prev => prev.map(i => i.id === id ? { ...i, status } : i))
+      } else {
+        const d = await res.json().catch(() => ({}))
+        setError(d.error ?? 'Failed to update report.')
+      }
+    } finally {
+      setResolvingIssue(null)
+    }
+  }
 
   function flash(msg: string) {
     setToast(msg)
@@ -162,6 +213,69 @@ export default function AdminPage() {
       {toast && (
         <p className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-2 mb-6">{toast}</p>
       )}
+
+      {/* Candidate-reported interview issues. Newest first; open reports
+          surface a badge so they're hard to miss during a live cohort. */}
+      {(() => {
+        const open = issues.filter(i => i.status !== 'resolved')
+        return (
+          <section className="mb-10">
+            <div className="flex items-center gap-2 mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500">
+                Interview issue reports
+              </h2>
+              {open.length > 0 && (
+                <span className="text-[10px] font-semibold text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-300 rounded-full px-2 py-0.5">
+                  {open.length} open
+                </span>
+              )}
+            </div>
+            {issues.length === 0 ? (
+              <p className="text-slate-400 dark:text-earth-500 text-sm">No issues reported.</p>
+            ) : (
+              <div className="border border-slate-200 dark:border-basanite-700 divide-y divide-slate-100 dark:divide-basanite-700">
+                {issues.map(issue => {
+                  const role = issue.assessments?.roles
+                  const resolved = issue.status === 'resolved'
+                  return (
+                    <div key={issue.id} className={`px-5 py-4 bg-white dark:bg-basanite-800 ${resolved ? 'opacity-60' : ''}`}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-[#0b1f3d] dark:text-earth-100">
+                              {ISSUE_CATEGORY_LABELS[issue.category] ?? issue.category}
+                            </span>
+                            {resolved && (
+                              <span className="text-[10px] text-green-700 bg-green-50 border border-green-200 px-1.5 py-0.5">Resolved</span>
+                            )}
+                          </div>
+                          {issue.message && (
+                            <p className="text-sm text-slate-600 dark:text-earth-300 whitespace-pre-wrap break-words mb-1">{issue.message}</p>
+                          )}
+                          <div className="text-xs text-slate-500 dark:text-earth-400 truncate">
+                            {issue.assessments?.candidate_name || issue.assessments?.candidate_email || 'Unknown candidate'}
+                            {role?.title ? ` · ${role.title}${role.company_name ? ` (${role.company_name})` : ''}` : ''}
+                          </div>
+                          <div className="text-[10px] text-slate-400 dark:text-earth-500 mt-0.5">
+                            {new Date(issue.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setIssueStatus(issue.id, resolved ? 'new' : 'resolved')}
+                          disabled={resolvingIssue === issue.id}
+                          className="shrink-0 text-xs font-medium px-3 py-1.5 border border-slate-200 dark:border-basanite-700 text-slate-600 dark:text-earth-300 hover:border-slate-400 dark:hover:border-earth-500 transition-colors disabled:opacity-50"
+                        >
+                          {resolvingIssue === issue.id ? '…' : resolved ? 'Reopen' : 'Mark resolved'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+        )
+      })()}
 
       {/* Direct-invite form. The single highest-friction admin task
           was Drew having to curl the waitlist API to invite someone

@@ -18,6 +18,10 @@ vi.mock('@/lib/supabase/server', () => ({
         select: () => chain,
         eq: () => chain,
         single: drain,
+        // lookupRoleByToken resolves the role with .maybeSingle() (it
+        // tolerates a 0-row result without erroring); the assessment
+        // lookup still uses .single(). Both must drain the same queue.
+        maybeSingle: drain,
       }
       return chain
     },

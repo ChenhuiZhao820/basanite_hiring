@@ -65,6 +65,25 @@ class _LooseModel(BaseModel):
 
     model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
 
+    @field_validator("*", mode="before")
+    @classmethod
+    def _none_to_empty_str(cls, v, info):
+        """Coerce a JSON null into "" for non-optional str fields.
+
+        The LLM frequently emits `null` for a string it has no value for —
+        e.g. quotation_basis when an interview produced no quotable answer.
+        A plain `str` field rejects null, which previously detonated the
+        ENTIRE hirer report into a schema_validation_failed sentinel (the
+        hirer then saw a "completed" candidate with no scores). Only fields
+        annotated exactly `str` are coerced; Optional[str] fields keep their
+        null, and non-string fields are untouched.
+        """
+        if v is None:
+            field = cls.model_fields.get(info.field_name)
+            if field is not None and field.annotation is str:
+                return ""
+        return v
+
 
 class CvExperienceEntry(_LooseModel):
     company: str | None = None

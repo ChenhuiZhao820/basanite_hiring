@@ -12,8 +12,14 @@ import { Redis } from '@upstash/redis'
 // the deploy environment is production and Upstash isn't configured.
 // ---------------------------------------------------------------------------
 
-const _IS_PRODUCTION =
-  process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+// Only the real Vercel *production* deploy must fail-closed without Upstash.
+// NODE_ENV is "production" for EVERY Vercel build (preview builds included) and
+// for local `next build`, so keying the throw on it hard-failed every preview/
+// branch deploy when Upstash creds weren't present in the Preview environment —
+// even though previews don't carry the candidate funnel and don't need
+// distributed limits. Gate strictly on VERCEL_ENV: production still fails
+// closed if the creds ever vanish; previews degrade to the in-memory fallback.
+const _IS_PRODUCTION = process.env.VERCEL_ENV === 'production'
 
 // Trim whitespace/newlines from env vars. Copy-paste into the Vercel
 // dashboard reliably introduces a trailing "\n" on the URL, which the
