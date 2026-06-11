@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import VoiceInterview from '@/components/VoiceInterview'
+import IssueReporter from '@/components/IssueReporter'
 import { LogoMark } from '@/components/Logo'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
@@ -98,15 +99,20 @@ export default function InterviewPage() {
   }
 
   return (
-    <VoiceInterview
-      token={token}
-      assessmentId={assessmentId}
-      signedUrl={config.signed_url}
-      prompt={config.prompt}
-      sessionToken={config.session_token}
-      firstMessage={config.first_message}
-      voiceId={config.voice_id}
-      targetSeconds={config.max_duration_seconds ?? 20 * 60}
-    />
+    <>
+      <VoiceInterview
+        token={token}
+        assessmentId={assessmentId}
+        signedUrl={config.signed_url}
+        prompt={config.prompt}
+        sessionToken={config.session_token}
+        firstMessage={config.first_message}
+        voiceId={config.voice_id}
+        targetSeconds={config.max_duration_seconds ?? 20 * 60}
+      />
+      {/* Overlays the interview UI; lets the candidate flag a problem
+          (audio, no response, frozen page…) without leaving the session. */}
+      <IssueReporter token={token} assessmentId={assessmentId} />
+    </>
   )
 }
