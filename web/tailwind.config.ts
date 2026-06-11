@@ -5,6 +5,13 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    // lib/ holds dynamically-composed class maps (e.g. TIER_META in
+    // recommendation.ts) that reach JSX only via `${meta.bg}` template
+    // literals. Without this glob, JIT never sees those literals, so the
+    // less-common dark: variants (dark:text-red-100, dark:bg-emerald-900/20,
+    // …) are silently purged — which rendered the routing-recommendation
+    // banner as near-black text on a dark-red background in dark mode.
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   // Class-based dark mode so we can scope it to specific subtrees
   // (the candidate-screening flow) instead of the whole app.
