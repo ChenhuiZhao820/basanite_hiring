@@ -484,7 +484,10 @@ async def cv_upload(
     # ENG-34: cap CV-upload attempts per IP. PDF parsing is expensive;
     # without this an attacker armed with a leaked token could exhaust
     # the worker pool by feeding malformed PDFs in a tight loop.
-    _rate_limit(request, bucket="cv-upload", max_requests=10, window_seconds=3600)
+    # Per-IP; all candidates share the Vercel egress IP (proxy drops the
+    # real client IP), so keep this above realistic cohort size or it
+    # throttles a whole hiring batch rather than an attacker.
+    _rate_limit(request, bucket="cv-upload", max_requests=120, window_seconds=3600)
     from core.db import get_role_by_token
     role = get_role_by_token(token)
     if not role or role["status"] != "live":
@@ -535,9 +538,15 @@ async def start_assessment(
 ):
     # ENG-34: cap assessment-start attempts per IP. Each /start mints
     # state, charges Haiku for CV extraction, and (once ENG-24 lands in
-    # prod) creates a unique-index entry — limiting to 5/hr keeps a
-    # leaked-token harvester from hammering this path.
-    _rate_limit(request, bucket="assess-start", max_requests=5, window_seconds=3600)
+    # prod) creates a unique-index entry.
+    # NOTE: candidates reach this through the Vercel proxy, which does NOT
+    # forward the real client IP, so EVERY candidate shares one Vercel
+    # egress IP here (and a co-located cohort shares one office NAT IP too).
+    # A low per-IP cap therefore throttles a whole hiring batch, not an
+    # attacker. The Next.js layer already caps per authenticated user
+    # (start:${user.id}, 5/hr), which is the real anti-harvest guard; this
+    # per-IP bucket stays only as generous defense-in-depth.
+    _rate_limit(request, bucket="assess-start", max_requests=120, window_seconds=3600)
     """Create an assessment and extract CV. Returns assessment_id."""
     from core.db import (
         get_role_by_token,
@@ -644,10 +653,12 @@ async def voice_session(token: str, body: dict, request: Request):
     return the per-session overrides (system prompt + first message) the
     browser SDK will send when it opens the socket.
     """
-    # ENG-34: each /voice-session burns an ElevenLabs signed URL. 10/hr
-    # tolerates legitimate reconnects after a network blip; anything
-    # past that is almost certainly an attacker probing the endpoint.
-    _rate_limit(request, bucket="voice-session", max_requests=10, window_seconds=3600)
+    # ENG-34: each /voice-session burns an ElevenLabs signed URL. Per-IP,
+    # but all candidates share the Vercel egress IP (proxy drops the real
+    # client IP) and reconnects multiply calls, so keep this well above
+    # cohort size or a batch of candidates throttles itself; per-user
+    # limiting upstream is the real guard.
+    _rate_limit(request, bucket="voice-session", max_requests=120, window_seconds=3600)
     import httpx
     from core.db import update_assessment
     from interview import assemble_interview_prompt
