@@ -78,9 +78,15 @@ describe('getIP', () => {
   })
 })
 
-// ENG-33: production deploys must never silently fall back to the
-// per-instance in-memory limiter. The module fails to import when
-// VERCEL_ENV/NODE_ENV is "production" and Upstash creds are missing.
+// ENG-33: the real production deploy must never silently fall back to the
+// per-instance in-memory limiter — the module fails to import when
+// VERCEL_ENV === 'production' and Upstash creds are missing.
+//
+// da28f1a: the gate is VERCEL_ENV only, NOT NODE_ENV. NODE_ENV is
+// "production" for every Vercel build (previews included) and for local
+// `next build`; gating the throw on it failed every preview pipeline whose
+// Preview env lacked Upstash creds. Previews carry no candidate funnel, so
+// they degrade to the in-memory limiter and build cleanly.
 describe('production fail-closed init', () => {
   const originalEnv = { ...process.env }
 
@@ -97,13 +103,25 @@ describe('production fail-closed init', () => {
     await expect(import('./rate-limit')).rejects.toThrow(/Rate limiter misconfigured/)
   })
 
-  it('throws when NODE_ENV=production has no Upstash creds', async () => {
+  it('does NOT throw when NODE_ENV=production but VERCEL_ENV is unset (preview/local build)', async () => {
+    // da28f1a regression guard: a preview/branch build (NODE_ENV
+    // "production", VERCEL_ENV unset or "preview") must import cleanly and
+    // fall back to the in-memory limiter rather than hard-failing the build.
     delete process.env.VERCEL_ENV
     process.env.NODE_ENV = 'production'
     delete process.env.UPSTASH_REDIS_REST_URL
     delete process.env.UPSTASH_REDIS_REST_TOKEN
     vi.resetModules()
-    await expect(import('./rate-limit')).rejects.toThrow(/Rate limiter misconfigured/)
+    await expect(import('./rate-limit')).resolves.toMatchObject({ allow: expect.any(Function) })
+  })
+
+  it('does NOT throw on a Vercel preview deploy without Upstash creds', async () => {
+    process.env.VERCEL_ENV = 'preview'
+    process.env.NODE_ENV = 'production'
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    vi.resetModules()
+    await expect(import('./rate-limit')).resolves.toMatchObject({ allow: expect.any(Function) })
   })
 
   it('imports cleanly in production when Upstash creds are present', async () => {
