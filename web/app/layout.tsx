@@ -104,11 +104,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="en-GB" className={`${fraunces.variable} ${dmSerif.variable}`}>
+    <html lang="en-GB" className={`${fraunces.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ldGraph) }}
         />
       </head>

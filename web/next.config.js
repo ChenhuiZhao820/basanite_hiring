@@ -12,7 +12,12 @@ const securityHeaders = [
   { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=()' },
 ]
 
+const path = require('path')
+
 const nextConfig = {
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   // Power-By header leaks framework identity to the network — strip it.
   poweredByHeader: false,
   // Trailing slashes are normalised off so duplicate-content canonical

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { LogoMark } from '@/components/Logo'
+import { SpiderChart } from '@/components/SpiderChart'
 
 export const metadata: Metadata = { title: 'Methodology' }
 
@@ -87,6 +88,13 @@ export default function MethodologyPage() {
       <MethodologyNav />
 
       <main className="max-w-4xl mx-auto px-6 pt-24 pb-32">
+        <Link
+          href="/"
+          className="inline-block text-sm text-basanite-600 hover:text-basanite-900 transition-colors mb-8"
+        >
+          &larr; Back to homepage
+        </Link>
+
         <header className="mb-16">
           <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.25em] mb-4">
             The research
@@ -101,6 +109,26 @@ export default function MethodologyPage() {
             provenance, and an empirical reference list.
           </p>
         </header>
+
+        <section className="mb-20 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+          <div>
+            <SpiderChart />
+          </div>
+          <div>
+            <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
+              Shape, not score
+            </p>
+            <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-4">
+              Capability is a shape.
+            </h2>
+            <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
+              Every candidate is scored across eight metacognitive dimensions.
+              The visualization above illustrates what a single candidate
+              profile looks like — strengths and gaps surfaced together, not
+              collapsed into one number.
+            </p>
+          </div>
+        </section>
 
         <section className="mb-20 border-l-2 border-gold-500/50 pl-6 sm:pl-8 py-2 max-w-3xl">
           <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
@@ -172,6 +200,75 @@ export default function MethodologyPage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section
+          id="roi-assumptions"
+          className="border-t border-earth-200 pt-12 mb-20 scroll-mt-24"
+        >
+          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
+            ROI calculator
+          </p>
+          <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-6">
+            The assumptions behind your number.
+          </h2>
+          <p className="text-basanite-600 text-base leading-relaxed mb-8 max-w-2xl">
+            The calculator on the homepage uses six constants. Each is set
+            conservatively against the cited benchmark — we&rsquo;d rather
+            understate the recovered value than overstate it.
+          </p>
+          <ul className="space-y-5">
+            <li className="border-l-2 border-gold-500/40 pl-5">
+              <p className="text-basanite-900 font-semibold mb-1">
+                Time saved per hire (15 hours)
+              </p>
+              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
+                Derived from Zivaro 2025 and Ashby 2026 benchmarks for
+                technical screening hours.
+              </p>
+            </li>
+            <li className="border-l-2 border-gold-500/40 pl-5">
+              <p className="text-basanite-900 font-semibold mb-1">
+                Blended hourly cost (&pound;80)
+              </p>
+              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
+                Weighted mix of recruiter and engineering time.
+              </p>
+            </li>
+            <li className="border-l-2 border-gold-500/40 pl-5">
+              <p className="text-basanite-900 font-semibold mb-1">
+                Mishire reduction (10 percentage points)
+              </p>
+              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
+                Conservative estimate against a 46% baseline (Leadership IQ,
+                n=20,000).
+              </p>
+            </li>
+            <li className="border-l-2 border-gold-500/40 pl-5">
+              <p className="text-basanite-900 font-semibold mb-1">
+                Replacement cost multiplier (0.5 &times; annual salary)
+              </p>
+              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
+                Low end of SHRM 2025 replacement cost range.
+              </p>
+            </li>
+            <li className="border-l-2 border-gold-500/40 pl-5">
+              <p className="text-basanite-900 font-semibold mb-1">
+                Days of vacancy avoided (10)
+              </p>
+              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
+                Conservative estimate against 30-day average reduction.
+              </p>
+            </li>
+            <li className="border-l-2 border-gold-500/40 pl-5">
+              <p className="text-basanite-900 font-semibold mb-1">
+                Vacancy cost per day (&pound;500)
+              </p>
+              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
+                Floor estimate from McKinsey developer-productivity research.
+              </p>
+            </li>
+          </ul>
         </section>
 
         <section className="border-t border-earth-200 pt-12 text-center">
