@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
-import { SpiderChart } from '@/components/SpiderChart'
 import { AuthFragmentHandler } from '@/components/AuthFragmentHandler'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
@@ -92,6 +91,7 @@ function Nav() {
         </a>
         <div className="hidden sm:flex items-center gap-7 text-sm text-basanite-600">
           <a href="#how-it-works" className="hover:text-basanite-900 transition-colors">How it works</a>
+          <a href="/methodology" className="hover:text-basanite-900 transition-colors">Methodology</a>
           <a href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</a>
           <a href="/about" className="hover:text-basanite-900 transition-colors">About</a>
           <a href="/blog" className="hover:text-basanite-900 transition-colors">Blog</a>
@@ -118,7 +118,7 @@ function Nav() {
   )
 }
 
-// ─── Hero ────────────────────────────────────────────────────────────────
+// ─── Hero (original full-bleed) ─────────────────────────────────────────
 function Hero() {
   return (
     <section className="pt-16 min-h-screen flex flex-col">
@@ -171,6 +171,477 @@ function Hero() {
   )
 }
 
+// ─── Stripe Startups badge ───────────────────────────────────────────────
+function StripeStartupsBadge() {
+  return (
+    <section
+      aria-label="Partnered with Stripe VC"
+      className="bg-white border-b border-earth-200/80 py-10"
+    >
+      <div className="max-w-6xl mx-auto px-6 flex items-baseline justify-center gap-3">
+        <span className="text-basanite-600 text-base sm:text-lg">
+          Partnered with
+        </span>
+        <img
+          src="/logos/stripe.svg"
+          alt="Stripe"
+          className="h-9 sm:h-10 w-auto select-none translate-y-[6px]"
+          draggable={false}
+        />
+        <span
+          className="font-semibold"
+          style={{
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", "Segoe UI", Arial, sans-serif',
+            color: '#635BFF',
+            fontSize: '24px',
+            letterSpacing: '0.01em',
+            marginLeft: '-4px',
+          }}
+        >
+          VC
+        </span>
+      </div>
+    </section>
+  )
+}
+
+// ─── Section 1 · Value proposition ──────────────────────────────────────
+function ValueProp() {
+  const ref = useReveal()
+  return (
+    <section className="relative py-32 sm:py-40 px-6 bg-basanite-900 overflow-hidden">
+      <StoneTexture />
+      <div ref={ref} className="reveal relative z-10 max-w-4xl mx-auto">
+        <h2 className="font-display text-earth-50 text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight">
+          Hire engineers 3&times; faster.<br />
+          Cut mishires in half.<br />
+          <span className="text-gold-400">Defend every decision.</span>
+        </h2>
+        <p className="text-earth-300/80 text-base sm:text-lg leading-relaxed mt-14 max-w-2xl">
+          Basanite replaces 17 interview hours per hire with one signal-dense
+          session that measures what coding tests can&rsquo;t: how candidates
+          actually think with AI. Every hire comes with a defensible,
+          evidence-backed report, and a process you can scale up, scale down,
+          or reshape around any role.
+        </p>
+        <p className="text-earth-400 text-sm sm:text-base mt-5 max-w-2xl">
+          For a team hiring 40 engineers a year, that&rsquo;s{' '}
+          <span className="font-semibold text-gold-400">
+            &pound;400k+ recovered annually.
+          </span>
+        </p>
+        <div className="flex items-center gap-6 mt-12">
+          <a
+            href="#roi-calculator"
+            className="px-6 py-3 bg-gold-500 hover:bg-gold-400 text-white text-sm font-semibold tracking-wide transition-colors duration-200"
+          >
+            See your savings &rarr;
+          </a>
+          <a
+            href={BOOK_A_CALL_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-earth-300 hover:text-earth-50 underline underline-offset-4 decoration-earth-500/50 font-medium transition-colors duration-200"
+          >
+            Book a 20-min call
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Section 2 · The numbers ─────────────────────────────────────────────
+const NUMBERS = [
+  {
+    value: '17 hours',
+    desc: 'of senior engineering time saved per hire.',
+    caption: 'Replaces the screening + first technical round.',
+  },
+  {
+    value: '30 days',
+    desc: 'cut from time-to-hire.',
+    caption: 'From 10 weeks to 6, on average.',
+  },
+  {
+    value: '£10–15k',
+    desc: 'in mishire risk avoided, per hire.',
+    caption:
+      "46% of new hires fail in 18 months. 89% of those failures are signals coding tests don't measure.",
+  },
+  {
+    value: '1 report',
+    desc: 'behind every hiring decision.',
+    caption:
+      'Eight dimensions, scored on the same rubric, every time. Defensible to your board, your team, and the candidate.',
+  },
+]
+
+function NumbersSection() {
+  const ref = useReveal()
+  return (
+    <section className="py-24 sm:py-32 px-6 bg-earth-50">
+      <div ref={ref} className="reveal max-w-6xl mx-auto">
+        <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
+          The impact
+        </p>
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-16 leading-[1.15]">
+          What you get back
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+          {NUMBERS.map((n, i) => (
+            <div key={n.value} className="relative pl-6 border-l-2 border-gold-500/50">
+              <div className="text-gold-600 text-[10px] font-semibold uppercase tracking-[0.25em] mb-3">
+                {String(i + 1).padStart(2, '0')}
+              </div>
+              <div className="font-display text-basanite-900 text-3xl sm:text-4xl leading-[1.05] mb-3">
+                {n.value}
+              </div>
+              <p className="text-basanite-700 text-base leading-relaxed">
+                {n.desc}
+              </p>
+              <p className="italic text-basanite-500 text-sm leading-relaxed mt-3">
+                {n.caption}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Section 3 · ROI calculator ──────────────────────────────────────────
+function ROICalculator() {
+  const ref = useReveal()
+  const [n, setN] = useState(40)
+  const [s, setS] = useState(80000)
+
+  const { recovered, inefficiency } = useMemo(() => {
+    const perHire = 15 * 80 + 0.10 * s * 0.5 + 10 * 500
+    const rec = n * perHire
+    const ineff = rec * 1.5
+    const round = (v: number) => Math.round(v / 1000) * 1000
+    return { recovered: round(rec), inefficiency: round(ineff) }
+  }, [n, s])
+
+  const fmt = (v: number) => `£${v.toLocaleString('en-GB')}`
+
+  return (
+    <section
+      id="roi-calculator"
+      className="relative py-32 sm:py-40 px-6 bg-basanite-900 overflow-hidden scroll-mt-16"
+    >
+      <StoneTexture />
+      <div ref={ref} className="reveal relative z-10 max-w-2xl mx-auto">
+        <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5">
+          ROI calculator
+        </p>
+        <h2 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl mb-16 leading-[1.05]">
+          See your number
+        </h2>
+
+        <div className="space-y-12">
+          <div>
+            <label
+              htmlFor="roi-engineers"
+              className="flex items-baseline justify-between text-base text-earth-300 mb-4"
+            >
+              <span>How many engineers do you hire a year?</span>
+              <span className="font-display text-2xl text-gold-400 tabular-nums">{n}</span>
+            </label>
+            <input
+              id="roi-engineers"
+              type="range"
+              min={1}
+              max={200}
+              step={1}
+              value={n}
+              onChange={e => setN(Number(e.target.value))}
+              className="roi-slider w-full"
+            />
+            <div className="flex justify-between text-xs text-earth-500 mt-2">
+              <span>1</span>
+              <span>200</span>
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="roi-salary"
+              className="flex items-baseline justify-between text-base text-earth-300 mb-4"
+            >
+              <span>Average base salary (&pound;)?</span>
+              <span className="font-display text-2xl text-gold-400 tabular-nums">
+                &pound;{s.toLocaleString('en-GB')}
+              </span>
+            </label>
+            <input
+              id="roi-salary"
+              type="range"
+              min={40000}
+              max={250000}
+              step={5000}
+              value={s}
+              onChange={e => setS(Number(e.target.value))}
+              className="roi-slider w-full"
+            />
+            <div className="flex justify-between text-xs text-earth-500 mt-2">
+              <span>&pound;40,000</span>
+              <span>&pound;250,000</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-16 p-10 bg-basanite-800/40 border border-earth-300/8">
+          <div className="space-y-4 text-earth-200 text-lg sm:text-xl leading-relaxed">
+            <p>
+              &rarr; You&rsquo;re spending roughly{' '}
+              <span className="font-display text-2xl sm:text-3xl text-earth-50">{fmt(inefficiency)}</span>{' '}
+              on hiring inefficiency every year.
+            </p>
+            <p>
+              &rarr; Basanite recovers{' '}
+              <span className="font-display text-2xl sm:text-3xl text-gold-400">~{fmt(recovered)}</span>{' '}
+              of that.
+            </p>
+          </div>
+        </div>
+
+        <p className="italic text-earth-500 text-sm mt-8">
+          Math: Ashby 2026, Leadership IQ, SHRM 2025.{' '}
+          <a
+            href="/methodology#roi-assumptions"
+            className="not-italic text-gold-500 hover:text-gold-400 underline underline-offset-4 decoration-gold-500/40 font-medium"
+          >
+            See the assumptions &rarr;
+          </a>
+        </p>
+
+        <div className="mt-12">
+          <a
+            href={BOOK_A_CALL_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block px-8 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
+          >
+            Book a call to walk through your number
+          </a>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .roi-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          height: 2px;
+          background: #3d3a36;
+          border-radius: 1px;
+          outline: none;
+          cursor: pointer;
+        }
+        .roi-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #c49a2f;
+          border: 2px solid #1a1a18;
+          box-shadow: 0 0 0 3px rgba(196, 154, 47, 0.15);
+          cursor: grab;
+          transition: box-shadow 0.15s ease;
+        }
+        .roi-slider::-webkit-slider-thumb:hover {
+          box-shadow: 0 0 0 6px rgba(196, 154, 47, 0.2);
+        }
+        .roi-slider::-webkit-slider-thumb:active {
+          cursor: grabbing;
+          box-shadow: 0 0 0 8px rgba(196, 154, 47, 0.25);
+        }
+        .roi-slider::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #c49a2f;
+          border: 2px solid #1a1a18;
+          box-shadow: 0 0 0 3px rgba(196, 154, 47, 0.15);
+          cursor: grab;
+        }
+        .roi-slider::-moz-range-track {
+          height: 2px;
+          background: #3d3a36;
+          border-radius: 1px;
+        }
+      `}</style>
+    </section>
+  )
+}
+
+// ─── Section 4 · The four levers ─────────────────────────────────────────
+const LEVERS: { label: string; body: string }[] = [
+  {
+    label: 'Time',
+    body:
+      'One 30-minute session replaces resume screening, phone screen, and first technical interview. Recruiter and engineer hours collapse by 60–70%.',
+  },
+  {
+    label: 'Speed',
+    body:
+      'Candidates flow through in days, not weeks. You stop losing offers to faster-moving competitors. Every vacancy day costs £500–1,000 in lost output.',
+  },
+  {
+    label: 'Quality',
+    body:
+      '46% of new hires fail within 18 months (Leadership IQ, n=20,000). 89% of those failures come from attitude, coachability, and judgment — exactly what Basanite measures, and exactly what coding tests miss.',
+  },
+  {
+    label: 'Defensibility',
+    body:
+      'Every candidate gets scored against the same eight-dimension rubric, with the evidence behind each score traceable to the actual interview. One report your hiring manager, your board, and the candidate can all read.',
+  },
+]
+
+function FourLevers() {
+  const ref = useReveal()
+  return (
+    <section className="py-24 sm:py-32 px-6 bg-white border-b border-earth-200/80">
+      <div ref={ref} className="reveal max-w-3xl mx-auto">
+        <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
+          The four levers
+        </p>
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-14 leading-[1.15]">
+          Where the savings come from
+        </h2>
+
+        <div className="space-y-10">
+          {LEVERS.map((l, i) => (
+            <div key={l.label} className="flex gap-6 items-start">
+              <span className="shrink-0 font-display text-gold-600 text-sm tracking-widest mt-1.5">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <p className="text-basanite-700 text-base sm:text-lg leading-relaxed">
+                <span className="font-semibold text-basanite-900">
+                  {l.label}
+                </span>{' '}
+                &mdash; {l.body}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-earth-200/40 mt-16 pt-10" />
+        <p className="italic text-basanite-500 text-sm sm:text-base leading-relaxed pl-12">
+          And it bends to your role, not the other way around. Custom
+          dimensions, custom rubrics, custom workbench tasks &mdash; for
+          engineering, data, ML, security, or wherever you take it next.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+// ─── Section 5 · What we measure ─────────────────────────────────────────
+const DIMENSION_ROWS: { name: string; question: string }[] = [
+  {
+    name: 'Problem framing',
+    question: 'Can they turn a vague brief into a workable spec?',
+  },
+  {
+    name: 'Context handling',
+    question:
+      'Do they give the model what it needs — or hope for the best?',
+  },
+  {
+    name: 'Verification',
+    question: "Do they check the model’s output, or ship it?",
+  },
+  {
+    name: 'Iteration',
+    question: 'When the first answer is wrong, what do they do next?',
+  },
+  {
+    name: 'Tool fluency',
+    question: 'Do they know which tool fits which subtask?',
+  },
+  {
+    name: 'Judgment under uncertainty',
+    question: 'When the model is confidently wrong, do they catch it?',
+  },
+  {
+    name: 'Coachability',
+    question: 'Can they take feedback mid-task and adjust?',
+  },
+  {
+    name: 'Communication',
+    question: 'Can they explain what they did and why?',
+  },
+]
+
+function WhatWeMeasure() {
+  const ref = useReveal()
+  return (
+    <section className="py-24 sm:py-32 px-6 bg-earth-50 border-b border-earth-200/80">
+      <div ref={ref} className="reveal max-w-4xl mx-auto">
+        <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
+          The dimensions
+        </p>
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-8 leading-[1.15]">
+          We measure how engineers think with AI
+        </h2>
+        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mb-4 max-w-3xl">
+          Coding tests assume the candidate works alone. That world is gone.{' '}
+          <span className="font-semibold text-basanite-900">
+            76% of technical candidates now use AI mid-interview.
+          </span>{' '}
+          The question that predicts on-the-job performance has shifted from
+          &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
+          think with it?&rdquo;
+        </p>
+        <p className="text-basanite-700 text-base sm:text-lg mb-12">
+          Eight dimensions. One rubric. Defensible scoring.
+        </p>
+
+        <div className="bg-basanite-900 text-earth-50 overflow-hidden shadow-[0_20px_60px_-15px_rgba(15,15,14,0.4)]">
+          <table className="w-full border-collapse">
+            <tbody>
+              {DIMENSION_ROWS.map((row, i) => (
+                <tr
+                  key={row.name}
+                  className={
+                    i < DIMENSION_ROWS.length - 1
+                      ? 'border-b border-basanite-800'
+                      : ''
+                  }
+                >
+                  <th
+                    scope="row"
+                    className="font-display text-gold-400 text-left align-top text-base sm:text-lg font-normal px-5 sm:px-8 py-5 sm:py-6 w-2/5 sm:w-1/3"
+                  >
+                    {row.name}
+                  </th>
+                  <td className="text-earth-200 text-sm sm:text-base leading-relaxed px-5 sm:px-8 py-5 sm:py-6">
+                    {row.question}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-10">
+          <a
+            href="/methodology"
+            className="text-gold-700 hover:text-gold-600 underline underline-offset-4 decoration-gold-500/60 font-medium text-base sm:text-lg"
+          >
+            Read the methodology &rarr;
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ─── Product demo video ─────────────────────────────────────────────────
 function DemoVideo() {
   const ref = useReveal()
@@ -211,91 +682,6 @@ function DemoVideo() {
   )
 }
 
-// ─── Stripe Startups badge ───────────────────────────────────────────────
-// Replaces the old "Team experience spans" company marquee. Basanite is an
-// enrolled member of the Stripe Startups Programme; this is a single, clean
-// trust signal under the hero rather than a list of past employers.
-//
-// The "stripe" wordmark is currently rendered as styled text using the
-// system sans-serif stack at Stripe's brand purple. Swap to an <Image>
-// of the official wordmark SVG (drop at /public/logos/stripe.svg) once it
-// arrives from the Stripe Startups team.
-function StripeStartupsBadge() {
-  return (
-    <section
-      aria-label="Partnered with Stripe VC"
-      className="bg-white border-b border-earth-200/80 py-10"
-    >
-      <div className="max-w-6xl mx-auto px-6 flex items-baseline justify-center gap-3">
-        <span className="text-basanite-600 text-base sm:text-lg">
-          Partnered with
-        </span>
-        <img
-          src="/logos/stripe.svg"
-          alt="Stripe"
-          className="h-9 sm:h-10 w-auto select-none translate-y-[6px]"
-          draggable={false}
-        />
-        <span
-          className="font-semibold"
-          style={{
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", "Segoe UI", Arial, sans-serif',
-            color: '#635BFF',
-            fontSize: '24px',
-            letterSpacing: '0.01em',
-            marginLeft: '-4px',
-          }}
-        >
-          VC
-        </span>
-      </div>
-    </section>
-  )
-}
-
-// ─── Research ────────────────────────────────────────────────────────────
-// Slim, motion-led section. The animated SpiderChart communicates the shape
-// of evaluation; the long-form methodology and per-dimension provenance now
-// live on /methodology.
-function Research() {
-  const ref = useReveal()
-  return (
-    <section
-      id="research"
-      className="py-24 sm:py-32 px-6 bg-earth-50 border-b border-earth-200/80"
-    >
-      <div
-        ref={ref}
-        className="reveal max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center"
-      >
-        <div className="md:order-1">
-          <SpiderChart />
-        </div>
-        <div className="md:order-2 text-center md:text-left">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5">
-            The research
-          </p>
-          <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-tight mb-5">
-            Eight dimensions of engineering judgment.
-          </h2>
-          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed mb-8">
-            Capability is a shape, not a number. Basanite scores every
-            candidate across eight metacognitive dimensions drawn from
-            cognitive science and the literature on human–AI collaboration.
-          </p>
-          <a
-            href="/methodology"
-            className="text-gold-700 hover:text-gold-600 underline underline-offset-4 decoration-gold-500/60 font-medium text-base"
-          >
-            Read the methodology &rarr;
-          </a>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 // ─── How It Works (interactive accordion) ────────────────────────────────
 const STAGES = [
   {
@@ -323,14 +709,14 @@ const STAGES = [
     number: '04',
     title: 'Round 1 — Structured Conversational Assessment',
     summary: 'Reveals what the candidate thinks',
-    description: 'Basanite asks questions grounded in the candidate’s own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth. This round generates signal across the cognitive, judgmental, and tacit-knowledge dimensions.',
+    description: "Basanite asks questions grounded in the candidate's own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth. This round generates signal across the cognitive, judgmental, and tacit-knowledge dimensions.",
     tags: ['Adaptive', 'Follow-up probes', '20–30 min'],
   },
   {
     number: '05',
     title: 'Round 2 — AI Collaboration Workbench',
     summary: 'Reveals what the candidate does',
-    description: 'A sandboxed VS Code environment with a role-matched codebase, a real ticket, and the candidate’s choice of AI coding agent (Claude Code, Cursor, Copilot, Aider). We test engineers WITH AI rather than against it — the dimension no other interview measures.',
+    description: "A sandboxed VS Code environment with a role-matched codebase, a real ticket, and the candidate's choice of AI coding agent (Claude Code, Cursor, Copilot, Aider). We test engineers WITH AI rather than against it — the dimension no other interview measures.",
     tags: ['VS Code sandbox', 'Real codebase', 'Any AI agent'],
   },
   {
@@ -769,8 +1155,12 @@ export default function HomePage() {
       <Nav />
       <Hero />
       <StripeStartupsBadge />
+      <ValueProp />
+      <NumbersSection />
+      <ROICalculator />
+      <FourLevers />
+      <WhatWeMeasure />
       <DemoVideo />
-      <Research />
       <HowItWorks />
       <Philosophy />
       <ForBoth />
