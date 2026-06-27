@@ -923,6 +923,17 @@ function HowItWorks() {
             })}
           </div>
         </div>
+
+        <div className="mt-12 pt-8 border-t border-earth-200">
+          <p className="text-basanite-600 text-sm mb-3">Want to see what comes out the other end?</p>
+          <a
+            href="/sample-reports"
+            className="inline-flex items-center gap-2 font-display text-lg text-basanite-900 hover:text-gold-700 transition-colors"
+          >
+            See sample reports
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
       </div>
     </section>
   )
