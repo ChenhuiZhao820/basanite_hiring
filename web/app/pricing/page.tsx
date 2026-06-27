@@ -273,6 +273,7 @@ function SlimNav() {
           <span className="font-display text-basanite-900 text-lg">Basanite</span>
         </Link>
         <div className="flex items-center gap-3 sm:gap-5 text-sm text-basanite-600">
+          <Link href="/compare" className="hover:text-basanite-900 transition-colors">Comparisons</Link>
           <Link href="/about" className="hidden sm:inline hover:text-basanite-900 transition-colors">About</Link>
           <Link href="/faq" className="hidden sm:inline hover:text-basanite-900 transition-colors">FAQ</Link>
           <a
