@@ -43,6 +43,16 @@ function StoneTexture() {
 // ─── Nav ─────────────────────────────────────────────────────────────────
 function Nav() {
   const [banner, setBanner] = useState<{ kind: 'error' | 'info'; msg: string } | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const navLinks: { href: string; label: string }[] = [
+    { href: '#how-it-works', label: 'How it works' },
+    { href: '/methodology', label: 'Methodology' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/about', label: 'About' },
+    { href: '/blog', label: 'Blog' },
+    { href: '/faq', label: 'FAQ' },
+  ]
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -90,12 +100,11 @@ function Nav() {
           <span className="font-display text-basanite-900 text-lg">Basanite</span>
         </a>
         <div className="hidden sm:flex items-center gap-7 text-sm text-basanite-600">
-          <a href="#how-it-works" className="hover:text-basanite-900 transition-colors">How it works</a>
-          <a href="/methodology" className="hover:text-basanite-900 transition-colors">Methodology</a>
-          <a href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</a>
-          <a href="/about" className="hover:text-basanite-900 transition-colors">About</a>
-          <a href="/blog" className="hover:text-basanite-900 transition-colors">Blog</a>
-          <a href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</a>
+          {navLinks.map(link => (
+            <a key={link.href} href={link.href} className="hover:text-basanite-900 transition-colors">
+              {link.label}
+            </a>
+          ))}
         </div>
         <div className="flex items-center gap-3">
           <a
@@ -108,12 +117,71 @@ function Nav() {
           </a>
           <a
             href="/login"
-            className="text-sm font-medium text-basanite-600 hover:text-basanite-900 transition-colors duration-200"
+            className="hidden sm:inline-flex text-sm font-medium text-basanite-600 hover:text-basanite-900 transition-colors duration-200"
           >
             Sign in
           </a>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(open => !open)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            className="sm:hidden -mr-1 inline-flex items-center justify-center p-2 text-basanite-700 hover:text-basanite-900 transition-colors"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              {menuOpen ? (
+                <>
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="6" y1="18" x2="18" y2="6" />
+                </>
+              ) : (
+                <>
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="17" x2="20" y2="17" />
+                </>
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {menuOpen && (
+        <div
+          id="mobile-menu"
+          className="sm:hidden border-t border-earth-200/60 bg-earth-50/95 backdrop-blur-md"
+        >
+          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col text-base text-basanite-700">
+            {navLinks.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="py-2.5 border-b border-earth-200/40 last:border-0 hover:text-basanite-900 transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className="py-2.5 font-medium hover:text-basanite-900 transition-colors"
+            >
+              Sign in
+            </a>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
