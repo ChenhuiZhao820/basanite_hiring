@@ -313,6 +313,61 @@ function NumbersSection() {
 }
 
 // ─── Section 3 · ROI calculator ──────────────────────────────────────────
+// Editable value display: shows the formatted figure, turns into a free-type
+// field on focus, and commits a clamped value on blur / Enter, so users can
+// type a number in directly instead of only dragging the slider.
+function ROIValueInput({
+  value,
+  min,
+  max,
+  onChange,
+  prefix = '',
+  ariaLabel,
+}: {
+  value: number
+  min: number
+  max: number
+  onChange: (v: number) => void
+  prefix?: string
+  ariaLabel: string
+}) {
+  const [draft, setDraft] = useState<string | null>(null)
+  const display = draft ?? value.toLocaleString('en-GB')
+
+  const commit = () => {
+    if (draft === null) return
+    const digits = draft.replace(/[^0-9]/g, '')
+    const next =
+      digits === '' ? value : Math.min(max, Math.max(min, Number(digits)))
+    onChange(next)
+    setDraft(null)
+  }
+
+  return (
+    <span className="font-display text-2xl text-gold-400 tabular-nums">
+      {prefix}
+      <input
+        type="text"
+        inputMode="numeric"
+        aria-label={ariaLabel}
+        value={display}
+        onChange={e => setDraft(e.target.value)}
+        onFocus={e => {
+          setDraft(value.toString())
+          const el = e.currentTarget
+          requestAnimationFrame(() => el.select())
+        }}
+        onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') e.currentTarget.blur()
+        }}
+        className="bg-transparent text-right text-gold-400 tabular-nums outline-none border-b border-transparent focus:border-gold-500/50 transition-colors"
+        style={{ width: `${Math.max(display.length, 2) + 1}ch` }}
+      />
+    </span>
+  )
+}
+
 function ROICalculator() {
   const ref = useReveal()
   const [n, setN] = useState(40)
@@ -344,13 +399,16 @@ function ROICalculator() {
 
         <div className="space-y-12">
           <div>
-            <label
-              htmlFor="roi-engineers"
-              className="flex items-baseline justify-between text-base text-earth-300 mb-4"
-            >
-              <span>How many engineers do you hire a year?</span>
-              <span className="font-display text-2xl text-gold-400 tabular-nums">{n}</span>
-            </label>
+            <div className="flex items-baseline justify-between text-base text-earth-300 mb-4">
+              <label htmlFor="roi-engineers">How many engineers do you hire a year?</label>
+              <ROIValueInput
+                value={n}
+                min={1}
+                max={200}
+                onChange={setN}
+                ariaLabel="Engineers hired per year"
+              />
+            </div>
             <input
               id="roi-engineers"
               type="range"
@@ -368,19 +426,21 @@ function ROICalculator() {
           </div>
 
           <div>
-            <label
-              htmlFor="roi-salary"
-              className="flex items-baseline justify-between text-base text-earth-300 mb-4"
-            >
-              <span>Average base salary (&pound;)?</span>
-              <span className="font-display text-2xl text-gold-400 tabular-nums">
-                &pound;{s.toLocaleString('en-GB')}
-              </span>
-            </label>
+            <div className="flex items-baseline justify-between text-base text-earth-300 mb-4">
+              <label htmlFor="roi-salary">Average base salary (&pound;)?</label>
+              <ROIValueInput
+                value={s}
+                min={25000}
+                max={250000}
+                onChange={setS}
+                prefix="£"
+                ariaLabel="Average base salary in pounds"
+              />
+            </div>
             <input
               id="roi-salary"
               type="range"
-              min={40000}
+              min={25000}
               max={250000}
               step={5000}
               value={s}
@@ -388,7 +448,7 @@ function ROICalculator() {
               className="roi-slider w-full"
             />
             <div className="flex justify-between text-xs text-earth-500 mt-2">
-              <span>&pound;40,000</span>
+              <span>&pound;25,000</span>
               <span>&pound;250,000</span>
             </div>
           </div>
