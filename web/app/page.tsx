@@ -49,6 +49,7 @@ function Nav() {
     { href: '#how-it-works', label: 'How it works' },
     { href: '/methodology', label: 'Methodology' },
     { href: '/pricing', label: 'Pricing' },
+    { href: '/compare', label: 'Comparisons' },
     { href: '/about', label: 'About' },
     { href: '/blog', label: 'Blog' },
     { href: '/faq', label: 'FAQ' },
