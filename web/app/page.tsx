@@ -240,36 +240,59 @@ function Hero() {
   )
 }
 
-// ─── Stripe Startups badge ───────────────────────────────────────────────
-function StripeStartupsBadge() {
+// ─── Social proof: backed & recognised by ────────────────────────────────
+const SOCIAL_PROOF: { src: string; alt: string; caption: string; logoClass: string }[] = [
+  {
+    src: '/logos/yc.svg',
+    alt: 'Y Combinator',
+    caption: 'Top 10% of S26 applicants',
+    logoClass: 'h-9 sm:h-10',
+  },
+  {
+    src: '/logos/redwood-founders.svg',
+    alt: 'Redwood Founders',
+    caption: 'Backed by Redwood Founders',
+    logoClass: 'h-9 sm:h-10',
+  },
+  {
+    src: '/logos/university-of-manchester.png',
+    alt: 'The University of Manchester',
+    caption: 'Masood Entrepreneurship Centre',
+    logoClass: 'h-8 sm:h-9',
+  },
+  {
+    src: '/logos/stripe.svg',
+    alt: 'Stripe',
+    caption: 'Partnered with Stripe VC',
+    logoClass: 'h-7 sm:h-8',
+  },
+]
+
+function SocialProof() {
   return (
     <section
-      aria-label="Partnered with Stripe VC"
-      className="bg-white border-b border-earth-200/80 py-10"
+      aria-label="Backed and recognised by Y Combinator, Redwood Founders, the University of Manchester Masood Entrepreneurship Centre, and Stripe"
+      className="bg-white border-b border-earth-200/80 py-12"
     >
-      <div className="max-w-6xl mx-auto px-6 flex items-baseline justify-center gap-3">
-        <span className="text-basanite-600 text-base sm:text-lg">
-          Partnered with
-        </span>
-        <img
-          src="/logos/stripe.svg"
-          alt="Stripe"
-          className="h-9 sm:h-10 w-auto select-none translate-y-[6px]"
-          draggable={false}
-        />
-        <span
-          className="font-semibold"
-          style={{
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", "Segoe UI", Arial, sans-serif',
-            color: '#635BFF',
-            fontSize: '24px',
-            letterSpacing: '0.01em',
-            marginLeft: '-4px',
-          }}
-        >
-          VC
-        </span>
+      <div className="max-w-6xl mx-auto px-6">
+        <p className="text-center text-basanite-500 text-[11px] font-semibold uppercase tracking-[0.2em] mb-8">
+          Backed &amp; recognised by
+        </p>
+        <div className="flex flex-wrap items-start justify-center gap-x-10 sm:gap-x-16 gap-y-8">
+          {SOCIAL_PROOF.map(item => (
+            <div key={item.alt} className="flex w-40 flex-col items-center gap-2.5 text-center">
+              <div className="flex h-10 items-center">
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className={`${item.logoClass} w-auto select-none`}
+                  draggable={false}
+                />
+              </div>
+              <span className="text-basanite-600 text-xs leading-snug">{item.caption}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -1294,7 +1317,7 @@ export default function HomePage() {
       <AuthFragmentHandler />
       <Nav />
       <Hero />
-      <StripeStartupsBadge />
+      <SocialProof />
       <ValueProp />
       <NumbersSection />
       <ROICalculator />
