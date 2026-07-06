@@ -212,11 +212,13 @@ function Hero() {
             The technical layer of the interview, rebuilt for the AI era
           </p>
           <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
-            Test genuine capability,<br />
-            <span className="text-gold-400">not performed competence.</span>
+            Basanite is your new<br />
+            <span className="text-gold-400">first interview round.</span>
           </h1>
           <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            The technical interview is broken. Coding tests have collapsed into a cheating arms race, and the capability that actually matters — engineering effectiveness in an AI-augmented workflow — is not measured anywhere. Basanite is the technical layer rebuilt for the AI era.
+            Your current screens can be{' '}
+            <strong className="font-semibold text-earth-50">passed with an AI in the other tab</strong>, and none of them measures the thing you&rsquo;re actually hiring for. Basanite interviews your candidates live, adapting in real time, and hands your team an{' '}
+            <strong className="font-semibold text-earth-50">evidence-backed briefing</strong>{' '}on each. Your team meet only the shortlist. You still decide.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
