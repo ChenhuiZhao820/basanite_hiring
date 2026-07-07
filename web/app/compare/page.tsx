@@ -117,11 +117,12 @@ function Cell({ cell }: { cell: Cell }) {
 }
 
 function NodeBox({ node }: { node: Node }) {
+  // Colours read on the dark (bg-basanite-900) "Where Basanite fits" band.
   const box = node.gold
     ? 'border-gold-500 bg-gold-500 text-basanite-900 font-medium'
     : node.struck
-      ? 'border-earth-300 text-basanite-400 line-through'
-      : 'border-basanite-300 text-basanite-800 bg-white'
+      ? 'border-earth-300/25 text-earth-400 line-through'
+      : 'border-earth-300/40 text-earth-100'
   return (
     <div className="flex flex-col items-center gap-1.5 max-w-[190px]">
       <div className={`border px-3.5 py-2.5 text-sm text-center leading-snug ${box}`}>{node.label}</div>
@@ -130,7 +131,7 @@ function NodeBox({ node }: { node: Node }) {
           className="text-xs italic text-center leading-snug"
           style={{ color: node.gold ? undefined : RED_BROWN }}
         >
-          <span className={node.gold ? 'text-gold-700 not-italic font-medium' : undefined}>{node.caption}</span>
+          <span className={node.gold ? 'text-gold-400 not-italic font-medium' : undefined}>{node.caption}</span>
         </span>
       )}
     </div>
@@ -152,7 +153,7 @@ function PipelineRow({ label, labelClass, nodes, note }: { label: string; labelC
             </Fragment>
           ))}
         </div>
-        <p className="mt-4 text-sm italic text-basanite-500 max-w-2xl">{note}</p>
+        <p className="mt-4 text-sm italic text-earth-300 max-w-2xl">{note}</p>
       </div>
     </div>
   )
@@ -193,21 +194,23 @@ export default function ComparePage() {
 
         {/* Block 1 — process pipeline */}
         <section className="mb-16" aria-label="The process, before and after Basanite">
-          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-8">Where Basanite fits</h2>
-          <div className="border border-earth-300/60 bg-white p-6 sm:p-8 space-y-10">
-            <PipelineRow
-              label="Today"
-              labelClass="text-basanite-500"
-              nodes={TODAY_NODES}
-              note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
-            />
-            <div className="border-t border-earth-200" />
-            <PipelineRow
-              label="With Basanite"
-              labelClass="text-gold-700"
-              nodes={BASANITE_NODES}
-              note="Your engineers interview only the shortlist — briefing in hand. You still decide."
-            />
+          <div className="bg-basanite-900 p-8 sm:p-10">
+            <h2 className="font-display text-2xl sm:text-3xl text-earth-50 mb-8">Where Basanite fits</h2>
+            <div className="space-y-10">
+              <PipelineRow
+                label="Today"
+                labelClass="text-earth-400"
+                nodes={TODAY_NODES}
+                note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
+              />
+              <div className="border-t border-earth-300/15" />
+              <PipelineRow
+                label="With Basanite"
+                labelClass="text-gold-400"
+                nodes={BASANITE_NODES}
+                note="Your engineers interview only the shortlist — briefing in hand. You still decide."
+              />
+            </div>
           </div>
         </section>
 
