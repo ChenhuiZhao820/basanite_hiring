@@ -964,63 +964,6 @@ function HowItWorks() {
   )
 }
 
-// ─── Philosophy ──────────────────────────────────────────────────────────
-const PRINCIPLES = [
-  {
-    title: 'Depth over breadth',
-    body: 'Each layer of the assessment exists to move one level deeper into signal quality. A candidate who answers fluently at the surface should encounter ground that shifts beneath them at the next layer. The edges of real ability are blurry. Performed ability has no edges.',
-  },
-  {
-    title: 'Structure as a fairness mechanism',
-    body: 'By anchoring every evaluation to consistent frameworks and explicit scoring criteria, a self taught engineer without institutional pedigree can be seen as clearly as one from a target university. Both are asked the same questions, in the same spirit, with the same depth of follow up.',
-  },
-  {
-    title: 'Honest about what AI can and cannot do',
-    body: 'Basanite flags where human expertise is required, produces quotable evidence rather than opaque scores, and positions itself as infrastructure that makes human judgment better, not the mechanism that replaces it.',
-  },
-  {
-    title: 'Evaluation as a two way mirror',
-    body: 'The best hiring processes leave candidates with a clearer understanding of themselves. Every assessment strategy deployed by Basanite can be honestly explained to the candidate it is applied to.',
-  },
-]
-
-function PrincipleCard({ title, body }: { title: string; body: string }) {
-  const ref = useReveal()
-  return (
-    <div ref={ref} className="reveal card-hover border border-earth-300/20 p-8 bg-basanite-800/40 backdrop-blur-sm">
-      <h3 className="font-display text-gold-400 text-lg mb-3">{title}</h3>
-      <p className="text-earth-300/80 text-sm leading-relaxed">{body}</p>
-    </div>
-  )
-}
-
-function Philosophy() {
-  const ref = useReveal()
-  return (
-    <section id="philosophy" className="relative py-24 sm:py-32 px-6 bg-basanite-900 overflow-hidden">
-      <StoneTexture />
-      <div className="relative z-10 max-w-5xl mx-auto">
-        <div ref={ref} className="reveal mb-14">
-          <p className="font-display italic text-gold-400/80 text-xl sm:text-2xl md:text-3xl mb-10 leading-snug max-w-3xl">
-            Most hiring tools measure how well someone can <span className="not-italic text-earth-200">approximate</span> a good candidate.
-            <br />
-            Basanite measures whether they <span className="not-italic text-gold-400">actually are one</span>.
-          </p>
-          <p className="text-gold-500 text-xs font-semibold uppercase tracking-[0.2em] mb-3">Design philosophy</p>
-          <h2 className="font-display text-earth-50 text-3xl sm:text-4xl mb-4">Assess genuine capability, not performed competence</h2>
-          <p className="text-earth-300 max-w-2xl leading-relaxed">
-            The central conviction behind every design decision at Basanite: most hiring tools are optimised for the wrong signal. They measure how well someone can approximate the idea of a good candidate, rather than whether they actually are one.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {PRINCIPLES.map(p => <PrincipleCard key={p.title} {...p} />)}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 // ─── For Hirers / For Candidates ─────────────────────────────────────────
 function ForBoth() {
   const ref = useReveal()
@@ -1327,7 +1270,6 @@ export default function HomePage() {
       <WhatWeMeasure />
       <DemoVideo />
       <HowItWorks />
-      <Philosophy />
       <ForBoth />
       <Team />
       <WaitlistCTA />
