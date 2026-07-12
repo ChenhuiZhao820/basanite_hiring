@@ -372,31 +372,28 @@ function WhereBasaniteFits() {
       className="bg-earth-50 py-20 sm:py-28 px-6"
     >
       <div ref={ref} className="reveal max-w-5xl mx-auto">
-        <div className="max-w-3xl mb-10">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.25em] mb-4">The process</p>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-basanite-900 leading-[1.05] mb-4">
-            Where Basanite fits
-          </h2>
-          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
-            One adaptive round replaces the early screens candidates can already pass with AI, so your
-            engineers only ever meet the shortlist.
-          </p>
-        </div>
-        <div className="bg-basanite-900 p-8 sm:p-10">
-          <div className="space-y-10">
-            <PipelineRow
-              label="Today"
-              labelClass="text-earth-400"
-              nodes={TODAY_PIPELINE}
-              note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
-            />
-            <div className="border-t border-earth-300/15" />
-            <PipelineRow
-              label="With Basanite"
-              labelClass="text-gold-400"
-              nodes={BASANITE_PIPELINE}
-              note="Your engineers interview only the shortlist, briefing in hand. You still decide."
-            />
+        <div className="relative overflow-hidden bg-basanite-900 p-8 sm:p-12 lg:p-14">
+          <StoneTexture />
+          <div className="relative z-10">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-earth-50 leading-tight">
+              Where Basanite fits
+            </h2>
+            <div className="mt-5 mb-10 h-px w-14 bg-gold-500" />
+            <div className="space-y-10">
+              <PipelineRow
+                label="Today"
+                labelClass="text-earth-400"
+                nodes={TODAY_PIPELINE}
+                note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
+              />
+              <div className="border-t border-earth-300/15" />
+              <PipelineRow
+                label="With Basanite"
+                labelClass="text-gold-400"
+                nodes={BASANITE_PIPELINE}
+                note="Your engineers interview only the shortlist, briefing in hand. You still decide."
+              />
+            </div>
           </div>
         </div>
       </div>
