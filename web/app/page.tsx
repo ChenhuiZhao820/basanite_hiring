@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
 import { AuthFragmentHandler } from '@/components/AuthFragmentHandler'
@@ -294,6 +294,110 @@ function SocialProof() {
               <span className="text-basanite-600 text-xs leading-snug">{item.caption}</span>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── Where Basanite fits · process pipeline ──────────────────────────────
+// Mirrors the "Where Basanite fits" band on /compare: two horizontal
+// pipelines (today's rounds vs. the single Basanite round) on a dark stone
+// band. Colours are tuned to read on bg-basanite-900.
+const PIPELINE_RED_BROWN = '#c98a6b'
+
+type PipelineNode = { label: string; struck?: boolean; gold?: boolean; caption?: string }
+
+const TODAY_PIPELINE: PipelineNode[] = [
+  { label: 'Phone screen', struck: true, caption: 'rehearsable' },
+  { label: 'Coding test', struck: true, caption: 'AI passes it' },
+  { label: 'First tech interview', struck: true, caption: 'wrong signal' },
+  { label: 'Final rounds' },
+  { label: 'Offer' },
+]
+
+const BASANITE_PIPELINE: PipelineNode[] = [
+  { label: '◆ Basanite round: interviews all, briefs you', gold: true, caption: 'adaptive · can’t be rehearsed · measures work-with-AI' },
+  { label: 'Final rounds (yours, briefed)' },
+  { label: 'Offer' },
+]
+
+function PipelineNodeBox({ node }: { node: PipelineNode }) {
+  const box = node.gold
+    ? 'border-gold-500 bg-gold-500 text-basanite-900 font-medium'
+    : node.struck
+      ? 'border-earth-300/25 text-earth-400 line-through'
+      : 'border-earth-300/40 text-earth-100'
+  return (
+    <div className="flex flex-col items-center gap-1.5 max-w-[190px]">
+      <div className={`border px-3.5 py-2.5 text-sm text-center leading-snug ${box}`}>{node.label}</div>
+      {node.caption && (
+        <span
+          className="text-xs italic text-center leading-snug"
+          style={{ color: node.gold ? undefined : PIPELINE_RED_BROWN }}
+        >
+          <span className={node.gold ? 'text-gold-400 not-italic font-medium' : undefined}>{node.caption}</span>
+        </span>
+      )}
+    </div>
+  )
+}
+
+function PipelineRow({ label, labelClass, nodes, note }: { label: string; labelClass: string; nodes: PipelineNode[]; note: string }) {
+  return (
+    <div className="flex flex-col min-[880px]:flex-row min-[880px]:items-start gap-3 min-[880px]:gap-5">
+      <div className={`shrink-0 min-[880px]:w-24 min-[880px]:pt-3 text-[11px] font-semibold uppercase tracking-[0.18em] ${labelClass}`}>
+        {label}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-start gap-y-3">
+          {nodes.map((n, i) => (
+            <Fragment key={n.label}>
+              {i > 0 && <span aria-hidden="true" className="self-start pt-3 px-2 text-earth-400 select-none">&rarr;</span>}
+              <PipelineNodeBox node={n} />
+            </Fragment>
+          ))}
+        </div>
+        <p className="mt-4 text-sm italic text-earth-300 max-w-2xl">{note}</p>
+      </div>
+    </div>
+  )
+}
+
+function WhereBasaniteFits() {
+  const ref = useReveal()
+  return (
+    <section
+      aria-label="Where Basanite fits in your hiring process"
+      className="bg-earth-50 py-20 sm:py-28 px-6"
+    >
+      <div ref={ref} className="reveal max-w-5xl mx-auto">
+        <div className="max-w-3xl mb-10">
+          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.25em] mb-4">The process</p>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-basanite-900 leading-[1.05] mb-4">
+            Where Basanite fits
+          </h2>
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
+            One adaptive round replaces the early screens candidates can already pass with AI, so your
+            engineers only ever meet the shortlist.
+          </p>
+        </div>
+        <div className="bg-basanite-900 p-8 sm:p-10">
+          <div className="space-y-10">
+            <PipelineRow
+              label="Today"
+              labelClass="text-earth-400"
+              nodes={TODAY_PIPELINE}
+              note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
+            />
+            <div className="border-t border-earth-300/15" />
+            <PipelineRow
+              label="With Basanite"
+              labelClass="text-gold-400"
+              nodes={BASANITE_PIPELINE}
+              note="Your engineers interview only the shortlist, briefing in hand. You still decide."
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -1263,6 +1367,7 @@ export default function HomePage() {
       <Nav />
       <Hero />
       <SocialProof />
+      <WhereBasaniteFits />
       <ValueProp />
       <NumbersSection />
       <ROICalculator />
