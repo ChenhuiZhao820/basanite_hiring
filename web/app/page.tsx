@@ -301,9 +301,10 @@ function SocialProof() {
 }
 
 // ─── Where Basanite fits · process pipeline ──────────────────────────────
-// Mirrors the "Where Basanite fits" band on /compare: two horizontal
-// pipelines (today's rounds vs. the single Basanite round) on a dark stone
-// band. Colours are tuned to read on bg-basanite-900.
+// Two horizontal pipelines (today's rounds vs. the single Basanite round),
+// laid out on a light, airy band so the section reads as part of the
+// marketing surface rather than a dark box floating on white. The gold
+// Basanite node is the focal point; struck rounds fade back.
 const PIPELINE_RED_BROWN = '#c98a6b'
 
 type PipelineNode = { label: string; struck?: boolean; gold?: boolean; caption?: string }
@@ -324,19 +325,21 @@ const BASANITE_PIPELINE: PipelineNode[] = [
 
 function PipelineNodeBox({ node }: { node: PipelineNode }) {
   const box = node.gold
-    ? 'border-gold-500 bg-gold-500 text-basanite-900 font-medium'
+    ? 'border-gold-500 bg-gold-500 text-basanite-900 font-medium shadow-sm shadow-gold-600/20'
     : node.struck
-      ? 'border-earth-300/25 text-earth-400 line-through'
-      : 'border-earth-300/40 text-earth-100'
+      ? 'border-earth-300 text-basanite-400 line-through'
+      : 'border-basanite-200 bg-white text-basanite-800'
   return (
-    <div className="flex flex-col items-center gap-1.5 max-w-[190px]">
-      <div className={`border px-3.5 py-2.5 text-sm text-center leading-snug ${box}`}>{node.label}</div>
+    <div className="flex flex-col items-center gap-2 max-w-[190px]">
+      <div className={`border px-3.5 py-2.5 text-sm text-center leading-snug flex items-center justify-center min-h-[3.25rem] ${box}`}>
+        {node.label}
+      </div>
       {node.caption && (
         <span
           className="text-xs italic text-center leading-snug"
           style={{ color: node.gold ? undefined : PIPELINE_RED_BROWN }}
         >
-          <span className={node.gold ? 'text-gold-400 not-italic font-medium' : undefined}>{node.caption}</span>
+          <span className={node.gold ? 'text-gold-700 not-italic font-medium' : undefined}>{node.caption}</span>
         </span>
       )}
     </div>
@@ -346,19 +349,19 @@ function PipelineNodeBox({ node }: { node: PipelineNode }) {
 function PipelineRow({ label, labelClass, nodes, note }: { label: string; labelClass: string; nodes: PipelineNode[]; note: string }) {
   return (
     <div className="flex flex-col min-[880px]:flex-row min-[880px]:items-start gap-3 min-[880px]:gap-5">
-      <div className={`shrink-0 min-[880px]:w-24 min-[880px]:pt-3 text-[11px] font-semibold uppercase tracking-[0.18em] ${labelClass}`}>
+      <div className={`shrink-0 min-[880px]:w-24 min-[880px]:pt-4 text-[11px] font-semibold uppercase tracking-[0.18em] ${labelClass}`}>
         {label}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-start gap-y-3">
           {nodes.map((n, i) => (
             <Fragment key={n.label}>
-              {i > 0 && <span aria-hidden="true" className="self-start pt-3 px-2 text-earth-400 select-none">&rarr;</span>}
+              {i > 0 && <span aria-hidden="true" className="self-start pt-4 px-2 text-basanite-300 select-none">&rarr;</span>}
               <PipelineNodeBox node={n} />
             </Fragment>
           ))}
         </div>
-        <p className="mt-4 text-sm italic text-earth-300 max-w-2xl">{note}</p>
+        <p className="mt-4 text-sm italic text-basanite-500 max-w-2xl">{note}</p>
       </div>
     </div>
   )
@@ -369,31 +372,33 @@ function WhereBasaniteFits() {
   return (
     <section
       aria-label="Where Basanite fits in your hiring process"
-      className="bg-earth-50 py-20 sm:py-28 px-6"
+      className="bg-gradient-to-b from-white to-earth-100 py-24 sm:py-28 px-6"
     >
       <div ref={ref} className="reveal max-w-5xl mx-auto">
-        <div className="relative overflow-hidden bg-basanite-900 p-8 sm:p-12 lg:p-14">
-          <StoneTexture />
-          <div className="relative z-10">
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-earth-50 leading-tight">
-              Where Basanite fits
-            </h2>
-            <div className="mt-5 mb-10 h-px w-14 bg-gold-500" />
-            <div className="space-y-10">
-              <PipelineRow
-                label="Today"
-                labelClass="text-earth-400"
-                nodes={TODAY_PIPELINE}
-                note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
-              />
-              <div className="border-t border-earth-300/15" />
-              <PipelineRow
-                label="With Basanite"
-                labelClass="text-gold-400"
-                nodes={BASANITE_PIPELINE}
-                note="Your engineers interview only the shortlist, briefing in hand. You still decide."
-              />
-            </div>
+        <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.28em] mb-4">The process</p>
+        <h2 className="font-display text-basanite-900 text-4xl sm:text-5xl leading-[1.05]">
+          Where Basanite fits
+        </h2>
+        <div className="mt-5 mb-6 h-px w-14 bg-gold-600" />
+        <p className="text-basanite-600 text-lg leading-relaxed max-w-2xl">
+          One adaptive round replaces the screens candidates can already pass with AI, so your engineers
+          only meet the shortlist.
+        </p>
+        <div className="mt-14 border-l-2 border-gold-500/70 pl-6 sm:pl-10">
+          <div className="space-y-10">
+            <PipelineRow
+              label="Today"
+              labelClass="text-basanite-400"
+              nodes={TODAY_PIPELINE}
+              note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
+            />
+            <div className="border-t border-basanite-200" />
+            <PipelineRow
+              label="With Basanite"
+              labelClass="text-gold-700"
+              nodes={BASANITE_PIPELINE}
+              note="Your engineers interview only the shortlist, briefing in hand. You still decide."
+            />
           </div>
         </div>
       </div>
