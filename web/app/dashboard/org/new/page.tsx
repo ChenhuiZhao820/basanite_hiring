@@ -52,7 +52,7 @@ export default function NewOrgPage() {
             onChange={e => setName(e.target.value)}
             required
             maxLength={200}
-            placeholder="Maxwell Bond"
+            placeholder="Acme Inc"
             className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
           />
         </div>

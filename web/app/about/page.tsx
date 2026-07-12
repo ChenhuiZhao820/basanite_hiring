@@ -57,7 +57,7 @@ const TIMELINE = [
   { date: 'April 2026', headline: 'MVP shipped', body: 'End-to-end working product: hirer dashboard, candidate portal, live 10–20 minute AI voice interview, dual reports grounded in candidate quotes. Built in week one.' },
   { date: 'May 2026', headline: '50 trial users', body: 'University of Manchester CS students, Manchester technology recruiters, and early hirers running mock interviews. Surveyed feedback drove iteration two.' },
   { date: 'May 2026', headline: 'Stripe VC accelerator', body: 'Accepted into the Stripe internal accelerator alongside ongoing applications to YC and VFA26.' },
-  { date: 'May 2026', headline: 'First paid pilot', body: 'Verbal commitment from Maxwell Bond — a seven-figure-revenue technology recruitment firm in Manchester. First contract worth ~£40k ARR.' },
+  { date: 'May 2026', headline: 'First paid pilot', body: 'Verbal commitment from a seven-figure-revenue technology recruitment firm in Manchester. First contract worth ~£40k ARR.' },
   { date: '2026 →', headline: 'Iteration three', body: 'The AI Collaboration Workbench: a sandboxed VS Code environment where candidates ship a real ticket alongside the AI agent of their choice. The dimension no other interview measures.' },
 ]
 
