@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Basanite — Test Genuine Technical Capability'
+export const alt = 'Basanite — Know Your Candidates Better'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -45,7 +45,7 @@ export default async function OpenGraphImage() {
               marginBottom: 24,
             }}
           >
-            Test genuine capability,
+            Hire with confidence.
           </div>
           <div
             style={{
@@ -56,7 +56,7 @@ export default async function OpenGraphImage() {
               marginBottom: 40,
             }}
           >
-            not performed competence.
+            Know your candidates better.
           </div>
           <div
             style={{
@@ -66,7 +66,7 @@ export default async function OpenGraphImage() {
               maxWidth: 900,
             }}
           >
-            AI-native technical interviews. A unique conversation, built from every candidate&apos;s own CV.
+            AI-augmented interviews that improve hiring insight, accuracy, and confidence.
           </div>
         </div>
 

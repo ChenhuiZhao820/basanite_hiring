@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     // Server pages set `title: 'X'` and the rendered title becomes "Basanite - X".
     // Client pages set `useDocumentTitle('X')` from `lib/useDocumentTitle.ts`.
     template: `${SITE_NAME} — %s`,
-    default: `${SITE_NAME}, Test Genuine Technical Capability`,
+    default: `${SITE_NAME}, Know Your Candidates Better`,
   },
   description: SITE_DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: '/' },
   openGraph: {
-    title: `${SITE_NAME}, Test Genuine Technical Capability`,
+    title: `${SITE_NAME}, Know Your Candidates Better`,
     description: SITE_DEFAULT_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME}, Test Genuine Technical Capability`,
+    title: `${SITE_NAME}, Know Your Candidates Better`,
     description: SITE_DEFAULT_DESCRIPTION,
   },
   robots: {

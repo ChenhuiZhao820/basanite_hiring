@@ -209,16 +209,14 @@ function Hero() {
             <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
           </svg>
           <p className="text-gold-400 text-[10px] sm:text-xs uppercase tracking-[0.28em] font-semibold mb-6">
-            The technical layer of the interview, rebuilt for the AI era
+            AI-augmented interviews that improve hiring insight, accuracy, and confidence
           </p>
           <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
-            Basanite is your new<br />
-            <span className="text-gold-400">first interview round.</span>
+            Hire with confidence.<br />
+            <span className="text-gold-400">Know your candidates better.</span>
           </h1>
           <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            Your current screens can be{' '}
-            <strong className="font-semibold text-earth-50">passed with an AI in the other tab</strong>, and none of them measures the thing you&rsquo;re actually hiring for. Basanite interviews your candidates live, adapting in real time, and hands your team an{' '}
-            <strong className="font-semibold text-earth-50">evidence-backed briefing</strong>{' '}on each. Your team meet only the shortlist. You still decide.
+            Basanite exists to improve hiring accuracy. An adaptive AI builds a bespoke interview from each candidate&rsquo;s CV, then delivers an evidence-backed briefing on their strengths, limitations, and technical depth — before you meet them. Your hiring decision, but with better evidence. Fewer interview rounds and a shorter time-to-hire come as standard.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
@@ -1079,11 +1077,15 @@ function ForBoth() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           <div className="card-hover border border-earth-300/60 bg-white p-8 sm:p-10">
             <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-4">For hiring teams</p>
-            <h3 className="font-display text-basanite-900 text-2xl mb-4">Replace the first three rounds</h3>
+            <h3 className="font-display text-basanite-900 text-2xl mb-4">Your hiring decision, with better evidence</h3>
             <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed">
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                One Basanite deployment replaces 1 to 3 full time recruiters doing screening and first round assessment
+                An interview briefing that gives your team deeper insight into every candidate — enhancing the rest of your interview process, not just adding another screen
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-gold-500 mt-0.5">&#9670;</span>
+                Decision-validation that improves hiring confidence while shortening your time-to-hire — fewer rounds, and your engineers stay on the projects that need them
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
@@ -1256,7 +1258,7 @@ const CTA_STATS = [
   { value: '8', label: 'metacognitive dimensions' },
   { value: '2', label: 'rounds: think + do' },
   { value: '100%', label: 'quote-grounded scores' },
-  { value: '3', label: 'screening rounds replaced' },
+  { value: 'Fewer', label: 'rounds, better accuracy' },
 ]
 
 function WaitlistCTA() {
@@ -1276,7 +1278,7 @@ function WaitlistCTA() {
 
         <div className="max-w-xl mx-auto text-center">
           <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
-            Ready to test what matters?
+            Ready to hire with confidence?
           </h2>
           <p className="text-earth-300 text-lg mb-10 leading-relaxed">
             Get early access for your team. Book a 20-minute intro call and we&rsquo;ll walk you through the platform live.
