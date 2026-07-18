@@ -1,0 +1,10 @@
+{
+  "name": "Alex Rivera",
+  "experience_path": "path_a",
+  "anchor_points": [
+    "4 years at a mid-stage fintech, most recently tech lead on the payments platform team",
+    "Led the migration of the settlement service from a single Postgres instance to a sharded setup handling ~2x prior peak volume",
+    "On-call rotation for the payments critical path for 3 years; participated in 5 post-incident reviews as writer",
+    "BSc Computer Science, 2020"
+  ]
+}

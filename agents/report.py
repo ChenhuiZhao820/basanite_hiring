@@ -21,7 +21,7 @@ _MAX_TURN_CHARS = 10000
 
 def _load_prompt(name: str) -> str:
     path = os.path.join(PROMPT_DIR, f"{name}.yaml")
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     return data.get("system", "")
 
@@ -241,8 +241,13 @@ FULL INTERVIEW TRANSCRIPT:
 
 Now produce the hirer report as JSON, following this exact structure:
 {{
+  "headline_summary": "1-2 sentence executive summary that captures who this candidate is and the primary tension in their profile. A reader with 15 seconds should understand the core call from this alone. Do NOT use hire/no-hire language.",
   "recommendation": "strongly_recommended|recommended|can_progress|not_recommended|strongly_not_recommended",
   "recommendation_rationale": "1-3 sentences explaining the routing call, grounded in the dimension scores below. Do not use hire/no-hire language. This is a next-round routing call.",
+  "at_a_glance": {{
+    "tags": ["4-6 short pill labels, each 2-4 words, capturing the standout signals — e.g. 'Narrow RAG depth', 'Honest about gaps', 'No voice-agent experience'. Mix positive and negative where applicable."],
+    "summary": "3-4 sentences elaborating on the tags. Skimming the tags plus this paragraph should tell a hirer whether the rest of the report is worth reading."
+  }},
   "scoring_summary": [
     {{"dimension": "...", "score": 1-5, "quotation_basis": "verbatim quote", "notes": "..."}}
   ],
@@ -252,7 +257,7 @@ Now produce the hirer report as JSON, following this exact structure:
   "capability_map": {{
     "demonstrated_depth": ["areas with genuine depth"],
     "surface_fluency": ["areas fluent but shallow"],
-    "blind_spots": ["suspected blind spots with evidence"],
+    "blind_spots": ["Each blind spot MUST be formatted as 'Short label: description'. The label is 2-5 words naming the gap (e.g. 'Automation tooling (n8n, Make, Zapier)'), followed by a colon, followed by the evidence-backed description."],
     "requires_expert_verification": ["claims exceeding AI judgment range"],
     "transfer_capability": "assessment of transfer test performance if applicable"
   }},

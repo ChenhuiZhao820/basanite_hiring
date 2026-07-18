@@ -1,0 +1,46 @@
+[
+  {
+    "role": "assistant",
+    "content": "Thanks for making the time, Alex. I'd like to start with something concrete. Walk me through the settlement migration you led — specifically the moment you had to commit to sharding rather than staying on a single Postgres. What did you actually know at that point, and what were you guessing at?"
+  },
+  {
+    "role": "user",
+    "content": "Sure. So the setup was — we were at about 60% of our vertical ceiling on the primary, and the growth curve said we'd hit the ceiling in maybe four to five months. What we knew was the write pattern was mostly settlement batches, heavily keyed by merchant ID, so sharding by merchant was viable. What we were guessing at was whether the read patterns from finance's reporting jobs would fall apart under a sharded model, because those queries didn't respect the shard key. I made the call to shard anyway, and honestly the biggest thing driving it wasn't the technical analysis — it was that a vertical bump would buy us maybe six months and we'd be back in the same conversation. I'd rather take the harder path once."
+  },
+  {
+    "role": "assistant",
+    "content": "That call about the reporting jobs — you shipped despite not knowing whether they'd hold. What was your bet?"
+  },
+  {
+    "role": "user",
+    "content": "The bet was that finance was going to want a warehouse anyway within a year, and we could push the ugly cross-shard reads into a nightly ETL rather than solve them in the OLTP layer. Which — that's exactly what we did. But I want to be honest, at the time when I said that in the design review, I sounded more confident than I actually was. If finance had pushed back harder on the latency of the nightly reports, we would have been in trouble."
+  },
+  {
+    "role": "assistant",
+    "content": "Tell me about a time a mid-level engineer on your team disagreed with an architectural call you made. What happened?"
+  },
+  {
+    "role": "user",
+    "content": "The clearest one — during the shard migration, one of the mid-levels, Priya, argued we should shard by transaction_id instead of merchant_id because it would distribute writes more evenly. Technically she was right about the distribution. But merchant-keying meant we could keep a whole merchant's history on one shard, which mattered for our support tooling and for a bunch of regulatory queries. I let her run the numbers on her approach for two days because I wanted her to see where it broke down herself rather than me shutting it down in the meeting. She came back and agreed. But looking back — I probably should have just told her the regulatory constraint on day one instead of letting her spend two days on it. That was me being too hands-off."
+  },
+  {
+    "role": "assistant",
+    "content": "What's a technical belief you held two years ago that you now think was wrong?"
+  },
+  {
+    "role": "user",
+    "content": "Hmm. Two years ago I was really strong on 'always use transactions, always ACID.' I'd been burned by an eventual-consistency bug early in my career and I overcorrected. What changed my mind was actually the reporting-warehouse thing I mentioned — once I started seeing how much operational simplicity we bought by accepting bounded staleness in the read path, I realised I'd been treating consistency as a moral value rather than a design choice. Now I think about it as — what does this specific read need to see, and how stale can it tolerably be. It's less clean but it maps to how the business actually thinks about the data."
+  },
+  {
+    "role": "assistant",
+    "content": "Last one for now. You're paged at 3am. The payment authorization service is returning 500s on about 3% of requests, but only for cards issued by one specific issuing bank. What are the first three things you check, and why in that order?"
+  },
+  {
+    "role": "user",
+    "content": "First: I check whether the issuing bank's network is degraded from their side, because I've been burned by chasing our code for two hours before finding out the counterparty was down. So — network route to their auth endpoint, response codes at the network layer, is it their timeout or ours. Second: assuming it looks like our problem, I check whether we deployed anything in the last 12 hours that touched the auth path, and specifically whether it changed anything about how we serialize the card BIN, because BIN-specific failures usually mean a serialization or routing issue by BIN range. Third: if neither of those, I look at the error itself — grab three or four failing requests and read the actual stack trace, don't rely on aggregated metrics. The reason for the order is roughly cost-of-being-wrong: if I skip step one and start reading stack traces, I might spend an hour on our code before realizing it's Chase. Chase-side outages have a specific shape you can spot in ninety seconds if you look."
+  },
+  {
+    "role": "assistant",
+    "content": "Thank you, Alex. That's helpful context. We'll wrap here."
+  }
+]
