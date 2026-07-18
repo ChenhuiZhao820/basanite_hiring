@@ -184,6 +184,11 @@ class ComprehensiveAssessment(_LooseModel):
     one_sentence_summary: str = ""
 
 
+class AtAGlance(_LooseModel):
+    tags: list[str] = Field(default_factory=list)
+    summary: str = ""
+
+
 # Next-round routing tier. This is NOT a hire/no-hire signal — the
 # hiring decision stays with humans. It's a tier the hirer can use to
 # triage their pipeline: who advances to the next interview round, who
@@ -231,6 +236,11 @@ class HirerReport(_LooseModel):
     # `derive_recommendation` fallback fills the gap on read.
     recommendation: RecommendationTier | None = None
     recommendation_rationale: str = ""
+    # Two-sentence executive summary for the top-of-report callout.
+    # Optional so legacy rows still validate; renderer falls back to
+    # recommendation_rationale / one_sentence_summary.
+    headline_summary: str = ""
+    at_a_glance: AtAGlance = Field(default_factory=AtAGlance)
 
 
 # ───────────────────────── Candidate report ───────────────────────

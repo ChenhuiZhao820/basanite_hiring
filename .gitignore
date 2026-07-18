@@ -213,3 +213,6 @@ web/out/
 !web/lib/.mcp.json
 .DS_Store
 .claude/
+
+# Local report-generation fixture outputs
+scripts/out/

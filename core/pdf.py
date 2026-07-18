@@ -157,45 +157,107 @@ def _format_key(key: str) -> str:
 BASE_CSS = """
 @page { size: A4; margin: 22mm 20mm 20mm 20mm; }
 body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-       font-size: 10.5pt; color: #1a1a1a; line-height: 1.55; }
-header.doc { border-bottom: 1px solid #e5dccd; padding-bottom: 12px; margin-bottom: 20px;
-             display: flex; justify-content: space-between; align-items: baseline; }
-header.doc .brand { font-family: 'DM Serif Display', Georgia, serif; font-size: 14pt; color: #0b1f3d; }
-header.doc .meta { font-size: 9pt; color: #8a7a5e; text-transform: uppercase; letter-spacing: 0.1em; }
-h1 { font-family: 'DM Serif Display', Georgia, serif; font-size: 22pt; color: #0b1f3d;
-     margin: 0 0 4px 0; font-weight: normal; }
-.sub { color: #555; font-size: 11pt; margin-bottom: 24px; }
-h2 { font-family: 'DM Serif Display', Georgia, serif; font-size: 14pt; color: #0b1f3d;
-     margin-top: 24px; margin-bottom: 8px; font-weight: normal; border-bottom: 1px solid #eee;
-     padding-bottom: 4px; }
-h3 { font-size: 11pt; color: #0b1f3d; margin-top: 14px; margin-bottom: 4px; }
+       font-size: 10.5pt; color: #2a2a2a; line-height: 1.55; }
+
+/* ── Header / brand line ────────────────────────────────────────── */
+header.doc { border-bottom: 1px solid #d5cfc0; padding-bottom: 10px; margin-bottom: 22px;
+             display: flex; justify-content: flex-start; align-items: baseline; gap: 14px; }
+header.doc .brand { font-family: 'DM Serif Display', Georgia, serif; font-size: 15pt;
+                    color: #1a4045; letter-spacing: 0.01em; }
+header.doc .meta { font-size: 8.5pt; color: #6f6355; text-transform: uppercase;
+                   letter-spacing: 0.14em; }
+
+/* ── Titles ────────────────────────────────────────────────────── */
+h1 { font-family: 'DM Serif Display', Georgia, serif; font-size: 26pt; color: #1a4045;
+     margin: 0 0 4px 0; font-weight: normal; letter-spacing: -0.005em; }
+.sub { color: #6a6a6a; font-size: 10.5pt; margin: 0 0 20px 0; }
+h2 { font-family: 'DM Serif Display', Georgia, serif; font-size: 16pt; color: #1a4045;
+     margin: 28px 0 12px 0; font-weight: normal;
+     border-bottom: 1px solid #d5cfc0; padding-bottom: 6px; }
+h3 { font-size: 10.5pt; color: #1a4045; margin: 16px 0 6px 0; font-weight: 700; }
 p { margin: 0 0 10px 0; }
-ul { margin: 0 0 10px 0; padding-left: 18px; }
-li { margin-bottom: 4px; }
-blockquote { border-left: 3px solid #c49a2f; margin: 8px 0 12px 0; padding: 6px 12px;
-             color: #333; background: #faf7f2; font-style: italic; }
-.score-row { display: flex; justify-content: space-between; align-items: baseline;
-             padding: 8px 0; border-bottom: 1px dashed #eee; }
-.score-row:last-child { border-bottom: none; }
-.score-name { font-weight: 600; color: #0b1f3d; }
-.score-value { font-family: 'Courier New', monospace; font-size: 10pt; color: #c49a2f; }
-.quote-basis { color: #555; font-size: 10pt; margin-top: 2px; }
-.notes { color: #8a7a5e; font-size: 10pt; margin-top: 2px; font-style: italic; }
-footer.doc { margin-top: 28px; padding-top: 10px; border-top: 1px solid #eee;
-             color: #8a7a5e; font-size: 8.5pt; }
-section.reco { border: 1px solid; padding: 16px 20px; margin: 0 0 24px 0; }
-.reco-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-.reco-text { flex: 1; }
-.reco-eyebrow { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75;
-                margin-bottom: 6px; }
-.reco-label { font-family: 'DM Serif Display', Georgia, serif; font-size: 15pt; line-height: 1.2; }
-.reco-rationale { font-size: 10pt; margin: 8px 0 0 0; opacity: 0.85; line-height: 1.5; }
-.reco-score { text-align: right; min-width: 110px; }
-.reco-score-label { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; }
-.reco-score-value { font-family: 'DM Serif Display', Georgia, serif; font-size: 22pt; line-height: 1.1; }
-.reco-score-denom { font-size: 12pt; opacity: 0.6; }
-.reco-footnote { font-size: 8.5pt; opacity: 0.7; margin: 10px 0 0 0; }
-.spider-wrap { padding: 8px 0 4px 0; }
+ul { margin: 6px 0 10px 0; padding-left: 18px; }
+li { margin-bottom: 6px; color: #333; }
+
+/* ── Executive summary callout ─────────────────────────────────── */
+.exec-callout { background: #f4efe0; border-left: 4px solid #a08a30;
+                padding: 14px 18px; margin: 0 0 22px 0;
+                color: #333; font-size: 10.5pt; line-height: 1.6; }
+
+/* ── Recommendation 3-card strip ───────────────────────────────── */
+.reco-cards { display: flex; gap: 12px; margin: 0 0 20px 0; }
+.reco-card { flex: 1 1 0; border: 1px solid #e5dccd; padding: 18px 12px;
+             text-align: center; background: #fbfaf6; position: relative; }
+.reco-card .dot { width: 8px; height: 8px; border-radius: 50%;
+                  margin: 0 auto 10px auto; background: #b7c7a8; }
+.reco-card.dot-green .dot { background: #6a9a4a; }
+.reco-card.dot-red .dot { background: #c04a3c; }
+.reco-card .eyebrow { font-size: 8pt; letter-spacing: 0.14em; color: #6f6355;
+                      text-transform: uppercase; margin-bottom: 6px; }
+.reco-card .tier-label { font-family: 'DM Serif Display', Georgia, serif; font-size: 12.5pt;
+                         line-height: 1.3; color: #6a6a6a; }
+.reco-card.active { background: #fdf3ef; border: 1.5px solid #c04a3c; }
+.reco-card.active.tier-green { background: #f1f7ec; border-color: #6a9a4a; }
+.reco-card.active .tier-label { color: #1a4045; }
+.reco-card .active-marker { font-size: 8pt; letter-spacing: 0.14em; color: #c04a3c;
+                            text-transform: uppercase; margin-top: 12px; font-weight: 600; }
+.reco-card.active.tier-green .active-marker { color: #4a7a2a; }
+.reco-card.muted { color: #a8a8a8; }
+.reco-card.muted .tier-label { color: #a8a8a8; }
+.reco-card.muted .eyebrow { color: #a8a8a8; }
+
+/* ── Overview two-column ───────────────────────────────────────── */
+.overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+                 margin: 0 0 22px 0; }
+.overview-card { border: 1px solid #e5dccd; background: #fbfaf6;
+                 padding: 14px 16px; }
+.card-title { font-size: 8.5pt; letter-spacing: 0.15em; color: #6f6355;
+              text-transform: uppercase; margin: 0 0 12px 0; font-weight: 600; }
+
+/* Score overview: name | bar | value */
+.score-row { display: flex; align-items: center; padding: 5px 0; font-size: 10pt; }
+.score-row .score-name { flex: 0 0 44%; color: #2a2a2a; }
+.score-row .score-track { flex: 1; height: 6px; background: #ede6d3;
+                          border-radius: 3px; margin: 0 12px; overflow: hidden; }
+.score-row .score-bar { height: 100%; background: #a08a30; }
+.score-row .score-value { flex: 0 0 30px; text-align: right; color: #6a6a6a; }
+.score-summary { border-top: 1px solid #ede6d3; margin-top: 12px; padding-top: 12px; }
+.score-summary-row { display: flex; justify-content: space-between; padding: 4px 0;
+                     font-weight: 600; color: #1a4045; }
+.score-summary-row .label { color: #1a4045; }
+.score-summary-row .value { color: #1a4045; }
+.score-summary-row.overall .value { font-size: 12pt; }
+
+/* At-a-glance card */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px 0; }
+.chip { display: inline-block; padding: 4px 10px; background: white;
+        border: 1px solid #e5dccd; border-radius: 12px; font-size: 8.5pt;
+        color: #4a4a4a; }
+.glance-summary { font-size: 9.5pt; color: #4a4a4a; margin: 0; line-height: 1.55; }
+
+/* ── Dimension detail (below-the-fold) ─────────────────────────── */
+.dim-detail { padding: 14px 0; border-bottom: 1px dashed #d5cfc0; }
+.dim-detail:last-of-type { border-bottom: none; }
+.dim-detail-header { display: flex; justify-content: space-between; align-items: baseline;
+                     margin-bottom: 6px; }
+.dim-detail-name { font-weight: 700; color: #1a4045; font-size: 10.5pt; }
+.dim-detail-score { color: #6a6a6a; font-size: 10pt; }
+.dim-detail-quote { color: #444; font-size: 9.5pt; margin: 6px 0 8px 0;
+                    font-style: italic; }
+.dim-detail-notes { color: #555; font-size: 9.5pt; line-height: 1.6; margin: 0; }
+
+/* ── Top excerpts callouts ─────────────────────────────────────── */
+.excerpt-card { background: #f4efe0; border-left: 4px solid #a08a30;
+                padding: 12px 16px; margin: 14px 0 6px 0;
+                color: #333; font-size: 9.5pt; line-height: 1.55; }
+.excerpt-note { color: #555; font-size: 9.5pt; margin: 0 0 14px 0; line-height: 1.55; }
+
+/* ── Capability map: blind-spot bullets w/ bold label ──────────── */
+.blind-spots li strong { color: #1a4045; }
+
+/* ── Footer ────────────────────────────────────────────────────── */
+footer.doc { margin-top: 32px; padding-top: 10px; border-top: 1px solid #d5cfc0;
+             color: #8a7a5e; font-size: 8pt; line-height: 1.5; }
 """
 
 
@@ -209,10 +271,12 @@ def _bullets(items: list) -> str:
 
 
 def _header(role_title: str, candidate_name: str, kind: str) -> str:
+    kind_label = f"{kind} report"
+    meta = f"{kind_label} · {candidate_name} · {role_title}"
     return f"""
 <header class="doc">
   <span class="brand">Basanite</span>
-  <span class="meta">{escape(kind)} report · {escape(candidate_name)} · {escape(role_title)}</span>
+  <span class="meta">{escape(meta)}</span>
 </header>
 """
 
@@ -240,7 +304,7 @@ def _candidate_html(role_title: str, candidate_name: str, report: dict) -> str:
     if areas:
         body.append(f"<h2>Areas for development</h2>{areas}")
     if overall:
-        body.append(f"<h2>Overall</h2><blockquote>{overall}</blockquote>")
+        body.append(f'<h2>Overall</h2><div class="exec-callout">{overall}</div>')
     if not body:
         body.append("<p>No feedback content available.</p>")
 
@@ -257,24 +321,26 @@ def _candidate_html(role_title: str, candidate_name: str, report: dict) -> str:
 """
 
 
-_TIER_LABELS: dict[str, str] = {
-    "strongly_recommended": "Strongly recommended for next round",
-    "recommended": "Recommended for next round",
-    "can_progress": "Can progress to next round",
-    "not_recommended": "Not recommended for next round",
-    "strongly_not_recommended": "Strongly not recommended for next round",
+# The 5-tier routing model projects onto 3 sample cards. Any
+# not/strongly-not tier lights the "Not Recommended" card; can_progress
+# and recommended both light "Recommended"; only strongly_recommended
+# lights the strongest card. Kept as a projection (rather than
+# collapsing to 3 tiers) so the underlying rubric and the dashboard
+# routing logic remain unchanged.
+_TIER_TO_CARD: dict[str, int] = {
+    "strongly_not_recommended": 0,
+    "not_recommended": 0,
+    "can_progress": 1,
+    "recommended": 1,
+    "strongly_recommended": 2,
 }
 
-# Banner accent colours per tier. Kept in the same gold/earth palette
-# as the rest of the report but tinted toward red as the tier
-# weakens, so a skim-reader can route on colour alone.
-_TIER_COLOURS: dict[str, tuple[str, str, str]] = {
-    "strongly_recommended": ("#e9f5ec", "#1f7a3a", "#1f7a3a"),
-    "recommended": ("#edf6ee", "#3a8a4d", "#3a8a4d"),
-    "can_progress": ("#faf3e2", "#8a6a14", "#8a6a14"),
-    "not_recommended": ("#fbe9e3", "#8c3c14", "#8c3c14"),
-    "strongly_not_recommended": ("#f8dcd6", "#8a2210", "#8a2210"),
-}
+_CARD_DEFS: list[tuple[str, str, str]] = [
+    # (tier-class dot color, main label line 1, main label line 2)
+    ("dot-red", "Not Recommended", "to Interview"),
+    ("dot-green", "Recommended", "to Interview"),
+    ("dot-green", "Strongly Recommended", "to Interview"),
+]
 
 
 def _derive_recommendation_pdf(composite: float | None) -> str:
@@ -292,50 +358,173 @@ def _derive_recommendation_pdf(composite: float | None) -> str:
     return "strongly_not_recommended"
 
 
-def _recommendation_banner(report: dict) -> str:
-    """Top-of-document routing tier. Falls back to a composite-score
-    derivation for legacy reports that pre-date the explicit field.
+def _headline_callout(report: dict) -> str:
+    """Executive-summary callout at the top of the hirer report.
 
-    Returns "" for the truly-empty {} report so the "No report content
-    available." fallback path still fires; rendering a banner on an
-    empty report would tell the hirer "can progress" with no evidence.
+    Prefers the explicit `headline_summary` field; falls back to
+    `recommendation_rationale`, then `comprehensive_assessment.one_sentence_summary`,
+    so reports predating the new field still render something.
     """
-    has_recommendation = bool(str(report.get("recommendation") or "").strip())
-    has_composite = isinstance(report.get("composite_score"), (int, float))
-    if not has_recommendation and not has_composite:
+    text = (
+        str(report.get("headline_summary") or "").strip()
+        or str(report.get("recommendation_rationale") or "").strip()
+    )
+    if not text:
+        summary = report.get("comprehensive_assessment") or {}
+        text = str(summary.get("one_sentence_summary") or "").strip()
+    if not text:
         return ""
+    return f'<div class="exec-callout">{escape(text)}</div>'
+
+
+def _reco_cards(report: dict) -> str:
+    """3-card 'Interview recommendation' strip. The active card is
+    determined by projecting the 5-tier routing model down to 3 card
+    slots (see _TIER_TO_CARD). Non-active cards are muted; only the
+    active card gets a colored border and the "◀ THIS CANDIDATE" marker.
+    """
     tier = str(report.get("recommendation") or "").strip()
-    if tier not in _TIER_LABELS:
+    if tier not in _TIER_TO_CARD:
         tier = _derive_recommendation_pdf(report.get("composite_score"))
-    bg, accent, label_colour = _TIER_COLOURS[tier]
-    label = _TIER_LABELS[tier]
+    active_idx = _TIER_TO_CARD.get(tier, 1)
+
+    cards: list[str] = []
+    for idx, (dot_class, line1, line2) in enumerate(_CARD_DEFS):
+        is_active = idx == active_idx
+        tier_class = "tier-green" if dot_class == "dot-green" else "tier-red"
+        classes = ["reco-card", dot_class, tier_class]
+        classes.append("active" if is_active else "muted")
+        marker = (
+            '<div class="active-marker">&#9664; This Candidate</div>'
+            if is_active else ""
+        )
+        cards.append(
+            f'<div class="{" ".join(classes)}">'
+            f'<div class="dot"></div>'
+            f'<div class="eyebrow">Outcome</div>'
+            f'<div class="tier-label">{escape(line1)}<br>{escape(line2)}</div>'
+            f'{marker}'
+            f'</div>'
+        )
+    return '<div class="reco-cards">' + "".join(cards) + '</div>'
+
+
+def _score_overview_card(report: dict) -> str:
+    """Left card of the two-column overview: dimension bar chart,
+    overall composite, cheating risk.
+    """
+    scoring = report.get("scoring_summary") or []
+    if not scoring:
+        return ""
+    rows: list[str] = []
+    for s in scoring:
+        if not isinstance(s, dict):
+            continue
+        raw_name = s.get("dimension") or s.get("name") or ""
+        name = escape(_format_key(raw_name))
+        score = s.get("score")
+        if isinstance(score, (int, float)):
+            pct = max(0.0, min(1.0, (float(score) - 1) / 4)) * 100
+            score_str = f"{float(score):.1f}"
+        else:
+            pct = 0.0
+            score_str = escape(str(score or ""))
+        rows.append(
+            f'<div class="score-row">'
+            f'<div class="score-name">{name}</div>'
+            f'<div class="score-track"><div class="score-bar" style="width:{pct:.1f}%"></div></div>'
+            f'<div class="score-value">{score_str}</div>'
+            f'</div>'
+        )
+
     composite = report.get("composite_score")
     composite_html = ""
     if isinstance(composite, (int, float)):
         composite_html = (
-            f'<div class="reco-score">'
-            f'<div class="reco-score-label">Composite</div>'
-            f'<div class="reco-score-value">{composite:.1f}<span class="reco-score-denom">/5</span></div>'
+            f'<div class="score-summary-row overall">'
+            f'<div class="label">Overall</div>'
+            f'<div class="value">{float(composite):.1f} / 5</div>'
             f'</div>'
         )
-    summary = report.get("comprehensive_assessment") or {}
-    rationale_raw = (
-        str(report.get("recommendation_rationale") or "").strip()
-        or str(summary.get("one_sentence_summary") or "").strip()
+
+    risk = ""
+    assessment = report.get("comprehensive_assessment") or {}
+    if isinstance(assessment, dict):
+        r = assessment.get("cheating_risk")
+        if isinstance(r, str) and r.strip():
+            risk = r.strip().capitalize()
+        elif isinstance(r, dict):
+            level = r.get("level")
+            if isinstance(level, str) and level.strip():
+                risk = level.strip().capitalize()
+    risk_html = (
+        f'<div class="score-summary-row">'
+        f'<div class="label">Cheating risk</div>'
+        f'<div class="value">{escape(risk)}</div>'
+        f'</div>'
+        if risk else ""
     )
-    rationale_html = f'<p class="reco-rationale">{escape(rationale_raw)}</p>' if rationale_raw else ""
+
+    summary_html = ""
+    if composite_html or risk_html:
+        summary_html = f'<div class="score-summary">{composite_html}{risk_html}</div>'
+
     return (
-        f'<section class="reco" style="background:{bg};border-color:{accent};color:{label_colour};">'
-        f'<div class="reco-row">'
-        f'<div class="reco-text">'
-        f'<div class="reco-eyebrow">Routing recommendation, next round</div>'
-        f'<div class="reco-label">{escape(label)}</div>'
-        f'{rationale_html}'
+        f'<div class="overview-card">'
+        f'<div class="card-title">Score Overview</div>'
+        f'{"".join(rows)}'
+        f'{summary_html}'
         f'</div>'
-        f'{composite_html}'
+    )
+
+
+def _at_a_glance_card(report: dict) -> str:
+    """Right card of the two-column overview: pill tags + short paragraph.
+
+    Prefers the explicit `at_a_glance` field. Falls back to a synthesised
+    view built from `top_excerpts` one-liners and the one-sentence
+    summary so legacy reports still render something usable.
+    """
+    glance = report.get("at_a_glance") or {}
+    tags_raw = glance.get("tags") if isinstance(glance, dict) else []
+    summary_raw = glance.get("summary") if isinstance(glance, dict) else ""
+
+    if not tags_raw:
+        # Fallback: pull dimension names from top_excerpts as tag stand-ins.
+        # It's coarse but better than an empty box.
+        seen: set[str] = set()
+        fallback_tags: list[str] = []
+        for e in (report.get("top_excerpts") or [])[:6]:
+            if not isinstance(e, dict):
+                continue
+            dim = _format_key(str(e.get("dimension") or ""))
+            if dim and dim not in seen:
+                seen.add(dim)
+                fallback_tags.append(dim)
+        tags_raw = fallback_tags
+
+    if not summary_raw:
+        assessment = report.get("comprehensive_assessment") or {}
+        if isinstance(assessment, dict):
+            summary_raw = assessment.get("one_sentence_summary") or ""
+
+    if not tags_raw and not summary_raw:
+        return ""
+
+    chips = "".join(
+        f'<span class="chip">{escape(str(t).strip())}</span>'
+        for t in (tags_raw or []) if str(t).strip()
+    )
+    summary_html = (
+        f'<p class="glance-summary">{escape(str(summary_raw).strip())}</p>'
+        if summary_raw else ""
+    )
+    return (
+        f'<div class="overview-card">'
+        f'<div class="card-title">At a Glance</div>'
+        f'<div class="chips">{chips}</div>'
+        f'{summary_html}'
         f'</div>'
-        f'<p class="reco-footnote">Routing call only. The hire/no-hire decision sits with the human interviewer.</p>'
-        f'</section>'
     )
 
 
@@ -425,87 +614,125 @@ def _spider_svg(scoring: list[dict]) -> str:
     )
 
 
+def _blind_spot_li(item: str) -> str:
+    """Render a blind-spot bullet with a bold label if the string is
+    formatted as 'Label: description'. Falls back to a plain bullet
+    when no colon is present."""
+    s = str(item).strip()
+    if not s:
+        return ""
+    if ":" in s:
+        label, _, rest = s.partition(":")
+        label = label.strip()
+        rest = rest.strip()
+        if label and rest and len(label) <= 80:
+            return f"<li><strong>{escape(label)}:</strong> {escape(rest)}</li>"
+    return f"<li>{escape(s)}</li>"
+
+
 def _hirer_html(role_title: str, candidate_name: str, report: dict) -> str:
     body: list[str] = []
 
-    # 1. Top-level routing recommendation banner. Skipped on the truly
-    #    empty `{}` report so the "no content" fallback at the bottom
-    #    still fires.
-    banner = _recommendation_banner(report)
-    if banner:
-        body.append(banner)
+    # 1. Executive summary callout — first thing after the title.
+    callout = _headline_callout(report)
+    if callout:
+        body.append(callout)
 
-    summary = report.get("comprehensive_assessment") or {}
-    one_liner = escape(summary.get("one_sentence_summary") or "")
+    # 2. Interview recommendation: three-card strip with the active
+    #    tier highlighted. Rendered whenever we have a recommendation or
+    #    a composite score to derive one from.
+    has_recommendation = bool(str(report.get("recommendation") or "").strip())
+    has_composite = isinstance(report.get("composite_score"), (int, float))
+    if has_recommendation or has_composite:
+        body.append("<h2>Interview recommendation</h2>")
+        body.append(_reco_cards(report))
 
+    # 3. Two-column overview: score bars + at-a-glance chips.
+    left = _score_overview_card(report)
+    right = _at_a_glance_card(report)
+    if left or right:
+        body.append(f'<div class="overview-grid">{left}{right}</div>')
+
+    # 4. Dimension scores — detail.
     scoring = report.get("scoring_summary") or []
-
-    # 2. Dimension profile chart, only when there are >= 3 scored rows.
-    spider = _spider_svg(scoring)
-    if spider:
-        body.append(f'<h2>Dimension profile</h2><div class="spider-wrap">{spider}</div>')
-
-    if one_liner:
-        body.append(f"<blockquote>{one_liner}</blockquote>")
     if scoring:
-        rows = []
+        details = []
         for s in scoring:
+            if not isinstance(s, dict):
+                continue
             raw_name = s.get("dimension") or s.get("name") or ""
             name = escape(_format_key(raw_name))
             score = s.get("score")
-            score_str = f"{score}/5" if isinstance(score, (int, float)) else escape(str(score or ""))
-            quote = escape(str(s.get("quotation_basis") or ""))
-            notes = escape(str(s.get("notes") or ""))
-            quote_html = f'<div class="quote-basis">&ldquo;{quote}&rdquo;</div>' if quote else ""
-            notes_html = f'<div class="notes">{notes}</div>' if notes else ""
-            rows.append(
-                f'<div class="score-row">'
-                f'<div><div class="score-name">{name}</div>{quote_html}{notes_html}</div>'
-                f'<div class="score-value">{score_str}</div>'
+            score_str = (
+                f"{float(score):.1f} / 5"
+                if isinstance(score, (int, float))
+                else escape(str(score or ""))
+            )
+            quote = escape(str(s.get("quotation_basis") or "").strip())
+            notes = escape(str(s.get("notes") or "").strip())
+            quote_html = f'<div class="dim-detail-quote">&ldquo;{quote}&rdquo;</div>' if quote else ""
+            notes_html = f'<p class="dim-detail-notes">{notes}</p>' if notes else ""
+            details.append(
+                f'<div class="dim-detail">'
+                f'<div class="dim-detail-header">'
+                f'<div class="dim-detail-name">{name}</div>'
+                f'<div class="dim-detail-score">{score_str}</div>'
+                f'</div>'
+                f'{quote_html}{notes_html}'
                 f'</div>'
             )
-        body.append("<h2>Dimension scores</h2>" + "".join(rows))
+        if details:
+            body.append("<h2>Dimension scores &mdash; detail</h2>" + "".join(details))
 
+    # 5. Top excerpts — each as a gold-callout card + plain-text note.
     excerpts = report.get("top_excerpts") or []
     if excerpts:
         items = []
         for e in excerpts:
             if isinstance(e, dict):
-                quote = escape(str(e.get("quote") or e.get("excerpt") or ""))
-                why = escape(str(e.get("why") or e.get("reason") or e.get("why_selected") or ""))
-                why_html = f"<p>{why}</p>" if why else ""
-                items.append(f"<blockquote>{quote}</blockquote>{why_html}")
+                quote = escape(str(e.get("excerpt") or e.get("quote") or "").strip())
+                why = escape(
+                    str(
+                        e.get("why_selected")
+                        or e.get("why")
+                        or e.get("reason")
+                        or ""
+                    ).strip()
+                )
+                if not quote:
+                    continue
+                why_html = f'<p class="excerpt-note">{why}</p>' if why else ""
+                items.append(f'<div class="excerpt-card">{quote}</div>{why_html}')
             else:
-                items.append(f"<blockquote>{escape(str(e))}</blockquote>")
-        body.append("<h2>Top excerpts</h2>" + "".join(items))
+                s = escape(str(e).strip())
+                if s:
+                    items.append(f'<div class="excerpt-card">{s}</div>')
+        if items:
+            body.append("<h2>Top excerpts</h2>" + "".join(items))
 
+    # 6. Capability map — transfer capability paragraph + blind-spot
+    #    bullets with bold labels. Other capability fields (demonstrated
+    #    depth, surface fluency, expert verification) are captured in
+    #    the top-of-report sections and omitted here to keep the layout
+    #    matching the sample.
     cap = report.get("capability_map") or {}
-    if cap:
-        sections = [
-            ("Technical depth", cap.get("technical_depth")),
-            ("Transfer capability", cap.get("transfer_capability")),
-            ("Blind spots", cap.get("blind_spots")),
-            ("Requires expert verification", cap.get("expert_verification_nodes")),
-        ]
-        parts = []
-        for title, value in sections:
-            if not value:
-                continue
-            if isinstance(value, list):
-                parts.append(f"<h3>{escape(title)}</h3>{_bullets(value)}")
-            else:
-                parts.append(f"<h3>{escape(title)}</h3><p>{escape(str(value))}</p>")
-        if parts:
-            body.append("<h2>Capability map</h2>" + "".join(parts))
-
-    risk = summary.get("cheating_risk") if isinstance(summary, dict) else None
-    if risk:
-        if isinstance(risk, dict):
-            level = escape(str(risk.get("level") or ""))
-            rationale = escape(str(risk.get("rationale") or ""))
-            body.append(f"<h2>Cheating risk</h2><p><strong>{level}</strong>, {rationale}</p>")
-        else:
-            body.append(f"<h2>Cheating risk</h2><p>{escape(str(risk))}</p>")
+    if isinstance(cap, dict):
+        cap_parts: list[str] = []
+        transfer = str(cap.get("transfer_capability") or "").strip()
+        if transfer:
+            cap_parts.append(
+                f'<h3>Transfer capability</h3><p>{escape(transfer)}</p>'
+            )
+        blind = cap.get("blind_spots") or []
+        blind_items = [_blind_spot_li(item) for item in blind]
+        blind_items = [it for it in blind_items if it]
+        if blind_items:
+            cap_parts.append(
+                '<h3>Blind spots</h3>'
+                f'<ul class="blind-spots">{"".join(blind_items)}</ul>'
+            )
+        if cap_parts:
+            body.append("<h2>Capability map</h2>" + "".join(cap_parts))
 
     if not body:
         body.append("<p>No report content available.</p>")

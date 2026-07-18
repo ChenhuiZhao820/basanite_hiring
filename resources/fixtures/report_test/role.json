@@ -1,0 +1,11 @@
+{
+  "title": "Senior Backend Engineer",
+  "job_description": "We're hiring a senior backend engineer for our payments infrastructure team. You'll own high-throughput services that move real money, working closely with fraud, ledger, and settlement teams. Expect to make architectural calls with incomplete information, debug hard concurrency issues in production, and mentor mid-level engineers. Comfort with distributed systems, database internals, and operating a service on-call is required.",
+  "technical_depth": "application",
+  "dimensions": [
+    "judgment_under_ambiguity",
+    "tacit_knowledge",
+    "technical_depth",
+    "capacity_for_change"
+  ]
+}
