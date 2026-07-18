@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk').replace(/\/$/, '')
 export const SITE_NAME = 'Basanite'
-export const SITE_TAGLINE = 'Test Genuine Technical Capability'
+export const SITE_TAGLINE = 'Know Your Candidates Better'
 export const SITE_DEFAULT_DESCRIPTION =
-  'Basanite is an AI-native technical interview platform. We give every candidate a unique conversation built from their own CV — so leaked answers and AI cheating stop working, and hirers only spend time on candidates worth meeting.'
+  'Basanite is an AI-native technical interview platform built to improve hiring accuracy. Every candidate gets a bespoke interview built from their own CV, and hirers get evidence-backed briefings on strengths, limitations, and technical depth — your hiring decision, with better evidence, in fewer rounds.'
 
 export function absoluteUrl(path: string): string {
   if (!path.startsWith('/')) return `${SITE_URL}/${path}`

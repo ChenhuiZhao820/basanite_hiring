@@ -76,10 +76,10 @@ const PLANS: Plan[] = [
 ]
 
 const COMPARISON_VALUE = [
+  { what: 'A mis-hire at a £70k salary', cost: '£50,000+ once ramp, backfill, and lost output are counted', vs: 'evidence-backed briefings lower the risk of making that call blind' },
+  { what: 'Senior engineer time lost to first-round screens', cost: 'Hours per week off key projects', vs: 'your engineers only meet candidates worth meeting' },
   { what: 'A paid trial week with one contractor', cost: '£4,000 – £8,000', vs: 'covered by ~10 months of Starter plan' },
-  { what: 'Toptal markup on one £150k contractor', cost: '~£45,000 per year', vs: 'covered by ~2.5 years of Growth plan' },
-  { what: 'One full-time technical screener', cost: '£40,000 – £70,000 per year', vs: 'one Basanite deployment displaces 1–3 of these roles' },
-  { what: 'University assessment-centre cost per candidate', cost: '£500 – £2,000', vs: 'replaced by one Basanite credit at a fraction of the cost' },
+  { what: 'University assessment-centre cost per candidate', cost: '£500 – £2,000', vs: 'one Basanite credit delivers deeper evidence at a fraction of the cost' },
 ]
 
 const FAQ = [
@@ -187,9 +187,9 @@ export default async function PricingPage() {
 
         {/* Value comparison */}
         <section className="mb-20">
-          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-3">What you save</h2>
+          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-3">What a wrong hire really costs</h2>
           <p className="text-basanite-500 text-sm mb-7 max-w-2xl">
-            Basanite&apos;s pricing only makes sense if you compare it to the alternative cost of getting a hire wrong, or running a screening function manually.
+            Basanite&apos;s pricing makes sense against the cost of hiring risk: the salary of a mis-hire, and the time your highest-value contributors lose along the way. Know your candidates better, lower the risk — and let your engineers engineer.
           </p>
           <div className="border border-earth-300/60 bg-white">
             <div className="hidden sm:grid grid-cols-3 gap-4 px-6 py-3 border-b border-earth-200 text-[11px] font-semibold uppercase tracking-[0.15em] text-gold-700">

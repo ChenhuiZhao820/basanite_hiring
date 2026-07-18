@@ -105,7 +105,7 @@ export default async function AboutPage() {
             We are building the technical interview we wish had filtered us.
           </h1>
           <p className="text-basanite-600 text-lg leading-relaxed mb-5">
-            Basanite is an AI-native technical hiring platform. Every candidate gets a unique conversation built from their own CV, so leaked answers and AI cheating tools stop working. Hirers only spend their senior-engineer hours on candidates worth meeting.
+            Basanite is an AI-native technical hiring platform built to improve hiring accuracy. Every candidate gets a unique conversation built from their own CV, and hirers get an evidence-backed briefing on each candidate&rsquo;s strengths, limitations, and technical depth before they meet them. Your hiring decision, but with better evidence — and your senior-engineer hours go only to candidates worth meeting.
           </p>
           <p className="text-basanite-600 text-lg leading-relaxed">
             Founded in 2026 in Manchester, UK, by three final-year computer scientists.

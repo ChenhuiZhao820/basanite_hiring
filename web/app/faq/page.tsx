@@ -197,7 +197,7 @@ const GROUPS: FaqGroup[] = [
         q: 'Does Basanite recommend hire / no-hire?',
         a: (
           <>
-            No. We produce evidence; the human interviewer makes the decision. The hirer report is designed as a briefing document for the final human-led interview: dimension-by-dimension scores grounded in candidate quotes, a technical capability map (areas of demonstrated depth vs surface fluency vs blind spots), and a cheating-risk assessment scored independently of capability.
+            No. Your hiring decision, but with better evidence. The hirer report is designed as a briefing document for the final human-led interview: dimension-by-dimension scores grounded in candidate quotes, a technical capability map (areas of demonstrated depth vs surface fluency vs blind spots), and a cheating-risk assessment scored independently of capability.
           </>
         ),
       },
@@ -237,7 +237,7 @@ const GROUPS: FaqGroup[] = [
         q: 'How is pricing structured?',
         a: (
           <>
-            Tier-based, with the commercial argument shaped to your pipeline. For high-volume technical recruiters running 30–40+ technical hires per year, the displacement maths is clean: one Basanite deployment can replace the screening and first-round assessment work of one to three full-time recruiters. For SMEs without dedicated talent functions, pricing is structured as infrastructure rather than labour substitution — you get the evaluation sophistication of a much larger company at a fraction of the cost of hiring a Head of Talent. Specific rates are agreed per engagement; reach out via the waitlist to start that conversation.
+            Tier-based, with the commercial argument shaped to your pipeline. For high-volume technical recruiters running 30–40+ technical hires per year, Basanite adds a decision-validation layer that improves hiring confidence while shortening time-to-hire — deeper evidence on every candidate, at a fraction of what the equivalent screening capacity costs to staff. For SMEs without dedicated talent functions, pricing is structured as infrastructure: you get the evaluation sophistication of a much larger company at a fraction of the cost of hiring a Head of Talent. Specific rates are agreed per engagement; reach out via the waitlist to start that conversation.
           </>
         ),
       },
@@ -322,7 +322,7 @@ function faqEntriesForSchema() {
     { question: 'How long does the assessment take?', answer: 'Round 1 (conversational) typically runs 20 to 30 minutes. Round 2 (AI Collaboration Workbench) is time-boxed by seniority: 35 minutes for junior, 60 for mid, 90 for senior. Both rounds terminate on signal saturation, not question or task count.' },
     { question: 'Which AI coding agent can a candidate use?', answer: 'The candidate has their choice — Claude Code, Cursor, Copilot, Aider, or a local CLI agent. Basanite is tooling-agnostic. Forcing candidates into a custom UI distorts the signal.' },
     { question: 'If AI use is required in Round 2, how do you prevent cheating?', answer: 'We invert the standard posture. The did-the-candidate-use-AI cheating vector is gone — we require it and we instrument it. Remaining risks (substituted operator, session takeover) are addressed through identity verification at session start, behavioural biometrics compared against a Round 1 baseline, and a randomised in-session check-in where the candidate must explain a specific decision they just made.' },
-    { question: 'Does Basanite recommend hire or no-hire?', answer: 'No. We produce evidence; the human interviewer makes the decision. The hirer report is a briefing document for the final human-led interview.' },
+    { question: 'Does Basanite recommend hire or no-hire?', answer: 'No. Your hiring decision, but with better evidence. The hirer report is a briefing document for the final human-led interview.' },
     { question: 'Does Basanite integrate with our ATS?', answer: 'Yes. We connect to Greenhouse, Lever, Ashby, and 50+ other ATS providers via Merge.dev. Candidates flow into Basanite assessments automatically as they enter a mapped role, and results push back to the candidate ATS record.' },
     { question: 'Will I get feedback as a candidate?', answer: 'Every candidate receives a personal feedback report regardless of outcome. It is a brief, neutral plain-language summary: what you demonstrated well, areas for development, constructive suggestions.' },
     { question: 'What about my privacy?', answer: 'Before any recording starts you will see a consent screen explaining what we capture, where it goes (Anthropic, ElevenLabs, Supabase), and how long it is kept (recordings 6 months, transcripts and reports 12 months, then automatically deleted). You can access, export, or erase your data at any time. We do not sell candidate data and we do not use it to train AI models.' },
