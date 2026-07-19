@@ -129,9 +129,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // DEV-ONLY local-testing bypass (see web/lib/assess-auth.ts). When active,
+  // candidates reach the interview without a Supabase session, so the
+  // interview/complete auth gate below would wrongly bounce them. Double-
+  // gated: never active in production, and requires the explicit flag that
+  // lives only in gitignored .env files.
+  const testCandidateBypass =
+    process.env.NODE_ENV !== 'production' &&
+    process.env.ALLOW_TEST_CANDIDATE === '1'
+
   // Assessment routes (interview/complete) require auth
   // But redirect to the assessment landing page, not /login
-  if (isAssessProtected && !user) {
+  if (isAssessProtected && !user && !testCandidateBypass) {
     const url = request.nextUrl.clone()
     // Extract token from path: /assess/{token}/onboard -> /assess/{token}
     const segments = path.split('/')

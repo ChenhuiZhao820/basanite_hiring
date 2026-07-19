@@ -25,6 +25,11 @@ export default function OnboardPage() {
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // DEV-ONLY local-testing bypass. Lets you skip Supabase sign-up/sign-in
+  // when the browser anon key isn't configured locally. Gated by a
+  // gitignored env flag; never set this in production. Do not commit the flag.
+  const TEST_BYPASS = process.env.NEXT_PUBLIC_ALLOW_TEST_CANDIDATE === '1'
+
   function isPdf(file: File) {
     return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
   }
@@ -144,16 +149,33 @@ export default function OnboardPage() {
     setLoading(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      let candidateUserId: string
+      let candidateName: string
+      let candidateEmail: string
+
+      if (TEST_BYPASS) {
+        // DEV-ONLY: no real session. Use a random UUID as the candidate id
+        // (the column is a uuid) so each test run creates a fresh assessment
+        // and avoids the one-active-per-candidate 409. The server bypass
+        // ignores the user-id match.
+        candidateUserId = crypto.randomUUID()
+        candidateName = name || 'Test Candidate'
+        candidateEmail = email || 'test@local.test'
+      } else {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('Not authenticated')
+        candidateUserId = user.id
+        candidateName = name || user.user_metadata?.full_name || email.split('@')[0]
+        candidateEmail = email || user.email || ''
+      }
 
       const res = await fetch(`/api/assess/${token}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          candidate_user_id: user.id,
-          candidate_name: name || user.user_metadata?.full_name || email.split('@')[0],
-          candidate_email: email || user.email,
+          candidate_user_id: candidateUserId,
+          candidate_name: candidateName,
+          candidate_email: candidateEmail,
           cv_text: cvText,
         }),
       })
@@ -219,6 +241,21 @@ export default function OnboardPage() {
               <p className="text-basanite-500 dark:text-earth-200/60 text-sm mb-6">
                 {isSignUp ? 'To begin the assessment, create a Basanite account.' : 'Sign in to continue your assessment.'}
               </p>
+
+              {TEST_BYPASS && (
+                <div className="mb-6 border border-dashed border-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3">
+                  <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
+                    Local test mode — skip account creation and go straight to the CV step.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setError(''); setStep('cv') }}
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 text-sm transition-colors"
+                  >
+                    Skip login (local test)
+                  </button>
+                </div>
+              )}
 
               <form onSubmit={handleAuth} className="space-y-4">
                 {isSignUp && (
