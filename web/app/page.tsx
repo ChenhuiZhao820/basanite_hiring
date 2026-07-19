@@ -854,7 +854,7 @@ function WhatWeMeasure() {
           </table>
         </div>
 
-        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mt-16 sm:mt-20 mb-4 max-w-3xl text-left">
+        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mt-16 sm:mt-20 mb-4 max-w-3xl mx-auto">
           Coding tests assume the candidate works alone. That world is gone.{' '}
           <span className="font-semibold text-basanite-900">
             76% of technical candidates now use AI mid-interview.
@@ -863,11 +863,11 @@ function WhatWeMeasure() {
           &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
           think with it?&rdquo;
         </p>
-        <p className="text-basanite-700 text-base sm:text-lg max-w-3xl text-left">
+        <p className="text-basanite-700 text-base sm:text-lg max-w-3xl mx-auto">
           Eight dimensions. One rubric. Defensible scoring.
         </p>
 
-        <div className="mt-8 text-left">
+        <div className="mt-8">
           <a
             href="/methodology"
             className="text-gold-700 hover:text-gold-600 underline underline-offset-4 decoration-gold-500/60 font-medium text-base sm:text-lg"
