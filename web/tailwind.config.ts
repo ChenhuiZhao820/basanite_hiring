@@ -45,6 +45,16 @@ const config: Config = {
           600: '#a6821f',
           700: '#8a6c1a',
         },
+        // Warm terracotta/rust — added 2026-07 for the "leak" ribbons in the
+        // savings-flow (Sankey) diagram. Sits harmoniously between the warm
+        // earth tones and gold; reads as "cost draining away".
+        clay: {
+          300: '#d6a06f',
+          400: '#c37d4e',
+          500: '#b05c39',
+          600: '#93472f',
+          700: '#733728',
+        },
         // Warm cream/sand — used for accents and dark-mode text on basanite.
         // Originally only 50-300; extended with 400-900 for dark-mode
         // text contrast (dark:text-earth-400/500/600/etc were undefined).

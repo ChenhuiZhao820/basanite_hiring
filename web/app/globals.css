@@ -60,6 +60,167 @@ body {
   transform: translateY(0);
 }
 
+/* ── Homepage "What is Basanite" flow chart ──
+   Items stagger in once .flow-in is set. When .flow-swapped is added,
+   the three early-round nodes collapse and fade while a single gold
+   Basanite interview node takes their place and the rest of the
+   pipeline slides left to close the gap. */
+.flow .flow-item {
+  opacity: 0;
+}
+.flow.flow-in .flow-item {
+  animation: flow-item-in 0.5s ease var(--d, 0ms) both;
+}
+@keyframes flow-item-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.flow-early {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Wide screens: single-line chart, the early rounds collapse horizontally. */
+@media (min-width: 880px) {
+  .flow-early {
+    max-width: 40rem;
+    transition: max-width 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  }
+  .flow-swapped .flow-early {
+    max-width: 15.5rem;
+  }
+}
+/* Narrow screens: vertical chart, the early rounds collapse vertically.
+   min-width keeps the swapped-in gold node from being clipped by the
+   narrower stacked-node column (.flow-early has overflow: hidden). */
+@media (max-width: 879.98px) {
+  .flow-early {
+    min-width: 12.5rem;
+    max-height: 26rem;
+    transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  }
+  .flow-swapped .flow-early {
+    max-height: 4.5rem;
+  }
+}
+/* The animation loops while the chart is on screen, so each rule pair
+   defines both legs: the un-delayed base transition governs the swap
+   back to "today" (gold leaves first, old rounds return after), and the
+   .flow-swapped transition governs the forward swap (old rounds leave
+   first, gold arrives after). */
+.flow-old {
+  transition: opacity 0.5s ease 0.3s;
+}
+.flow-swapped .flow-old {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.flow-new {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transform-origin: center;
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.flow-swapped .flow-new {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s ease 0.45s, transform 0.5s ease 0.45s;
+}
+.flow-swapped .flow-gold {
+  animation: flow-gold-pulse 2.8s ease-in-out 1.4s infinite;
+}
+@keyframes flow-gold-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 154, 47, 0.35); }
+  50% { box-shadow: 0 0 0 10px rgba(196, 154, 47, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow .flow-item {
+    opacity: 1;
+    animation: none;
+  }
+  .flow-early,
+  .flow-old,
+  .flow-new {
+    transition: none;
+  }
+  .flow-swapped .flow-gold {
+    animation: none;
+  }
+}
+
+/* ── Homepage "How Basanite works" slider mockups ──
+   Small animation vocabulary reused across the six step mockups. Each
+   element sets --d for a stagger delay; the mockup remounts when its
+   slide becomes active so the sequence replays. */
+.hiw-rise {
+  opacity: 0;
+  animation: hiw-rise 0.5s ease var(--d, 0ms) both;
+}
+@keyframes hiw-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hiw-pop {
+  opacity: 0;
+  animation: hiw-pop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) var(--d, 0ms) both;
+}
+@keyframes hiw-pop {
+  from { opacity: 0; transform: scale(0.75); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.hiw-grow {
+  transform-origin: left center;
+  animation: hiw-grow 0.7s cubic-bezier(0.4, 0, 0.2, 1) var(--d, 0ms) both;
+}
+@keyframes hiw-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.hiw-dash {
+  stroke-dasharray: 6 5;
+  animation: hiw-dash-draw 0.9s ease var(--d, 0ms) both;
+}
+@keyframes hiw-dash-draw {
+  from { opacity: 0; stroke-dashoffset: 60; }
+  to   { opacity: 1; stroke-dashoffset: 0; }
+}
+.hiw-dot {
+  animation: hiw-dot-pulse 1.2s ease-in-out var(--d, 0ms) infinite;
+}
+@keyframes hiw-dot-pulse {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+.hiw-click {
+  animation: hiw-click-press 0.45s ease var(--d, 0ms) both;
+}
+@keyframes hiw-click-press {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(196, 154, 47, 0.45); }
+  35% { transform: scale(0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 0 10px rgba(196, 154, 47, 0); }
+}
+.hiw-caret {
+  animation: hiw-caret-blink 1s step-end infinite;
+}
+@keyframes hiw-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hiw-rise, .hiw-pop, .hiw-grow, .hiw-dash, .hiw-dot, .hiw-caret, .hiw-click {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ─────────────────── Agent bubble (interview screen) ─────────────────── */
 /* Particle-cloud canvas. The cloud already produces its own additive bloom;
    the CSS drop-shadow is just a soft outer halo and phase fade. */

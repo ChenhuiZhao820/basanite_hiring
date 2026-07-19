@@ -48,11 +48,17 @@ const nextConfig = {
         source: '/(sitemap.xml|robots.txt)',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600' }],
       },
-      {
-        // Versioned next assets are immutable; long cache lifetime.
-        source: '/_next/static/(.*)',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-      },
+      // Versioned next assets are immutable; long cache lifetime. Production
+      // only: dev chunk paths are not content-hashed, so an immutable cache
+      // makes browsers keep serving stale code after every edit.
+      ...(process.env.NODE_ENV === 'production'
+        ? [
+            {
+              source: '/_next/static/(.*)',
+              headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+            },
+          ]
+        : []),
     ]
   },
 }

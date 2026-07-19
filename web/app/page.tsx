@@ -4,6 +4,10 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
 import { AuthFragmentHandler } from '@/components/AuthFragmentHandler'
+import { DimensionsRadar } from '@/components/DimensionsRadar'
+import { HowItWorksSlider } from '@/components/HowItWorksSlider'
+import { StoneTexture } from '@/components/StoneTexture'
+import { SavingsFlow } from '@/components/SavingsFlow'
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
 
@@ -25,19 +29,6 @@ function useReveal() {
     return () => obs.disconnect()
   }, [])
   return ref
-}
-
-// ─── Decorative: Stone texture background ────────────────────────────────
-function StoneTexture() {
-  return (
-    <svg className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-      <filter id="noise">
-        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch"/>
-        <feColorMatrix type="saturate" values="0"/>
-      </filter>
-      <rect width="100%" height="100%" filter="url(#noise)"/>
-    </svg>
-  )
 }
 
 // ─── Nav ─────────────────────────────────────────────────────────────────
@@ -208,15 +199,12 @@ function Hero() {
             <path d="M40 18 L20 18 L20 54 Z" fill="#a87f24" />
             <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
           </svg>
-          <p className="text-gold-400 text-[10px] sm:text-xs uppercase tracking-[0.28em] font-semibold mb-6">
-            AI-augmented interviews that improve hiring insight, accuracy, and confidence
-          </p>
           <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
             Hire with confidence.<br />
             <span className="text-gold-400">Know your candidates better.</span>
           </h1>
           <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            Basanite exists to improve hiring accuracy. An adaptive AI builds a bespoke interview from each candidate&rsquo;s CV, then delivers an evidence-backed briefing on their strengths, limitations, and technical depth — before you meet them. Your hiring decision, but with better evidence. Fewer interview rounds and a shorter time-to-hire come as standard.
+            AI-augmented interviews for more informed hiring, faster time to hire, and better candidate understanding.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
@@ -246,204 +234,180 @@ const SOCIAL_PROOF: { src: string; alt: string; caption: string; logoClass: stri
     src: '/logos/yc.svg',
     alt: 'Y Combinator',
     caption: 'Top 10% of S26 applicants',
-    logoClass: 'h-9 sm:h-10',
+    logoClass: 'h-6 sm:h-7',
   },
   {
     src: '/logos/redwood-founders.svg',
     alt: 'Redwood Founders',
     caption: 'Backed by Redwood Founders',
-    logoClass: 'h-9 sm:h-10',
+    logoClass: 'h-6 sm:h-7',
   },
   {
     src: '/logos/university-of-manchester.png',
     alt: 'The University of Manchester',
     caption: 'Masood Entrepreneurship Centre',
-    logoClass: 'h-8 sm:h-9',
+    logoClass: 'h-5 sm:h-6',
   },
   {
     src: '/logos/stripe.svg',
     alt: 'Stripe',
     caption: 'Partnered with Stripe VC',
-    logoClass: 'h-7 sm:h-8',
+    logoClass: 'h-5 sm:h-6',
   },
 ]
 
-function SocialProof() {
+// ─── What is Basanite · animated process flow + social proof ─────────────
+// The "Backed & recognised by" logos (SOCIAL_PROOF above) are rendered at
+// the foot of this same section rather than in a standalone band.
+// The visualization leads: today's typical process draws itself first,
+// then the three early rounds are swapped out for a single gold Basanite
+// interview node while the rest of the pipeline closes the gap. The copy
+// comes after the chart.
+const FLOW_CAPTION_RED_BROWN = '#c98a6b'
+
+const EARLY_ROUNDS = [
+  { label: 'Phone screen', caption: 'rehearsable', delay: 0 },
+  { label: 'Coding test', caption: 'AI passes it', delay: 200 },
+  { label: 'First tech interview', caption: 'wrong signal', delay: 400 },
+]
+
+function FlowArrow({ delay }: { delay: number }) {
   return (
-    <section
-      aria-label="Backed and recognised by Y Combinator, Redwood Founders, the University of Manchester Masood Entrepreneurship Centre, and Stripe"
-      className="bg-white border-b border-earth-200/80 py-12"
+    <span
+      aria-hidden="true"
+      className="flow-item text-basanite-300 text-2xl select-none rotate-90 py-1.5 min-[880px]:rotate-0 min-[880px]:py-0 min-[880px]:self-start min-[880px]:pt-4 min-[880px]:px-3"
+      style={{ ['--d' as string]: `${delay}ms` }}
     >
-      <div className="max-w-6xl mx-auto px-6">
-        <p className="text-center text-basanite-500 text-[11px] font-semibold uppercase tracking-[0.2em] mb-8">
-          Backed &amp; recognised by
-        </p>
-        <div className="flex flex-wrap items-start justify-center gap-x-10 sm:gap-x-16 gap-y-8">
-          {SOCIAL_PROOF.map(item => (
-            <div key={item.alt} className="flex w-40 flex-col items-center gap-2.5 text-center">
-              <div className="flex h-10 items-center">
-                <img
-                  src={item.src}
-                  alt={item.alt}
-                  className={`${item.logoClass} w-auto select-none`}
-                  draggable={false}
-                />
-              </div>
-              <span className="text-basanite-600 text-xs leading-snug">{item.caption}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+      &rarr;
+    </span>
   )
 }
 
-// ─── Where Basanite fits · process pipeline ──────────────────────────────
-// Two horizontal pipelines (today's rounds vs. the single Basanite round),
-// laid out on a light, airy band so the section reads as part of the
-// marketing surface rather than a dark box floating on white. The gold
-// Basanite node is the focal point; struck rounds fade back.
-const PIPELINE_RED_BROWN = '#c98a6b'
-
-type PipelineNode = { label: string; struck?: boolean; gold?: boolean; caption?: string }
-
-const TODAY_PIPELINE: PipelineNode[] = [
-  { label: 'Phone screen', struck: true, caption: 'rehearsable' },
-  { label: 'Coding test', struck: true, caption: 'AI passes it' },
-  { label: 'First tech interview', struck: true, caption: 'wrong signal' },
-  { label: 'Final rounds' },
-  { label: 'Offer' },
-]
-
-const BASANITE_PIPELINE: PipelineNode[] = [
-  { label: '◆ Basanite round: interviews all, briefs you', gold: true, caption: 'adaptive · can’t be rehearsed · measures work-with-AI' },
-  { label: 'Final rounds (yours, briefed)' },
-  { label: 'Offer' },
-]
-
-function PipelineNodeBox({ node }: { node: PipelineNode }) {
-  const box = node.gold
-    ? 'border-gold-500 bg-gold-500 text-basanite-900 font-medium shadow-sm shadow-gold-600/20'
-    : node.struck
-      ? 'border-earth-300 text-basanite-400 line-through'
-      : 'border-basanite-200 bg-white text-basanite-800'
+function FlowNode({ label, caption, dim, delay }: { label: string; caption?: string; dim?: boolean; delay: number }) {
   return (
-    <div className="flex flex-col items-center gap-2 max-w-[190px]">
-      <div className={`border px-3.5 py-2.5 text-sm text-center leading-snug flex items-center justify-center min-h-[3.25rem] ${box}`}>
-        {node.label}
+    <div className="flow-item flex flex-col items-center gap-2" style={{ ['--d' as string]: `${delay}ms` }}>
+      <div
+        className={`border px-6 py-3.5 text-lg text-center leading-snug whitespace-nowrap ${
+          dim ? 'border-earth-300 bg-white text-basanite-500' : 'border-basanite-200 bg-white text-basanite-800'
+        }`}
+      >
+        {label}
       </div>
-      {node.caption && (
-        <span
-          className="text-xs italic text-center leading-snug"
-          style={{ color: node.gold ? undefined : PIPELINE_RED_BROWN }}
-        >
-          <span className={node.gold ? 'text-gold-700 not-italic font-medium' : undefined}>{node.caption}</span>
+      {caption && (
+        <span className="text-xs italic leading-snug" style={{ color: FLOW_CAPTION_RED_BROWN }}>
+          {caption}
         </span>
       )}
     </div>
   )
 }
 
-function PipelineRow({ label, labelClass, nodes, note }: { label: string; labelClass: string; nodes: PipelineNode[]; note: string }) {
-  return (
-    <div className="flex flex-col min-[880px]:flex-row min-[880px]:items-start gap-3 min-[880px]:gap-5">
-      <div className={`shrink-0 min-[880px]:w-24 min-[880px]:pt-4 text-[11px] font-semibold uppercase tracking-[0.18em] ${labelClass}`}>
-        {label}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-start gap-y-3">
-          {nodes.map((n, i) => (
-            <Fragment key={n.label}>
-              {i > 0 && <span aria-hidden="true" className="self-start pt-4 px-2 text-basanite-300 select-none">&rarr;</span>}
-              <PipelineNodeBox node={n} />
-            </Fragment>
-          ))}
-        </div>
-        <p className="mt-4 text-sm italic text-basanite-500 max-w-2xl">{note}</p>
-      </div>
-    </div>
-  )
-}
-
 function WhereBasaniteFits() {
-  const ref = useReveal()
+  const ref = useRef<HTMLDivElement>(null)
+  const [entered, setEntered] = useState(false)
+  const [inView, setInView] = useState(false)
+  const [swapped, setSwapped] = useState(false)
+  const [reduced, setReduced] = useState(false)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setReduced(true)
+      setEntered(true)
+      setSwapped(true)
+      return
+    }
+    const el = ref.current
+    if (!el) return
+    // Keep observing (no disconnect on first hit): the swap loop below
+    // pauses whenever the chart scrolls off screen and resumes on return.
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting)
+        if (entry.isIntersecting) setEntered(true)
+      },
+      { threshold: 0.3 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // Loop between today's process and the Basanite version for as long as
+  // the chart is on the visitor's screen. Holding the swapped state longer
+  // keeps the gold node the dominant impression.
+  useEffect(() => {
+    if (reduced || !entered || !inView) return
+    const t = setTimeout(() => setSwapped(s => !s), swapped ? 4200 : 2600)
+    return () => clearTimeout(t)
+  }, [reduced, entered, inView, swapped])
+
   return (
     <section
-      aria-label="Where Basanite fits in your hiring process"
-      className="bg-gradient-to-b from-white to-earth-100 py-24 sm:py-28 px-6"
+      aria-label="What Basanite is and where it fits in your hiring process, and who backs and recognises Basanite"
+      className="bg-gradient-to-b from-white to-earth-100 py-12 sm:py-16 px-6 border-b border-earth-200/80"
     >
-      <div ref={ref} className="reveal max-w-5xl mx-auto">
-        <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.28em] mb-4">The process</p>
-        <h2 className="font-display text-basanite-900 text-4xl sm:text-5xl leading-[1.05]">
-          Where Basanite fits
+      <div ref={ref} className={`reveal ${entered ? 'visible' : ''} max-w-5xl mx-auto text-center`}>
+        <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.28em] mb-4">What is Basanite</p>
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-[1.05]">
+          An AI interviewer for your early rounds.
         </h2>
-        <div className="mt-5 mb-6 h-px w-14 bg-gold-600" />
-        <p className="text-basanite-600 text-lg leading-relaxed max-w-2xl">
-          One adaptive round replaces the screens candidates can already pass with AI, so your engineers
-          only meet the shortlist.
-        </p>
-        <div className="mt-14 border-l-2 border-gold-500/70 pl-6 sm:pl-10">
-          <div className="space-y-10">
-            <PipelineRow
-              label="Today"
-              labelClass="text-basanite-400"
-              nodes={TODAY_PIPELINE}
-              note="~17 engineer-hours per hire, mostly spent on candidates you won’t hire, filtered by rounds that can be gamed."
-            />
-            <div className="border-t border-basanite-200" />
-            <PipelineRow
-              label="With Basanite"
-              labelClass="text-gold-700"
-              nodes={BASANITE_PIPELINE}
-              note="Your engineers interview only the shortlist, briefing in hand. You still decide."
-            />
+        <div className="mt-5 mb-6 h-px w-14 bg-gold-600 mx-auto" />
+
+        <div className={`flow mt-10 ${entered ? 'flow-in' : ''} ${swapped ? 'flow-swapped' : ''}`}>
+          <div className="relative h-6 mb-6 text-xs font-semibold uppercase tracking-[0.18em]">
+            <span className={`absolute inset-0 text-basanite-400 transition-opacity duration-500 ${swapped ? 'opacity-0' : 'opacity-100'}`}>
+              Today&rsquo;s typical process
+            </span>
+            <span className={`absolute inset-0 text-gold-700 transition-opacity duration-500 ${swapped ? 'opacity-100' : 'opacity-0'}`}>
+              With Basanite
+            </span>
+          </div>
+          <div className="flex flex-col items-center min-[880px]:flex-row min-[880px]:items-start min-[880px]:justify-center">
+            <div className="flow-early">
+              <div className="flow-old flex flex-col items-center min-[880px]:flex-row min-[880px]:items-start">
+                {EARLY_ROUNDS.map((r, i) => (
+                  <Fragment key={r.label}>
+                    {i > 0 && <FlowArrow delay={r.delay - 80} />}
+                    <FlowNode label={r.label} caption={r.caption} dim delay={r.delay} />
+                  </Fragment>
+                ))}
+              </div>
+              <div className="flow-new justify-center" aria-hidden={!swapped}>
+                <div className="flow-gold border border-gold-500 bg-gold-500 text-basanite-900 font-semibold px-7 py-3.5 text-lg leading-snug whitespace-nowrap shadow-md shadow-gold-600/25">
+                  &#9670; Basanite interview
+                </div>
+              </div>
+            </div>
+            <FlowArrow delay={520} />
+            <FlowNode label="Final rounds" delay={600} />
+            <FlowArrow delay={720} />
+            <FlowNode label="Offer" delay={800} />
           </div>
         </div>
-      </div>
-    </section>
-  )
-}
 
-// ─── Section 1 · Value proposition ──────────────────────────────────────
-function ValueProp() {
-  const ref = useReveal()
-  return (
-    <section className="relative py-32 sm:py-40 px-6 bg-basanite-900 overflow-hidden">
-      <StoneTexture />
-      <div ref={ref} className="reveal relative z-10 max-w-4xl mx-auto">
-        <h2 className="font-display text-earth-50 text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.02] tracking-tight">
-          Hire engineers 3&times; faster.<br />
-          Cut mishires in half.<br />
-          <span className="text-gold-400">Defend every decision.</span>
-        </h2>
-        <p className="text-earth-300/80 text-base sm:text-lg leading-relaxed mt-14 max-w-2xl">
-          Basanite replaces 17 interview hours per hire with one signal-dense
-          session that measures what coding tests can&rsquo;t: how candidates
-          actually think with AI. Every hire comes with a defensible,
-          evidence-backed report, and a process you can scale up, scale down,
-          or reshape around any role.
+        <p className="mt-8 text-basanite-600 text-lg leading-relaxed max-w-2xl mx-auto">
+          Basanite interviews your applicants adaptively from their own CV and briefs your team with
+          evidence on each one. Fewer interview rounds, better hiring accuracy.
         </p>
-        <p className="text-earth-400 text-sm sm:text-base mt-5 max-w-2xl">
-          For a team hiring 40 engineers a year, that&rsquo;s{' '}
-          <span className="font-semibold text-gold-400">
-            &pound;400k+ recovered annually.
-          </span>
-        </p>
-        <div className="flex items-center gap-6 mt-12">
-          <a
-            href="#roi-calculator"
-            className="px-6 py-3 bg-gold-500 hover:bg-gold-400 text-white text-sm font-semibold tracking-wide transition-colors duration-200"
-          >
-            See your savings &rarr;
-          </a>
-          <a
-            href={BOOK_A_CALL_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-earth-300 hover:text-earth-50 underline underline-offset-4 decoration-earth-500/50 font-medium transition-colors duration-200"
-          >
-            Book a 20-min call
-          </a>
+
+        <div className="mt-8 pt-6 border-t border-earth-200/70">
+          <p className="text-basanite-500 text-[10px] font-semibold uppercase tracking-[0.2em] mb-4">
+            Backed &amp; recognised by
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-8 sm:gap-x-12 gap-y-4">
+            {SOCIAL_PROOF.map(item => (
+              <div key={item.alt} className="flex w-32 flex-col items-center gap-1.5 text-center">
+                <div className="flex h-7 items-center">
+                  <img
+                    src={item.src}
+                    alt={item.alt}
+                    className={`${item.logoClass} w-auto select-none`}
+                    draggable={false}
+                  />
+                </div>
+                <span className="text-basanite-500 text-[11px] leading-snug">{item.caption}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -476,41 +440,7 @@ const NUMBERS = [
   },
 ]
 
-function NumbersSection() {
-  const ref = useReveal()
-  return (
-    <section className="py-24 sm:py-32 px-6 bg-earth-50">
-      <div ref={ref} className="reveal max-w-6xl mx-auto">
-        <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
-          The impact
-        </p>
-        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-16 leading-[1.15]">
-          What you get back
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
-          {NUMBERS.map((n, i) => (
-            <div key={n.value} className="relative pl-6 border-l-2 border-gold-500/50">
-              <div className="text-gold-600 text-[10px] font-semibold uppercase tracking-[0.25em] mb-3">
-                {String(i + 1).padStart(2, '0')}
-              </div>
-              <div className="font-display text-basanite-900 text-3xl sm:text-4xl leading-[1.05] mb-3">
-                {n.value}
-              </div>
-              <p className="text-basanite-700 text-base leading-relaxed">
-                {n.desc}
-              </p>
-              <p className="italic text-basanite-500 text-sm leading-relaxed mt-3">
-                {n.caption}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ─── Section 3 · ROI calculator ──────────────────────────────────────────
+// ─── Section 2 + 3 · The impact & ROI calculator (merged) ────────────────
 // Editable value display: shows the formatted figure, turns into a free-type
 // field on focus, and commits a clamped value on blur / Enter, so users can
 // type a number in directly instead of only dragging the slider.
@@ -571,12 +501,10 @@ function ROICalculator() {
   const [n, setN] = useState(40)
   const [s, setS] = useState(80000)
 
-  const { recovered, inefficiency } = useMemo(() => {
+  const recovered = useMemo(() => {
     const perHire = 15 * 80 + 0.10 * s * 0.5 + 10 * 500
-    const rec = n * perHire
-    const ineff = rec * 1.5
     const round = (v: number) => Math.round(v / 1000) * 1000
-    return { recovered: round(rec), inefficiency: round(ineff) }
+    return round(n * perHire)
   }, [n, s])
 
   const fmt = (v: number) => `£${v.toLocaleString('en-GB')}`
@@ -584,108 +512,113 @@ function ROICalculator() {
   return (
     <section
       id="roi-calculator"
-      className="relative py-32 sm:py-40 px-6 bg-basanite-900 overflow-hidden scroll-mt-16"
+      className="relative py-16 sm:py-20 px-6 bg-basanite-900 overflow-hidden scroll-mt-16"
     >
       <StoneTexture />
-      <div ref={ref} className="reveal relative z-10 max-w-2xl mx-auto">
-        <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5">
-          ROI calculator
+      <div ref={ref} className="reveal relative z-10 max-w-5xl mx-auto text-center">
+        <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
+          The impact
         </p>
-        <h2 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl mb-16 leading-[1.05]">
-          See your number
+        <h2 className="font-display text-earth-50 text-3xl sm:text-4xl mb-10 leading-[1.15]">
+          What you get back
         </h2>
 
-        <div className="space-y-12">
-          <div>
-            <div className="flex items-baseline justify-between text-base text-earth-300 mb-4">
-              <label htmlFor="roi-engineers">How many engineers do you hire a year?</label>
-              <ROIValueInput
-                value={n}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-left">
+          {NUMBERS.map((num, i) => (
+            <div key={num.value} className="relative pt-4 border-t-2 border-gold-500/50">
+              <div className="text-gold-500 text-[10px] font-semibold uppercase tracking-[0.25em] mb-2">
+                {String(i + 1).padStart(2, '0')}
+              </div>
+              <div className="font-display text-earth-50 text-2xl sm:text-3xl leading-[1.05] mb-2">
+                {num.value}
+              </div>
+              <p className="text-earth-200 text-sm leading-relaxed">
+                {num.desc}
+              </p>
+              <p className="italic text-earth-400 text-xs leading-relaxed mt-2">
+                {num.caption}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 pt-10 border-t border-earth-300/10">
+          <h3 className="font-display text-earth-50 text-2xl sm:text-3xl mb-8">
+            See your number
+          </h3>
+
+          <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8 max-w-3xl mx-auto text-left">
+            <div>
+              <div className="flex items-baseline justify-between text-sm text-earth-300 mb-3">
+                <label htmlFor="roi-engineers">Engineers hired a year</label>
+                <ROIValueInput
+                  value={n}
+                  min={1}
+                  max={200}
+                  onChange={setN}
+                  ariaLabel="Engineers hired per year"
+                />
+              </div>
+              <input
+                id="roi-engineers"
+                type="range"
                 min={1}
                 max={200}
-                onChange={setN}
-                ariaLabel="Engineers hired per year"
+                step={1}
+                value={n}
+                onChange={e => setN(Number(e.target.value))}
+                className="roi-slider w-full"
               />
+              <div className="flex justify-between text-xs text-earth-500 mt-2">
+                <span>1</span>
+                <span>200</span>
+              </div>
             </div>
-            <input
-              id="roi-engineers"
-              type="range"
-              min={1}
-              max={200}
-              step={1}
-              value={n}
-              onChange={e => setN(Number(e.target.value))}
-              className="roi-slider w-full"
-            />
-            <div className="flex justify-between text-xs text-earth-500 mt-2">
-              <span>1</span>
-              <span>200</span>
-            </div>
-          </div>
 
-          <div>
-            <div className="flex items-baseline justify-between text-base text-earth-300 mb-4">
-              <label htmlFor="roi-salary">Average base salary (&pound;)?</label>
-              <ROIValueInput
-                value={s}
+            <div>
+              <div className="flex items-baseline justify-between text-sm text-earth-300 mb-3">
+                <label htmlFor="roi-salary">Average base salary (&pound;)</label>
+                <ROIValueInput
+                  value={s}
+                  min={25000}
+                  max={250000}
+                  onChange={setS}
+                  prefix="£"
+                  ariaLabel="Average base salary in pounds"
+                />
+              </div>
+              <input
+                id="roi-salary"
+                type="range"
                 min={25000}
                 max={250000}
-                onChange={setS}
-                prefix="£"
-                ariaLabel="Average base salary in pounds"
+                step={5000}
+                value={s}
+                onChange={e => setS(Number(e.target.value))}
+                className="roi-slider w-full"
               />
-            </div>
-            <input
-              id="roi-salary"
-              type="range"
-              min={25000}
-              max={250000}
-              step={5000}
-              value={s}
-              onChange={e => setS(Number(e.target.value))}
-              className="roi-slider w-full"
-            />
-            <div className="flex justify-between text-xs text-earth-500 mt-2">
-              <span>&pound;25,000</span>
-              <span>&pound;250,000</span>
+              <div className="flex justify-between text-xs text-earth-500 mt-2">
+                <span>&pound;25,000</span>
+                <span>&pound;250,000</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-16 p-10 bg-basanite-800/40 border border-earth-300/8">
-          <div className="space-y-4 text-earth-200 text-lg sm:text-xl leading-relaxed">
-            <p>
-              &rarr; You&rsquo;re spending roughly{' '}
-              <span className="font-display text-2xl sm:text-3xl text-earth-50">{fmt(inefficiency)}</span>{' '}
-              on hiring inefficiency every year.
-            </p>
-            <p>
-              &rarr; Basanite recovers{' '}
-              <span className="font-display text-2xl sm:text-3xl text-gold-400">~{fmt(recovered)}</span>{' '}
-              of that.
-            </p>
-          </div>
-        </div>
+          <p className="mt-10 text-earth-100 text-xl sm:text-2xl leading-relaxed">
+            Basanite recovers{' '}
+            <span className="font-display text-gold-400">~{fmt(recovered)}</span>{' '}
+            of your hiring inefficiency.
+          </p>
 
-        <p className="italic text-earth-500 text-sm mt-8">
-          Math: Ashby 2026, Leadership IQ, SHRM 2025.{' '}
-          <a
-            href="/methodology#roi-assumptions"
-            className="not-italic text-gold-500 hover:text-gold-400 underline underline-offset-4 decoration-gold-500/40 font-medium"
-          >
-            See the assumptions &rarr;
-          </a>
-        </p>
-
-        <div className="mt-12">
-          <a
-            href={BOOK_A_CALL_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-block px-8 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
-          >
-            Book a call to walk through your number
-          </a>
+          <p className="italic text-earth-500 text-sm mt-4">
+            Math: Ashby 2026, Leadership IQ, SHRM 2025.{' '}
+            <a
+              href="/methodology#roi-assumptions"
+              className="not-italic text-gold-500 hover:text-gold-400 underline underline-offset-4 decoration-gold-500/40 font-medium"
+            >
+              See the assumptions &rarr;
+            </a>
+          </p>
         </div>
       </div>
 
@@ -737,61 +670,23 @@ function ROICalculator() {
 }
 
 // ─── Section 4 · The four levers ─────────────────────────────────────────
-const LEVERS: { label: string; body: string }[] = [
-  {
-    label: 'Time',
-    body:
-      'One 30-minute session replaces resume screening, phone screen, and first technical interview. Recruiter and engineer hours collapse by 60–70%.',
-  },
-  {
-    label: 'Speed',
-    body:
-      'Candidates flow through in days, not weeks. You stop losing offers to faster-moving competitors. Every vacancy day costs £500–1,000 in lost output.',
-  },
-  {
-    label: 'Quality',
-    body:
-      '46% of new hires fail within 18 months (Leadership IQ, n=20,000). 89% of those failures come from attitude, coachability, and judgment — exactly what Basanite measures, and exactly what coding tests miss.',
-  },
-  {
-    label: 'Defensibility',
-    body:
-      'Every candidate gets scored against the same eight-dimension rubric, with the evidence behind each score traceable to the actual interview. One report your hiring manager, your board, and the candidate can all read.',
-  },
-]
-
 function FourLevers() {
   const ref = useReveal()
   return (
-    <section className="py-24 sm:py-32 px-6 bg-white border-b border-earth-200/80">
-      <div ref={ref} className="reveal max-w-3xl mx-auto">
+    <section className="py-12 sm:py-16 px-6 bg-white border-b border-earth-200/80">
+      <div ref={ref} className="reveal max-w-5xl mx-auto text-center">
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
           The four levers
         </p>
-        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-14 leading-[1.15]">
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-8 leading-[1.15]">
           Where the savings come from
         </h2>
 
-        <div className="space-y-10">
-          {LEVERS.map((l, i) => (
-            <div key={l.label} className="flex gap-6 items-start">
-              <span className="shrink-0 font-display text-gold-600 text-sm tracking-widest mt-1.5">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <p className="text-basanite-700 text-base sm:text-lg leading-relaxed">
-                <span className="font-semibold text-basanite-900">
-                  {l.label}
-                </span>{' '}
-                &mdash; {l.body}
-              </p>
-            </div>
-          ))}
-        </div>
+        <SavingsFlow />
 
-        <div className="border-t border-earth-200/40 mt-16 pt-10" />
-        <p className="italic text-basanite-500 text-sm sm:text-base leading-relaxed pl-12">
+        <p className="text-basanite-700 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto text-left mt-6">
           And it bends to your role, not the other way around. Custom
-          dimensions, custom rubrics, custom workbench tasks &mdash; for
+          dimensions, custom rubrics, and custom workbench tasks for
           engineering, data, ML, security, or wherever you take it next.
         </p>
       </div>
@@ -800,94 +695,43 @@ function FourLevers() {
 }
 
 // ─── Section 5 · What we measure ─────────────────────────────────────────
-const DIMENSION_ROWS: { name: string; question: string }[] = [
-  {
-    name: 'Problem framing',
-    question: 'Can they turn a vague brief into a workable spec?',
-  },
-  {
-    name: 'Context handling',
-    question:
-      'Do they give the model what it needs — or hope for the best?',
-  },
-  {
-    name: 'Verification',
-    question: "Do they check the model’s output, or ship it?",
-  },
-  {
-    name: 'Iteration',
-    question: 'When the first answer is wrong, what do they do next?',
-  },
-  {
-    name: 'Tool fluency',
-    question: 'Do they know which tool fits which subtask?',
-  },
-  {
-    name: 'Judgment under uncertainty',
-    question: 'When the model is confidently wrong, do they catch it?',
-  },
-  {
-    name: 'Coachability',
-    question: 'Can they take feedback mid-task and adjust?',
-  },
-  {
-    name: 'Communication',
-    question: 'Can they explain what they did and why?',
-  },
-]
-
+// The eight dimensions and their probing questions live in DimensionsRadar,
+// which renders them around an animated spider chart (and carries the
+// screen-reader-friendly list).
 function WhatWeMeasure() {
   const ref = useReveal()
   return (
-    <section className="py-24 sm:py-32 px-6 bg-earth-50 border-b border-earth-200/80">
-      <div ref={ref} className="reveal max-w-4xl mx-auto">
+    <section className="py-12 sm:py-16 px-6 bg-earth-50 border-b border-earth-200/80">
+      <div ref={ref} className="reveal max-w-6xl mx-auto text-center">
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
           The dimensions
         </p>
-        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-8 leading-[1.15]">
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3 leading-[1.15]">
           We measure how engineers think with AI
         </h2>
-        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mb-4 max-w-3xl">
-          Coding tests assume the candidate works alone. That world is gone.{' '}
-          <span className="font-semibold text-basanite-900">
-            76% of technical candidates now use AI mid-interview.
-          </span>{' '}
-          The question that predicts on-the-job performance has shifted from
-          &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
-          think with it?&rdquo;
-        </p>
-        <p className="text-basanite-700 text-base sm:text-lg mb-12">
-          Eight dimensions. One rubric. Defensible scoring.
-        </p>
 
-        <div className="bg-basanite-900 text-earth-50 overflow-hidden shadow-[0_20px_60px_-15px_rgba(15,15,14,0.4)]">
-          <table className="w-full border-collapse">
-            <tbody>
-              {DIMENSION_ROWS.map((row, i) => (
-                <tr
-                  key={row.name}
-                  className={
-                    i < DIMENSION_ROWS.length - 1
-                      ? 'border-b border-basanite-800'
-                      : ''
-                  }
-                >
-                  <th
-                    scope="row"
-                    className="font-display text-gold-400 text-left align-top text-base sm:text-lg font-normal px-5 sm:px-8 py-5 sm:py-6 w-2/5 sm:w-1/3"
-                  >
-                    {row.name}
-                  </th>
-                  <td className="text-earth-200 text-sm sm:text-base leading-relaxed px-5 sm:px-8 py-5 sm:py-6">
-                    {row.question}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <DimensionsRadar />
+
+        <div
+          className="max-w-[41rem] mx-auto mt-8 sm:mt-10 mb-3 text-left"
+        >
+          <p className="text-basanite-900 text-lg sm:text-xl font-bold leading-snug mb-1">
+            Coding tests assume the candidate works alone. That world is gone.
+          </p>
+          <p className="text-basanite-700 text-xs sm:text-sm leading-normal mb-2">
+            <span className="font-semibold text-basanite-900">
+              76% of technical candidates now use AI mid-interview.
+            </span>{' '}
+            The question that predicts on-the-job performance has shifted from
+            &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
+            think with it?&rdquo;
+          </p>
+          <p className="text-basanite-700 text-xs sm:text-sm leading-normal">
+            Eight dimensions. One rubric. Defensible scoring.
+          </p>
         </div>
 
-        <div className="mt-10">
+        <div className="max-w-[41rem] mx-auto text-left mt-4">
           <a
             href="/methodology"
             className="text-gold-700 hover:text-gold-600 underline underline-offset-4 decoration-gold-500/60 font-medium text-base sm:text-lg"
@@ -940,124 +784,25 @@ function DemoVideo() {
   )
 }
 
-// ─── How It Works (interactive accordion) ────────────────────────────────
-const STAGES = [
-  {
-    number: '01',
-    title: 'Paste your job description',
-    summary: 'No formatting needed',
-    description: 'Basanite accepts the same JD you would post on LinkedIn or Greenhouse. Our extraction agent pulls out role shape, seniority, and required capability profile.',
-    tags: ['Plain text', 'LinkedIn friendly', 'Any format'],
-  },
-  {
-    number: '02',
-    title: 'Configure evaluation dimensions',
-    summary: 'Eight metacognitive dimensions',
-    description: 'The system recommends which dimensions to weight for this role and seniority — calibrated against our Tech-Industry Map of verticals, roles, and bands. You can adjust, add, or remove before going live.',
-    tags: ['Judgment', 'Tacit knowledge', 'Human–AI collaboration'],
-  },
-  {
-    number: '03',
-    title: 'Share the assessment link',
-    summary: 'Candidates take the interview on their time',
-    description: 'Candidates receive a link, upload their CV, and enter an adaptive 25–60 minute interview with Basanite. Length is signal-driven, not timer-driven. No scheduling overhead on your side.',
-    tags: ['Asynchronous', 'CV upload', 'Mobile friendly'],
-  },
-  {
-    number: '04',
-    title: 'Round 1 — Structured Conversational Assessment',
-    summary: 'Reveals what the candidate thinks',
-    description: "Basanite asks questions grounded in the candidate's own CV, follows up on vagueness, tracks narrative consistency, and probes for genuine depth. This round generates signal across the cognitive, judgmental, and tacit-knowledge dimensions.",
-    tags: ['Adaptive', 'Follow-up probes', '20–30 min'],
-  },
-  {
-    number: '05',
-    title: 'Round 2 — AI Collaboration Workbench',
-    summary: 'Reveals what the candidate does',
-    description: "A sandboxed VS Code environment with a role-matched codebase, a real ticket, and the candidate's choice of AI coding agent (Claude Code, Cursor, Copilot, Aider). We test engineers WITH AI rather than against it — the dimension no other interview measures.",
-    tags: ['VS Code sandbox', 'Real codebase', 'Any AI agent'],
-  },
-  {
-    number: '06',
-    title: 'Review ranked candidates',
-    summary: 'Two rounds, one composite report',
-    description: 'Each candidate receives dimension scores grounded in specific quotes from Round 1 and observed work patterns from Round 2. You see a ranked queue with a briefing document for the final human interview.',
-    tags: ['Ranked', 'Quote-grounded', 'Briefing report'],
-  },
-]
-
+// ─── How It Works (animated slider) ──────────────────────────────────────
+// The six steps, their mockups, and the slider mechanics live in
+// HowItWorksSlider.
 function HowItWorks() {
-  const [active, setActive] = useState<number | null>(0)
   const ref = useReveal()
 
   return (
     <section id="how-it-works" className="py-24 sm:py-32 px-6 bg-white">
-      <div ref={ref} className="reveal max-w-4xl mx-auto">
+      <div ref={ref} className="reveal max-w-4xl mx-auto text-center">
         <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-3">The process</p>
-        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-3">How Basanite works</h2>
-        <p className="text-basanite-600 text-base mb-16 max-w-xl">
-          A two-round assessment: a conversational round that reveals what a candidate thinks, and an AI Collaboration Workbench round that reveals what they actually do.
-        </p>
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-10">How Basanite works</h2>
 
-        <div className="relative">
-          <div className="absolute left-6 top-6 bottom-6 w-px bg-gold-500/40" aria-hidden="true" />
+        <HowItWorksSlider />
 
-          <div className="flex flex-col gap-8">
-            {STAGES.map((stage, i) => {
-              const isOpen = active === i
-              return (
-                <div key={stage.number} className="relative flex gap-5 sm:gap-8 items-start">
-                  <button
-                    onClick={() => setActive(isOpen ? null : i)}
-                    aria-label={`Toggle step ${stage.number}`}
-                    className={`relative z-10 shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-display text-lg transition-all duration-300 ${isOpen ? 'bg-gold-500 text-white border-2 border-gold-500 shadow-[0_0_0_6px_rgba(196,154,47,0.15)]' : 'bg-white text-basanite-900 border-2 border-gold-500/60 hover:border-gold-500'}`}
-                  >
-                    {stage.number}
-                  </button>
-
-                  <button
-                    onClick={() => setActive(isOpen ? null : i)}
-                    className={`text-left flex-1 bg-white border overflow-hidden transition-shadow duration-200 ${isOpen ? 'border-gold-500/60 shadow-md' : 'border-earth-300/60 hover:border-gold-500/40 hover:shadow-sm'}`}
-                  >
-                    <div className={`flex items-center justify-between gap-4 px-5 sm:px-7 py-5 ${isOpen ? 'border-b border-earth-200' : ''}`}>
-                      <div className="min-w-0">
-                        <div className="font-display text-basanite-900 text-lg sm:text-xl">{stage.title}</div>
-                        <div className="text-basanite-500 text-xs mt-0.5">{stage.summary}</div>
-                      </div>
-                      <svg
-                        width="14" height="14" viewBox="0 0 12 12" fill="none"
-                        className={`transition-transform duration-500 ease-in-out shrink-0 text-basanite-500 ${isOpen ? 'rotate-180' : ''}`}
-                      >
-                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <div
-                      className="overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out"
-                      style={{ maxHeight: isOpen ? '18rem' : '0', opacity: isOpen ? 1 : 0 }}
-                    >
-                      <div className="px-5 sm:px-7 py-5">
-                        <p className="text-basanite-600 text-sm leading-relaxed mb-4">{stage.description}</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {stage.tags.map(t => (
-                            <span key={t} className="text-xs px-2 py-1 border border-earth-300 text-basanite-600">
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="mt-12 pt-8 border-t border-earth-200">
+        <div className="mt-5 pt-8 border-t border-earth-200">
           <p className="text-basanite-600 text-sm mb-3">Want to see what comes out the other end?</p>
           <a
             href="/sample-reports"
-            className="inline-flex items-center gap-2 font-display text-lg text-basanite-900 hover:text-gold-700 transition-colors"
+            className="inline-flex items-center gap-2 font-display text-lg text-gold-700 hover:text-gold-600 transition-colors"
           >
             See sample reports
             <span aria-hidden="true">&rarr;</span>
@@ -1075,17 +820,17 @@ function ForBoth() {
     <section className="py-24 sm:py-32 px-6 bg-earth-50">
       <div ref={ref} className="reveal max-w-5xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          <div className="card-hover border border-earth-300/60 bg-white p-8 sm:p-10">
+          <div className="card-hover border border-earth-300/60 bg-white p-8 sm:p-10 flex flex-col text-center">
             <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-4">For hiring teams</p>
             <h3 className="font-display text-basanite-900 text-2xl mb-4">Your hiring decision, with better evidence</h3>
-            <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed">
+            <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed text-left flex-1">
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                An interview briefing that gives your team deeper insight into every candidate — enhancing the rest of your interview process, not just adding another screen
+                An interview briefing that gives your team deeper insight into every candidate, enhancing the rest of your interview process rather than just adding another screen
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Decision-validation that improves hiring confidence while shortening your time-to-hire — fewer rounds, and your engineers stay on the projects that need them
+                Decision-validation that improves hiring confidence while shortening your time-to-hire: fewer rounds, and your engineers stay on the projects that need them
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
@@ -1104,16 +849,16 @@ function ForBoth() {
               href={BOOK_A_CALL_URL}
               target="_blank"
               rel="noreferrer"
-              className="inline-block mt-8 px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-medium hover:bg-gold-600 transition-colors"
+              className="inline-block mt-8 mx-auto px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-medium hover:bg-gold-600 transition-colors"
             >
               Book a call
             </a>
           </div>
 
-          <div className="card-hover border border-earth-300/60 bg-white p-8 sm:p-10">
+          <div className="card-hover border border-earth-300/60 bg-white p-8 sm:p-10 flex flex-col text-center">
             <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-4">For candidates</p>
             <h3 className="font-display text-basanite-900 text-2xl mb-4">Be genuinely seen</h3>
-            <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed">
+            <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed text-left flex-1">
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
                 A conversation, not an interrogation. Questions grow organically from your own experience
@@ -1131,7 +876,7 @@ function ForBoth() {
                 You receive a personal feedback report, regardless of outcome
               </li>
             </ul>
-            <a href="#how-it-works" className="inline-block mt-8 px-6 py-3 border border-basanite-900 text-basanite-900 text-sm font-medium hover:bg-basanite-900 hover:text-earth-50 transition-colors">
+            <a href="#how-it-works" className="inline-block mt-8 mx-auto px-6 py-3 border border-basanite-900 text-basanite-900 text-sm font-medium hover:bg-basanite-900 hover:text-earth-50 transition-colors">
               Learn more
             </a>
           </div>
@@ -1184,10 +929,10 @@ function Team() {
   return (
     <section id="team" className="py-24 sm:py-32 px-6 bg-white">
       <div ref={ref} className="reveal max-w-6xl mx-auto">
-        <div className="mb-14">
+        <div className="mb-14 text-center">
           <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-3">The team</p>
           <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-4">Built by people who have felt the problem</h2>
-          <p className="text-basanite-600 max-w-xl leading-relaxed">
+          <p className="text-basanite-600 max-w-xl mx-auto leading-relaxed">
             Engineers and AI researchers from Manchester, building the hiring tool we wish existed.
           </p>
         </div>
@@ -1196,7 +941,7 @@ function Team() {
           {TEAM.map(member => (
             <div key={member.name} className="card-hover border border-earth-300/60 bg-white flex flex-col">
               <div className="p-7 flex flex-col flex-1">
-                <div className="flex items-center gap-4 mb-5">
+                <div className="flex flex-col items-center text-center gap-3 mb-5">
                   <div className="relative w-14 h-14 rounded-full overflow-hidden bg-earth-200 shrink-0">
                     <Image
                       src={member.img}
@@ -1218,7 +963,7 @@ function Team() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-5 flex items-center gap-4">
+                <div className="mt-5 flex items-center justify-center gap-4">
                   <a
                     href={member.linkedin}
                     target="_blank"
@@ -1370,15 +1115,12 @@ export default function HomePage() {
       <AuthFragmentHandler />
       <Nav />
       <Hero />
-      <SocialProof />
       <WhereBasaniteFits />
-      <ValueProp />
-      <NumbersSection />
+      <WhatWeMeasure />
       <ROICalculator />
       <FourLevers />
-      <WhatWeMeasure />
-      <DemoVideo />
       <HowItWorks />
+      <DemoVideo />
       <ForBoth />
       <Team />
       <WaitlistCTA />
