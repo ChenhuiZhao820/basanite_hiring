@@ -5,7 +5,7 @@ import EndButton from '@/components/EndButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
 type Phase = 'idle' | 'live' | 'ending' | 'done' | 'error'
-type CallStatus = 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening'
+type CallStatus = 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' | 'reverting'
 
 type Props = {
   title: string
@@ -31,6 +31,7 @@ function StatusBadge({ status }: { status: CallStatus }) {
     'connecting':     { label: 'Connecting\u2026', dot: 'bg-basanite-400 dark:bg-earth-200/50', text: 'text-basanite-600 dark:text-earth-200/80', ring: 'border-basanite-200 dark:border-earth-200/15' },
     'agent-speaking': { label: 'Baz is speaking',  dot: 'bg-gold-500 animate-pulse',           text: 'text-gold-700 dark:text-gold-300',      ring: 'border-gold-400/70 dark:border-gold-500/40' },
     'user-speaking':  { label: "You're speaking",  dot: 'bg-emerald-500 animate-pulse',        text: 'text-emerald-700 dark:text-emerald-300', ring: 'border-emerald-400/70 dark:border-emerald-500/40' },
+    'reverting':      { label: 'Reverting \u2014 Baz will re-ask\u2026', dot: 'bg-amber-500 animate-pulse', text: 'text-amber-700 dark:text-amber-300', ring: 'border-amber-400/70 dark:border-amber-500/40' },
     'listening':      { label: 'Listening \u00b7 your turn', dot: 'bg-emerald-500 animate-pulse', text: 'text-emerald-700 dark:text-emerald-300', ring: 'border-emerald-400/70 dark:border-emerald-500/40' },
   }
   const v = map[status]

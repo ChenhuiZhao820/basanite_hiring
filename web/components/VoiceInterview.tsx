@@ -126,6 +126,15 @@ export default function VoiceInterview({
   // agent's re-ask. The next agent message consumes it instead of resetting
   // the redo counter.
   const pendingRedoRef = useRef(false)
+  // True from the moment a redo is sent until Baz has finished speaking the
+  // "No problem, let's restart." re-ask. Drives the 'reverting' status pill
+  // so the candidate gets a clear signal the instruction was received, and
+  // the header never shows "Listening" mid-revert.
+  const [reverting, setReverting] = useState(false)
+  // Whether Baz has started speaking since the redo was sent. The
+  // speaking→listening transition after this clears the reverting state.
+  const revertSpokenRef = useRef(false)
+  const revertTimeoutRef = useRef<number | null>(null)
   const previewRef = useRef<HTMLVideoElement>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -223,6 +232,16 @@ export default function VoiceInterview({
       // 'speaking' = Baz is speaking, 'listening' = Baz is waiting for the
       // candidate. Drives the "Listening… / Baz speaking" badge.
       setAgentMode(mode)
+      // Reverting lifecycle: once Baz starts speaking after a redo, that's
+      // the re-ask; when he stops (speaking → listening), the revert is
+      // complete and the badge can return to the normal flow.
+      if (mode === 'speaking') {
+        revertSpokenRef.current = true
+      } else if (revertSpokenRef.current) {
+        revertSpokenRef.current = false
+        if (revertTimeoutRef.current != null) { window.clearTimeout(revertTimeoutRef.current); revertTimeoutRef.current = null }
+        setReverting(false)
+      }
     },
     onVadScore: ({ vadScore }) => {
       // Hysteresis on raw VAD score so brief spikes don't flicker the label.
@@ -340,6 +359,13 @@ export default function VoiceInterview({
     try {
       redoCountRef.current += 1
       pendingRedoRef.current = true
+      revertSpokenRef.current = false
+      setReverting(true)
+      // Safety valve: if the agent never produces the re-ask (dropped
+      // directive, network hiccup), don't leave the badge stuck on
+      // "Reverting" forever.
+      if (revertTimeoutRef.current != null) window.clearTimeout(revertTimeoutRef.current)
+      revertTimeoutRef.current = window.setTimeout(() => { setReverting(false); revertTimeoutRef.current = null }, 25_000)
       conversation.sendContextualUpdate(
         `SYSTEM DIRECTIVE: The candidate pressed the 'Redo answer' button (redo ${redoCountRef.current} of 3 for this question). Completely disregard their most recent answer to the CURRENT question. Say exactly: "No problem, let's restart." Then repeat the SAME current question again. Do not advance to a new question.`,
       )
@@ -351,6 +377,7 @@ export default function VoiceInterview({
     } catch (e) {
       console.warn('redo push failed', e)
       pendingRedoRef.current = false
+      setReverting(false)
     } finally {
       window.setTimeout(() => { redoInFlightRef.current = false }, 3000)
     }
@@ -649,16 +676,19 @@ export default function VoiceInterview({
   // Compose the status label shown in the header. Priority:
   //   1) phase 'idle' → connection isn't fully up yet
   //   2) Baz speaking
-  //   3) Candidate speaking
-  //   4) Otherwise: listening (Baz waiting on the candidate)
-  const callStatus: 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' =
+  //   3) Reverting after a redo (never show "Listening" mid-revert)
+  //   4) Candidate speaking
+  //   5) Otherwise: listening (Baz waiting on the candidate)
+  const callStatus: 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' | 'reverting' =
     phase === 'idle'
       ? 'connecting'
       : conversation.isSpeaking || agentMode === 'speaking'
         ? 'agent-speaking'
-        : userIsSpeaking
-          ? 'user-speaking'
-          : 'listening'
+        : reverting
+          ? 'reverting'
+          : userIsSpeaking
+            ? 'user-speaking'
+            : 'listening'
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-earth-50 text-basanite-900 dark:bg-basanite-950 dark:text-earth-100 transition-colors duration-150">
