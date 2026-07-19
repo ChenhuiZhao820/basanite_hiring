@@ -174,7 +174,7 @@ export default function DeviceCheckPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-gold-500 mt-0.5">&#9670;</span>
-                    Need to re-answer while you're still on a question? Tap the "Redo answer" button at the top of the screen and the interviewer will ask it again.
+                    Need to re-answer while you're still on a question? Tap the "Redo answer" button at the top of the screen — the interviewer will say "No problem, let's restart." and ask it again. You have up to 3 redos per question.
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-gold-500 mt-0.5">&#9670;</span>

@@ -111,12 +111,21 @@ export default function VoiceInterview({
   // Throttled user-VAD signal so we can show "You're speaking" without thrashing.
   const [userIsSpeaking, setUserIsSpeaking] = useState(false)
   // Transient banner shown right after the candidate taps "Redo answer".
-  const [redoNotice, setRedoNotice] = useState(false)
+  // Holds the message to display, or null when hidden.
+  const [redoNotice, setRedoNotice] = useState<string | null>(null)
   const vadHighSinceRef = useRef(0)
 
   const captureStreamRef = useRef<MediaStream | null>(null)
   const mirrorRef = useRef<MirroredCapture | null>(null)
   const redoInFlightRef = useRef(false)
+  // Redos used on the current question (max 3). Reset when the agent speaks
+  // a turn that wasn't triggered by a redo press, i.e. it moved the
+  // conversation forward on its own.
+  const redoCountRef = useRef(0)
+  // Set when a redo directive has been sent and we're waiting for the
+  // agent's re-ask. The next agent message consumes it instead of resetting
+  // the redo counter.
+  const pendingRedoRef = useRef(false)
   const previewRef = useRef<HTMLVideoElement>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -188,6 +197,14 @@ export default function VoiceInterview({
       // Backup: if the agent gives a verbal close but somehow forgets the tool,
       // end anyway. Short message, farewell phrase, no question mark.
       if (source === 'ai') {
+        // Redo bookkeeping: the first agent message after a redo press is the
+        // re-ask (keep the counter); any other agent turn means the interview
+        // moved on, so the redo allowance resets for the new question.
+        if (pendingRedoRef.current) {
+          pendingRedoRef.current = false
+        } else {
+          redoCountRef.current = 0
+        }
         const trimmed = message.trim()
         const looksLikeClose = /\b(thank|conclude|wrap|appreciat|best of luck|goodbye|good luck|that (is|'?s) (all|it)|end(s)? (the|our) interview)\b/i.test(trimmed)
         const hasQuestion = /\?/.test(trimmed)
@@ -314,15 +331,26 @@ export default function VoiceInterview({
   function redoCurrentAnswer() {
     if (phase !== 'live') return
     if (redoInFlightRef.current) return
+    if (redoCountRef.current >= 3) {
+      setRedoNotice("You've used all 3 redos for this question \u2014 keep going with your answer.")
+      window.setTimeout(() => setRedoNotice(null), 3500)
+      return
+    }
     redoInFlightRef.current = true
     try {
+      redoCountRef.current += 1
+      pendingRedoRef.current = true
       conversation.sendContextualUpdate(
-        "SYSTEM DIRECTIVE: The candidate pressed the 'Redo answer' button. Completely disregard their most recent answer to the CURRENT question. In one short sentence, acknowledge this warmly (e.g. \"No problem, let's take that one again\"), then re-ask the SAME current question. Do not advance to a new question.",
+        `SYSTEM DIRECTIVE: The candidate pressed the 'Redo answer' button (redo ${redoCountRef.current} of 3 for this question). Completely disregard their most recent answer to the CURRENT question. Say exactly: "No problem, let's restart." Then repeat the SAME current question again. Do not advance to a new question.`,
       )
-      setRedoNotice(true)
-      window.setTimeout(() => setRedoNotice(false), 3500)
+      const left = 3 - redoCountRef.current
+      setRedoNotice(
+        `Re-asking the question \u2014 go ahead and answer again. (${left} redo${left === 1 ? '' : 's'} left for this question)`,
+      )
+      window.setTimeout(() => setRedoNotice(null), 3500)
     } catch (e) {
       console.warn('redo push failed', e)
+      pendingRedoRef.current = false
     } finally {
       window.setTimeout(() => { redoInFlightRef.current = false }, 3000)
     }
@@ -645,7 +673,7 @@ export default function VoiceInterview({
       {redoNotice && (
         <div className="flex-shrink-0 flex justify-center px-4 py-2 bg-gold-500/15 border-b border-gold-500/30">
           <span className="text-xs sm:text-sm font-medium text-gold-700 dark:text-gold-300">
-            Re-asking the question — go ahead and answer again.
+            {redoNotice}
           </span>
         </div>
       )}
