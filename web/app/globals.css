@@ -89,7 +89,7 @@ body {
     transition: max-width 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
   }
   .flow-swapped .flow-early {
-    max-width: 12.5rem;
+    max-width: 15.5rem;
   }
 }
 /* Narrow screens: vertical chart, the early rounds collapse vertically.
@@ -102,7 +102,7 @@ body {
     transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
   }
   .flow-swapped .flow-early {
-    max-height: 3.5rem;
+    max-height: 4.5rem;
   }
 }
 /* The animation loops while the chart is on screen, so each rule pair
@@ -152,6 +152,72 @@ body {
   }
   .flow-swapped .flow-gold {
     animation: none;
+  }
+}
+
+/* ── Homepage "How Basanite works" slider mockups ──
+   Small animation vocabulary reused across the six step mockups. Each
+   element sets --d for a stagger delay; the mockup remounts when its
+   slide becomes active so the sequence replays. */
+.hiw-rise {
+  opacity: 0;
+  animation: hiw-rise 0.5s ease var(--d, 0ms) both;
+}
+@keyframes hiw-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hiw-pop {
+  opacity: 0;
+  animation: hiw-pop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) var(--d, 0ms) both;
+}
+@keyframes hiw-pop {
+  from { opacity: 0; transform: scale(0.75); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.hiw-grow {
+  transform-origin: left center;
+  animation: hiw-grow 0.7s cubic-bezier(0.4, 0, 0.2, 1) var(--d, 0ms) both;
+}
+@keyframes hiw-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.hiw-dash {
+  stroke-dasharray: 6 5;
+  animation: hiw-dash-draw 0.9s ease var(--d, 0ms) both;
+}
+@keyframes hiw-dash-draw {
+  from { opacity: 0; stroke-dashoffset: 60; }
+  to   { opacity: 1; stroke-dashoffset: 0; }
+}
+.hiw-dot {
+  animation: hiw-dot-pulse 1.2s ease-in-out var(--d, 0ms) infinite;
+}
+@keyframes hiw-dot-pulse {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+.hiw-click {
+  animation: hiw-click-press 0.45s ease var(--d, 0ms) both;
+}
+@keyframes hiw-click-press {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(196, 154, 47, 0.45); }
+  35% { transform: scale(0.9); }
+  100% { transform: scale(1); box-shadow: 0 0 0 10px rgba(196, 154, 47, 0); }
+}
+.hiw-caret {
+  animation: hiw-caret-blink 1s step-end infinite;
+}
+@keyframes hiw-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hiw-rise, .hiw-pop, .hiw-grow, .hiw-dash, .hiw-dot, .hiw-caret, .hiw-click {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 
