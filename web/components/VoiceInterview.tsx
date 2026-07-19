@@ -110,31 +110,10 @@ export default function VoiceInterview({
   const [agentMode, setAgentMode] = useState<'listening' | 'speaking' | null>(null)
   // Throttled user-VAD signal so we can show "You're speaking" without thrashing.
   const [userIsSpeaking, setUserIsSpeaking] = useState(false)
-  // Transient banner shown right after the candidate taps "Redo answer".
-  // Holds the message to display, or null when hidden.
-  const [redoNotice, setRedoNotice] = useState<string | null>(null)
   const vadHighSinceRef = useRef(0)
 
   const captureStreamRef = useRef<MediaStream | null>(null)
   const mirrorRef = useRef<MirroredCapture | null>(null)
-  const redoInFlightRef = useRef(false)
-  // Redos used on the current question (max 3). Reset when the agent speaks
-  // a turn that wasn't triggered by a redo press, i.e. it moved the
-  // conversation forward on its own.
-  const redoCountRef = useRef(0)
-  // Set when a redo directive has been sent and we're waiting for the
-  // agent's re-ask. The next agent message consumes it instead of resetting
-  // the redo counter.
-  const pendingRedoRef = useRef(false)
-  // True from the moment a redo is sent until Baz has finished speaking the
-  // "No problem, let's restart." re-ask. Drives the 'reverting' status pill
-  // so the candidate gets a clear signal the instruction was received, and
-  // the header never shows "Listening" mid-revert.
-  const [reverting, setReverting] = useState(false)
-  // Whether Baz has started speaking since the redo was sent. The
-  // speaking→listening transition after this clears the reverting state.
-  const revertSpokenRef = useRef(false)
-  const revertTimeoutRef = useRef<number | null>(null)
   const previewRef = useRef<HTMLVideoElement>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -199,9 +178,6 @@ export default function VoiceInterview({
     },
     onMessage: ({ message, source }) => {
       if (!message) return
-      // The redo directive is injected via sendUserMessage so it echoes back
-      // as a 'user' message. Keep it out of the visible transcript.
-      if (source === 'user' && message.startsWith('SYSTEM DIRECTIVE')) return
       messageCountRef.current += 1
       const role: Bubble['role'] = source === 'user' ? 'user' : 'assistant'
       setBubbles(prev => [...prev, { role, content: message }])
@@ -209,14 +185,6 @@ export default function VoiceInterview({
       // Backup: if the agent gives a verbal close but somehow forgets the tool,
       // end anyway. Short message, farewell phrase, no question mark.
       if (source === 'ai') {
-        // Redo bookkeeping: the first agent message after a redo press is the
-        // re-ask (keep the counter); any other agent turn means the interview
-        // moved on, so the redo allowance resets for the new question.
-        if (pendingRedoRef.current) {
-          pendingRedoRef.current = false
-        } else {
-          redoCountRef.current = 0
-        }
         const trimmed = message.trim()
         const looksLikeClose = /\b(thank|conclude|wrap|appreciat|best of luck|goodbye|good luck|that (is|'?s) (all|it)|end(s)? (the|our) interview)\b/i.test(trimmed)
         const hasQuestion = /\?/.test(trimmed)
@@ -235,16 +203,6 @@ export default function VoiceInterview({
       // 'speaking' = Baz is speaking, 'listening' = Baz is waiting for the
       // candidate. Drives the "Listening… / Baz speaking" badge.
       setAgentMode(mode)
-      // Reverting lifecycle: once Baz starts speaking after a redo, that's
-      // the re-ask; when he stops (speaking → listening), the revert is
-      // complete and the badge can return to the normal flow.
-      if (mode === 'speaking') {
-        revertSpokenRef.current = true
-      } else if (revertSpokenRef.current) {
-        revertSpokenRef.current = false
-        if (revertTimeoutRef.current != null) { window.clearTimeout(revertTimeoutRef.current); revertTimeoutRef.current = null }
-        setReverting(false)
-      }
     },
     onVadScore: ({ vadScore }) => {
       // Hysteresis on raw VAD score so brief spikes don't flicker the label.
@@ -344,50 +302,6 @@ export default function VoiceInterview({
       }, AGENT_DRAIN_MS)
     }
     // Otherwise the isSpeaking watcher below ends it on the next true→false edge.
-  }
-
-  // Redo: the candidate wants to answer the current question again. We push a
-  // contextual directive so Baz drops their most recent answer and re-asks the
-  // same question, then briefly show an on-screen acknowledgement. Guarded so a
-  // double-tap doesn't queue two directives.
-  function redoCurrentAnswer() {
-    if (phase !== 'live') return
-    if (redoInFlightRef.current) return
-    if (redoCountRef.current >= 3) {
-      setRedoNotice("You've used all 3 redos for this question \u2014 keep going with your answer.")
-      window.setTimeout(() => setRedoNotice(null), 3500)
-      return
-    }
-    redoInFlightRef.current = true
-    try {
-      redoCountRef.current += 1
-      pendingRedoRef.current = true
-      revertSpokenRef.current = false
-      setReverting(true)
-      // Safety valve: if the agent never produces the re-ask (dropped
-      // directive, network hiccup), don't leave the badge stuck on
-      // "Reverting" forever.
-      if (revertTimeoutRef.current != null) window.clearTimeout(revertTimeoutRef.current)
-      revertTimeoutRef.current = window.setTimeout(() => { setReverting(false); revertTimeoutRef.current = null }, 25_000)
-      // Must be sendUserMessage, not sendContextualUpdate: contextual updates
-      // are absorbed silently and only influence the agent's NEXT turn, so
-      // Baz would sit there until the candidate spoke again. A user message
-      // is a real turn and triggers an immediate response.
-      conversation.sendUserMessage(
-        `SYSTEM DIRECTIVE (not spoken by the candidate): The candidate pressed the 'Redo answer' button (redo ${redoCountRef.current} of 3 for this question). Completely disregard their most recent answer to the CURRENT question. Respond now, saying exactly: "No problem, let's restart." Then repeat the SAME current question again. Do not advance to a new question.`,
-      )
-      const left = 3 - redoCountRef.current
-      setRedoNotice(
-        `Re-asking the question \u2014 go ahead and answer again. (${left} redo${left === 1 ? '' : 's'} left for this question)`,
-      )
-      window.setTimeout(() => setRedoNotice(null), 3500)
-    } catch (e) {
-      console.warn('redo push failed', e)
-      pendingRedoRef.current = false
-      setReverting(false)
-    } finally {
-      window.setTimeout(() => { redoInFlightRef.current = false }, 3000)
-    }
   }
 
   // Kick off: acquire camera+mic, start the ElevenLabs session.
@@ -683,19 +597,16 @@ export default function VoiceInterview({
   // Compose the status label shown in the header. Priority:
   //   1) phase 'idle' → connection isn't fully up yet
   //   2) Baz speaking
-  //   3) Reverting after a redo (never show "Listening" mid-revert)
-  //   4) Candidate speaking
-  //   5) Otherwise: listening (Baz waiting on the candidate)
-  const callStatus: 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' | 'reverting' =
+  //   3) Candidate speaking
+  //   4) Otherwise: listening (Baz waiting on the candidate)
+  const callStatus: 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' =
     phase === 'idle'
       ? 'connecting'
       : conversation.isSpeaking || agentMode === 'speaking'
         ? 'agent-speaking'
-        : reverting
-          ? 'reverting'
-          : userIsSpeaking
-            ? 'user-speaking'
-            : 'listening'
+        : userIsSpeaking
+          ? 'user-speaking'
+          : 'listening'
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-earth-50 text-basanite-900 dark:bg-basanite-950 dark:text-earth-100 transition-colors duration-150">
@@ -704,16 +615,8 @@ export default function VoiceInterview({
         phase={phase}
         elapsedSeconds={elapsed}
         onEnd={() => requestGracefulEnd()}
-        onRedo={redoCurrentAnswer}
         callStatus={callStatus}
       />
-      {redoNotice && (
-        <div className="flex-shrink-0 flex justify-center px-4 py-2 bg-gold-500/15 border-b border-gold-500/30">
-          <span className="text-xs sm:text-sm font-medium text-gold-700 dark:text-gold-300">
-            {redoNotice}
-          </span>
-        </div>
-      )}
       <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/40 dark:bg-earth-200/10 min-h-0">
         <SelfPane
           ref={previewRef}

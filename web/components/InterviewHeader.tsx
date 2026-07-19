@@ -5,15 +5,13 @@ import EndButton from '@/components/EndButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
 type Phase = 'idle' | 'live' | 'ending' | 'done' | 'error'
-type CallStatus = 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening' | 'reverting'
+type CallStatus = 'connecting' | 'agent-speaking' | 'user-speaking' | 'listening'
 
 type Props = {
   title: string
   phase: Phase
   elapsedSeconds: number
   onEnd: () => void
-  /** Discards the candidate's current answer and re-asks the current question. */
-  onRedo?: () => void
   /** Live conversation state — drives the prominent centre status pill. */
   callStatus?: CallStatus
 }
@@ -31,7 +29,6 @@ function StatusBadge({ status }: { status: CallStatus }) {
     'connecting':     { label: 'Connecting\u2026', dot: 'bg-basanite-400 dark:bg-earth-200/50', text: 'text-basanite-600 dark:text-earth-200/80', ring: 'border-basanite-200 dark:border-earth-200/15' },
     'agent-speaking': { label: 'Baz is speaking',  dot: 'bg-gold-500 animate-pulse',           text: 'text-gold-700 dark:text-gold-300',      ring: 'border-gold-400/70 dark:border-gold-500/40' },
     'user-speaking':  { label: "You're speaking",  dot: 'bg-emerald-500 animate-pulse',        text: 'text-emerald-700 dark:text-emerald-300', ring: 'border-emerald-400/70 dark:border-emerald-500/40' },
-    'reverting':      { label: 'Reverting \u2014 Baz will re-ask\u2026', dot: 'bg-amber-500 animate-pulse', text: 'text-amber-700 dark:text-amber-300', ring: 'border-amber-400/70 dark:border-amber-500/40' },
     'listening':      { label: 'Listening \u00b7 your turn', dot: 'bg-emerald-500 animate-pulse', text: 'text-emerald-700 dark:text-emerald-300', ring: 'border-emerald-400/70 dark:border-emerald-500/40' },
   }
   const v = map[status]
@@ -52,7 +49,6 @@ export default function InterviewHeader({
   phase,
   elapsedSeconds,
   onEnd,
-  onRedo,
   callStatus,
 }: Props) {
   const showBadge = (phase === 'live' || phase === 'idle') && callStatus
@@ -73,20 +69,6 @@ export default function InterviewHeader({
       </div>
 
       <div className="flex items-center gap-2">
-        {phase === 'live' && onRedo && (
-          <button
-            type="button"
-            onClick={onRedo}
-            title="Discard your current answer and answer this question again"
-            className="inline-flex items-center gap-1.5 px-3 h-9 rounded-full border border-basanite-200/60 dark:border-earth-200/15 bg-white/60 dark:bg-basanite-900/60 text-basanite-700 dark:text-earth-200 hover:border-gold-500/60 hover:text-basanite-900 dark:hover:text-earth-100 transition-colors text-xs font-medium"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M1 4v6h6" />
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-            </svg>
-            <span className="hidden sm:inline">Redo answer</span>
-          </button>
-        )}
         <ThemeToggle />
         <EndButton onClick={onEnd} visible={phase === 'live'} />
       </div>
