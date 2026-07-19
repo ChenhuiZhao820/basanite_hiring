@@ -238,3 +238,27 @@ body {
   opacity: 0.55;
   filter: none;
 }
+
+/* ─────────────── Slim indeterminate progress bar ─────────────── */
+/* Used on the interview "Preparing your interview…" loading screen while
+   we resolve the assessment + mint the voice session (unknown duration). */
+.progress-indeterminate {
+  position: relative;
+  overflow: hidden;
+}
+.progress-indeterminate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: currentColor;
+  border-radius: inherit;
+  animation: progress-indeterminate 1.2s ease-in-out infinite;
+}
+@keyframes progress-indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-indeterminate::before { animation-duration: 2.4s; }
+}

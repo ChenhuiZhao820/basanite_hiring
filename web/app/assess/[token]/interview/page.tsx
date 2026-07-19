@@ -92,8 +92,13 @@ export default function InterviewPage() {
 
   if (!assessmentId || !config) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-basanite-950">
-        <p className="text-sm text-earth-200/60">Preparing your interview…</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-basanite-950">
+        <p className="text-sm text-earth-200/60 mb-5">Preparing your interview…</p>
+        <div
+          role="progressbar"
+          aria-label="Preparing your interview"
+          className="progress-indeterminate w-48 h-0.5 rounded-full bg-earth-200/10 text-gold-500/80"
+        />
       </div>
     )
   }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { LogoMark } from '@/components/Logo'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { getFlipPreference, setFlipPreference } from '@/lib/mirroredStream'
 
 type Phase = 'requesting' | 'preview' | 'test_recording' | 'test_playback' | 'denied'
 
@@ -16,6 +17,9 @@ export default function DeviceCheckPage() {
   const [phase, setPhase] = useState<Phase>('requesting')
   const [elapsed, setElapsed] = useState(0)
   const [playbackUrl, setPlaybackUrl] = useState<string | null>(null)
+  // Whether the interview recording is horizontally mirrored to match the
+  // candidate's selfie view. Persisted so the interview page picks it up.
+  const [flip, setFlip] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
@@ -24,6 +28,15 @@ export default function DeviceCheckPage() {
 
   // Acquire mic+camera once on mount. The same stream is used for live preview
   // and for the test recording. Playback switches the element over to the blob.
+  useEffect(() => {
+    setFlip(getFlipPreference())
+  }, [])
+
+  function toggleFlip(next: boolean) {
+    setFlip(next)
+    setFlipPreference(next)
+  }
+
   useEffect(() => {
     let cancelled = false
     async function init() {
@@ -148,14 +161,37 @@ export default function DeviceCheckPage() {
             </div>
           ) : (
             <>
+              <div className="mb-6 border border-earth-200 dark:border-basanite-700 bg-earth-50 dark:bg-basanite-950/40 p-4">
+                <h2 className="text-sm font-medium text-basanite-800 dark:text-earth-100 mb-2">Before you start</h2>
+                <ul className="space-y-2 text-xs text-basanite-600 dark:text-earth-200/80">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold-500 mt-0.5">&#9670;</span>
+                    Check your internet connection and battery. Plug in if you can, and find a quiet place with no background noise.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold-500 mt-0.5">&#9670;</span>
+                    The interview is done only once, so speak as if you're talking to a human interviewer, naturally and at your own pace.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold-500 mt-0.5">&#9670;</span>
+                    Need to re-answer while you're still on a question? Tap the "Redo answer" button at the top of the screen and the interviewer will ask it again.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gold-500 mt-0.5">&#9670;</span>
+                    Once you've finished a question and the interviewer moves on to the next one, that answer can't be redone.
+                  </li>
+                </ul>
+              </div>
+
               <div className="relative w-full aspect-video bg-basanite-900 overflow-hidden mb-4">
-                {/* Single video element: mirrored for live preview (feels natural),
-                    un-mirrored during playback so controls aren't flipped and
-                    playback matches what the interviewer will see. */}
+                {/* Single video element. Mirrored (selfie view) when the flip
+                    preference is on — matching how the interview recording is
+                    saved — so live preview and test playback look identical to
+                    what the candidate will see of themselves. */}
                 <video
                   ref={videoRef}
                   playsInline
-                  className={`w-full h-full object-cover ${isPlayback ? '' : 'scale-x-[-1]'}`}
+                  className={`w-full h-full object-cover ${flip ? 'scale-x-[-1]' : ''}`}
                 />
                 {phase === 'test_recording' && (
                   <span className="absolute top-2 left-2 flex items-center gap-1.5 text-xs text-white bg-red-600 px-2 py-1 font-medium">
@@ -194,6 +230,17 @@ export default function DeviceCheckPage() {
                   <p className="text-xs text-basanite-500 dark:text-earth-200/60 mb-3">
                     Could you see and hear yourself clearly? If yes, start the interview. If not, record another test.
                   </p>
+                  <label className="flex items-start gap-3 cursor-pointer mb-4">
+                    <input
+                      type="checkbox"
+                      checked={flip}
+                      onChange={e => toggleFlip(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 accent-gold-600 cursor-pointer"
+                    />
+                    <span className="text-xs text-basanite-600 dark:text-earth-200/80 leading-relaxed">
+                      <span className="font-medium text-basanite-800 dark:text-earth-100">Flip camera</span> — mirror the video so your recording looks exactly like what you see in your own camera.
+                    </span>
+                  </label>
                   <div className="flex gap-2">
                     <button
                       onClick={redoTest}

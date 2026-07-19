@@ -67,12 +67,6 @@ export default async function AssessmentLandingPage({
                   <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
                   You'll be asked about your real experiences and how you think, no trick questions
                 </li>
-                {typeof roleInfo.dimensions_count === 'number' && roleInfo.dimensions_count > 0 && (
-                  <li className="flex items-start gap-3">
-                    <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
-                    Your answers are evaluated across {roleInfo.dimensions_count} capability {roleInfo.dimensions_count === 1 ? 'dimension' : 'dimensions'}
-                  </li>
-                )}
                 <li className="flex items-start gap-3">
                   <span className="text-gold-500 mt-0.5 text-xs">&#9670;</span>
                   You'll get a personal feedback report by email when it's done

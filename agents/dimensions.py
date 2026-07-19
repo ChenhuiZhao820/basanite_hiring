@@ -53,7 +53,7 @@ PROMPT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts")
 
 def _load_prompt(name: str) -> str:
     path = os.path.join(PROMPT_DIR, f"{name}.yaml")
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     return data.get("system", "")
 

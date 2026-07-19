@@ -8,6 +8,7 @@ import InterviewHeader from '@/components/InterviewHeader'
 import SelfPane from '@/components/SelfPane'
 import AgentPane from '@/components/AgentPane'
 import ErrorToast from '@/components/ErrorToast'
+import { createMirroredStream, getFlipPreference, type MirroredCapture } from '@/lib/mirroredStream'
 
 type Props = {
   token: string
@@ -109,9 +110,13 @@ export default function VoiceInterview({
   const [agentMode, setAgentMode] = useState<'listening' | 'speaking' | null>(null)
   // Throttled user-VAD signal so we can show "You're speaking" without thrashing.
   const [userIsSpeaking, setUserIsSpeaking] = useState(false)
+  // Transient banner shown right after the candidate taps "Redo answer".
+  const [redoNotice, setRedoNotice] = useState(false)
   const vadHighSinceRef = useRef(0)
 
   const captureStreamRef = useRef<MediaStream | null>(null)
+  const mirrorRef = useRef<MirroredCapture | null>(null)
+  const redoInFlightRef = useRef(false)
   const previewRef = useRef<HTMLVideoElement>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
@@ -302,6 +307,27 @@ export default function VoiceInterview({
     // Otherwise the isSpeaking watcher below ends it on the next true→false edge.
   }
 
+  // Redo: the candidate wants to answer the current question again. We push a
+  // contextual directive so Baz drops their most recent answer and re-asks the
+  // same question, then briefly show an on-screen acknowledgement. Guarded so a
+  // double-tap doesn't queue two directives.
+  function redoCurrentAnswer() {
+    if (phase !== 'live') return
+    if (redoInFlightRef.current) return
+    redoInFlightRef.current = true
+    try {
+      conversation.sendContextualUpdate(
+        "SYSTEM DIRECTIVE: The candidate pressed the 'Redo answer' button. Completely disregard their most recent answer to the CURRENT question. In one short sentence, acknowledge this warmly (e.g. \"No problem, let's take that one again\"), then re-ask the SAME current question. Do not advance to a new question.",
+      )
+      setRedoNotice(true)
+      window.setTimeout(() => setRedoNotice(false), 3500)
+    } catch (e) {
+      console.warn('redo push failed', e)
+    } finally {
+      window.setTimeout(() => { redoInFlightRef.current = false }, 3000)
+    }
+  }
+
   // Kick off: acquire camera+mic, start the ElevenLabs session.
   useEffect(() => {
     let cancelled = false
@@ -318,11 +344,23 @@ export default function VoiceInterview({
           await previewRef.current.play().catch(() => {})
         }
 
+        // Record through a horizontally-flipped canvas when the candidate
+        // opted to mirror their camera on the device-check screen, so the
+        // saved file matches the selfie view they see. Otherwise record the
+        // raw stream. The live preview always uses the raw stream (SelfPane
+        // mirrors it in CSS), so this only affects the stored recording.
+        let recordStream = stream
+        if (getFlipPreference()) {
+          const mirror = createMirroredStream(stream)
+          mirrorRef.current = mirror
+          recordStream = mirror.stream
+        }
+
         // Parallel silent recorder. Tight bitrate so a 40-min session still
         // fits in the 50 MB default bucket cap.
         const mimeCandidates = ['video/webm;codecs=vp8,opus', 'video/webm']
         const mimeType = mimeCandidates.find(t => MediaRecorder.isTypeSupported(t)) ?? ''
-        const mr = new MediaRecorder(stream, {
+        const mr = new MediaRecorder(recordStream, {
           mimeType: mimeType || undefined,
           videoBitsPerSecond: 400_000,
           audioBitsPerSecond: 48_000,
@@ -389,6 +427,8 @@ export default function VoiceInterview({
     return () => {
       cancelled = true
       try { recorderRef.current?.state === 'recording' && recorderRef.current.stop() } catch {}
+      mirrorRef.current?.stop()
+      mirrorRef.current = null
       captureStreamRef.current?.getTracks().forEach(t => t.stop())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -593,15 +633,23 @@ export default function VoiceInterview({
           : 'listening'
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-basanite-950 text-earth-100">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-earth-50 text-basanite-900 dark:bg-basanite-950 dark:text-earth-100 transition-colors duration-150">
       <InterviewHeader
         title={screeningTitle}
         phase={phase}
         elapsedSeconds={elapsed}
         onEnd={() => requestGracefulEnd()}
+        onRedo={redoCurrentAnswer}
         callStatus={callStatus}
       />
-      <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/10 min-h-0">
+      {redoNotice && (
+        <div className="flex-shrink-0 flex justify-center px-4 py-2 bg-gold-500/15 border-b border-gold-500/30">
+          <span className="text-xs sm:text-sm font-medium text-gold-700 dark:text-gold-300">
+            Re-asking the question — go ahead and answer again.
+          </span>
+        </div>
+      )}
+      <main className="flex-1 grid grid-cols-2 gap-px bg-earth-200/40 dark:bg-earth-200/10 min-h-0">
         <SelfPane
           ref={previewRef}
           phase={phase}
