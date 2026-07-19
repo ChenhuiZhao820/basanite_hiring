@@ -20,7 +20,7 @@ _MAX_JD_CHARS = 15000
 
 def _load_prompt(name: str) -> str:
     path = os.path.join(PROMPT_DIR, f"{name}.yaml")
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     return data.get("system", "")
 

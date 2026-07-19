@@ -22,13 +22,31 @@ export default function OnboardPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isSignUp, setIsSignUp] = useState(true)
+  const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function isPdf(file: File) {
+    return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragActive(false)
+    if (uploading) return
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+    if (!isPdf(file)) {
+      setError('That file isn\u2019t a PDF. Basanite only accepts PDF CVs.')
+      return
+    }
+    void handleCVFile(file)
+  }
 
   async function handleCVFile(file: File) {
     setError('')
     const MAX_CV_BYTES = 10 * 1024 * 1024
     if (file.size > MAX_CV_BYTES) {
-      setError('That file is too large. Please upload a PDF under 10 MB, or paste the CV text.')
+      setError('That file is too large. Please upload a PDF under 10 MB.')
       setCvFileName(null)
       return
     }
@@ -119,7 +137,7 @@ export default function OnboardPage() {
 
   async function handleCVSubmit() {
     if (!cvText.trim()) {
-      setError('Please paste your CV content.')
+      setError('Please upload your CV first.')
       return
     }
     setError('')
@@ -268,7 +286,7 @@ export default function OnboardPage() {
             <div className="bg-white dark:bg-basanite-900 border border-earth-200 dark:border-basanite-700 p-8">
               <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">Upload your CV</h1>
               <p className="text-basanite-500 dark:text-earth-200/60 text-sm mb-6">
-                Upload a PDF or paste the text below. We use this to personalise your interview.
+                We use this to personalise your interview.
               </p>
 
               <input
@@ -287,39 +305,45 @@ export default function OnboardPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="w-full border border-earth-300 dark:border-basanite-700 hover:border-gold-500 dark:hover:border-gold-500 text-basanite-700 dark:text-earth-200 text-sm py-3 transition-colors mb-3 disabled:opacity-60"
+                className="w-full bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-3 text-sm transition-colors disabled:opacity-60 mb-3"
               >
-                {uploading
-                  ? 'Reading your PDF…'
-                  : cvFileName
-                    ? `Replace: ${cvFileName}`
-                    : 'Choose a PDF file'}
+                {uploading ? 'Reading your PDF…' : cvFileName ? `Replace: ${cvFileName}` : 'Choose a PDF file'}
               </button>
 
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 h-px bg-earth-200 dark:bg-basanite-700" />
-                <span className="text-xs text-basanite-400 dark:text-earth-200/40 uppercase tracking-wide">or paste text</span>
+                <span className="text-xs text-basanite-400 dark:text-earth-200/40 uppercase tracking-wide">or</span>
                 <div className="flex-1 h-px bg-earth-200 dark:bg-basanite-700" />
               </div>
 
-              <textarea
-                value={cvText}
-                onChange={e => { setCvText(e.target.value); if (cvFileName) setCvFileName(null) }}
-                rows={10}
-                className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 placeholder-basanite-400 dark:placeholder-earth-200/40 outline-none focus:border-gold-500 dark:focus:border-gold-500 transition-colors resize-y mb-4"
-                placeholder="Paste your CV content here…"
-              />
+              <div
+                onDragOver={e => { e.preventDefault(); if (!uploading) setDragActive(true) }}
+                onDragEnter={e => { e.preventDefault(); if (!uploading) setDragActive(true) }}
+                onDragLeave={e => { e.preventDefault(); setDragActive(false) }}
+                onDrop={handleDrop}
+                className={`w-full border border-dashed text-center text-basanite-700 dark:text-earth-200 text-sm py-10 px-4 transition-colors ${
+                  dragActive
+                    ? 'border-gold-500 bg-gold-50 dark:bg-gold-500/10'
+                    : 'border-earth-300 dark:border-basanite-700'
+                } ${uploading ? 'opacity-60' : ''}`}
+              >
+                {dragActive ? 'Drop your file here' : 'Drag your file here'}
+              </div>
 
-              {cvText && (
-                <p className="text-xs text-basanite-400 dark:text-earth-200/40 mb-4">
-                  {cvFileName ? `Loaded ${cvFileName}, ${cvText.length.toLocaleString()} characters.` : `${cvText.length.toLocaleString()} characters.`}
+              <p className="text-xs text-basanite-400 dark:text-earth-200/40 mt-3">
+                Supported file format: PDF
+              </p>
+
+              {cvText && cvFileName && (
+                <p className="text-xs text-basanite-400 dark:text-earth-200/40 mt-2">
+                  Loaded {cvFileName}, {cvText.length.toLocaleString()} characters.
                 </p>
               )}
 
               <button
                 onClick={handleCVSubmit}
                 disabled={loading || uploading || !cvText.trim()}
-                className="w-full bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-3 text-sm transition-colors disabled:opacity-60"
+                className="w-full bg-basanite-900 dark:bg-gold-500 text-white dark:text-basanite-950 hover:bg-gold-600 dark:hover:bg-gold-400 font-medium py-3 text-sm transition-colors disabled:opacity-60 mt-6"
               >
                 {loading ? 'Processing your CV…' : 'Continue to Interview'}
               </button>

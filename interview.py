@@ -38,7 +38,7 @@ _BASE_PROMPT: str | None = None
 def _load_base_prompt() -> str:
     global _BASE_PROMPT
     if _BASE_PROMPT is None:
-        with open(_BASE_PROMPT_PATH, "r") as f:
+        with open(_BASE_PROMPT_PATH, "r", encoding="utf-8") as f:
             _BASE_PROMPT = f.read()
     return _BASE_PROMPT
 

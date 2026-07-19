@@ -103,7 +103,7 @@ export default function ConsentPage() {
                 checked={c.ai_scoring}
                 onChange={v => update('ai_scoring', v)}
                 title="I understand the interview is conducted and scored by AI."
-                detail="An AI agent (powered by Anthropic Claude and ElevenLabs) conducts the interview. AI also produces the dimension scores and report. The hirer reviews the report before any decision."
+                detail="An AI agent (powered by Anthropic Claude and ElevenLabs) conducts the interview and briefs the hirer with your results along with verbatim evidence. The final decision stays with your hirer."
               />
 
               <Consent
@@ -128,17 +128,11 @@ export default function ConsentPage() {
 
             <div className="mt-8 pt-6 border-t border-earth-200 dark:border-basanite-700">
               <h2 className="text-sm font-medium text-basanite-800 dark:text-earth-100 mb-2">
-                Optional — your right to human review
+                Prefer a human-led interview?
               </h2>
-              <p className="text-xs text-basanite-500 dark:text-earth-200/60 mb-3">
-                Under UK GDPR Article 22 you have the right not to be subject to a decision based solely on automated processing. Tick this if you want a human reviewer to look at your assessment before the hirer relies on it.
+              <p className="text-xs text-basanite-500 dark:text-earth-200/60">
+                If you'd rather not be interviewed by AI, that's completely fine. We're launching Basanite Co-pilot, where a human interviewer runs the conversation with Basanite assisting in the background. Let the hirer know and they can invite you to a Co-pilot session instead.
               </p>
-              <Consent
-                checked={c.object_to_automated_decisions}
-                onChange={v => update('object_to_automated_decisions', v)}
-                title="I object to fully automated decisions and request human review."
-                detail="Your assessment will be flagged so the hirer must review it manually before acting on the score. This may delay your result by 1-3 working days."
-              />
             </div>
 
             <button
