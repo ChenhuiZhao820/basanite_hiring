@@ -12,8 +12,6 @@ type Props = {
   phase: Phase
   elapsedSeconds: number
   onEnd: () => void
-  /** Discards the candidate's current answer and re-asks the current question. */
-  onRedo?: () => void
   /** Live conversation state — drives the prominent centre status pill. */
   callStatus?: CallStatus
 }
@@ -51,7 +49,6 @@ export default function InterviewHeader({
   phase,
   elapsedSeconds,
   onEnd,
-  onRedo,
   callStatus,
 }: Props) {
   const showBadge = (phase === 'live' || phase === 'idle') && callStatus
@@ -72,20 +69,6 @@ export default function InterviewHeader({
       </div>
 
       <div className="flex items-center gap-2">
-        {phase === 'live' && onRedo && (
-          <button
-            type="button"
-            onClick={onRedo}
-            title="Discard your current answer and answer this question again"
-            className="inline-flex items-center gap-1.5 px-3 h-9 rounded-full border border-basanite-200/60 dark:border-earth-200/15 bg-white/60 dark:bg-basanite-900/60 text-basanite-700 dark:text-earth-200 hover:border-gold-500/60 hover:text-basanite-900 dark:hover:text-earth-100 transition-colors text-xs font-medium"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M1 4v6h6" />
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-            </svg>
-            <span className="hidden sm:inline">Redo answer</span>
-          </button>
-        )}
         <ThemeToggle />
         <EndButton onClick={onEnd} visible={phase === 'live'} />
       </div>

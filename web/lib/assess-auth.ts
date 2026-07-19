@@ -2,6 +2,18 @@ import { NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 /**
+ * DEV-ONLY local-testing bypass. When active, the candidate guards below
+ * skip Supabase browser/session auth entirely so the flow can be exercised
+ * locally without configuring the browser anon key. Double-gated: it can
+ * NEVER be active in production, and additionally requires the explicit
+ * ALLOW_TEST_CANDIDATE=1 flag, which must live only in gitignored .env
+ * files and never be committed. Do not push this flag to remote.
+ */
+export const TEST_CANDIDATE_BYPASS =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.ALLOW_TEST_CANDIDATE === '1'
+
+/**
  * Returns true if the role's optional token expiry has passed.
  * NULL / undefined means the token never expires (ENG-20).
  */
@@ -67,6 +79,30 @@ export async function assertCandidateOwnsAssessment(
     }
   }
 
+  // DEV-ONLY bypass: skip the candidate binding and just confirm the
+  // assessment belongs to the token's role. Never active in production.
+  if (TEST_CANDIDATE_BYPASS) {
+    const service = createServiceClient()
+    const role = await lookupRoleByToken(service, token)
+    if (!role) {
+      return { error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
+    }
+    const { data: assessment } = await service
+      .from('assessments')
+      .select('id, candidate_user_id')
+      .eq('id', assessmentId)
+      .eq('role_id', role.id)
+      .single()
+    if (!assessment) {
+      return { error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
+    }
+    return {
+      user: { id: assessment.candidate_user_id ?? 'test:local' },
+      role,
+      assessment: { id: assessment.id },
+    }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
@@ -103,6 +139,17 @@ export async function assertCandidateSession(
   | { error: Response; user?: never; role?: never }
   | { error?: never; user: { id: string }; role: { id: string } }
 > {
+  // DEV-ONLY bypass: skip Supabase session auth and just resolve the role
+  // from the token. Never active in production.
+  if (TEST_CANDIDATE_BYPASS) {
+    const service = createServiceClient()
+    const role = await lookupRoleByToken(service, token)
+    if (!role) {
+      return { error: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
+    }
+    return { user: { id: 'test:local' }, role }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {

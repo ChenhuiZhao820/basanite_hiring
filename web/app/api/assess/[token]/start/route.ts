@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { assertCandidateSession } from '@/lib/assess-auth'
+import { assertCandidateSession, TEST_CANDIDATE_BYPASS } from '@/lib/assess-auth'
+import { createServiceClient } from '@/lib/supabase/server'
 import { allow } from '@/lib/rate-limit'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
@@ -15,8 +16,29 @@ export async function POST(
   if (check.error) return check.error
 
   // Block anyone from starting an assessment as a different user.
-  if (body?.candidate_user_id !== check.user.id) {
+  // Skipped under the DEV-ONLY bypass, where there is no real session user.
+  if (!TEST_CANDIDATE_BYPASS && body?.candidate_user_id !== check.user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  // DEV-ONLY: candidate_user_id has a FK to auth.users, so a synthetic id
+  // won't insert. Mint a real, confirmed throwaway user via the service
+  // admin API and use its id (fresh per run avoids the one-active-per-
+  // candidate 409). Never active in production.
+  if (TEST_CANDIDATE_BYPASS) {
+    const service = createServiceClient()
+    const { data: created, error: createErr } = await service.auth.admin.createUser({
+      email: `test+${crypto.randomUUID()}@local.test`,
+      email_confirm: true,
+      user_metadata: { is_candidate: true, full_name: body?.candidate_name || 'Test Candidate' },
+    })
+    if (createErr || !created?.user) {
+      return NextResponse.json(
+        { error: `Test user creation failed: ${createErr?.message ?? 'unknown'}` },
+        { status: 500 },
+      )
+    }
+    body.candidate_user_id = created.user.id
   }
 
   // CV extraction hits Haiku; cap per candidate to 5 starts/hour.
