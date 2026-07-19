@@ -24,10 +24,10 @@ type Leak = {
 const EFFECTIVE = { key: 'effective', label: 'Effective spend', sub: 'The hire itself', color: '#847d72', value: 120 }
 
 const LEAKS: Leak[] = [
-  { key: 'recruiter', label: 'Recruiter hours', sub: 'Screening & phone screens', color: '#d6a06f', today: 55, basanite: 20 },
-  { key: 'engineer', label: 'Engineer hours', sub: '~17 hrs/hire on early rounds', color: '#c37d4e', today: 70, basanite: 28 },
-  { key: 'vacancy', label: 'Vacancy days', sub: '~30 days a role stays open', color: '#b05c39', today: 45, basanite: 22 },
-  { key: 'mishire', label: 'Mis-hire risk', sub: '46% fail within 18 months', color: '#93472f', today: 50, basanite: 30 },
+  { key: 'recruiter', label: 'Recruiter hours', sub: 'Screening & phone screens', color: '#b6c8d6', today: 55, basanite: 20 },
+  { key: 'engineer', label: 'Engineer hours', sub: '~17 hrs/hire on early rounds', color: '#8ea6ba', today: 70, basanite: 28 },
+  { key: 'vacancy', label: 'Vacancy days', sub: '~30 days a role stays open', color: '#6a869d', today: 45, basanite: 22 },
+  { key: 'mishire', label: 'Mis-hire risk', sub: '46% fail within 18 months', color: '#4e6a82', today: 50, basanite: 30 },
 ]
 
 const RECOVERED_COLOR = '#c49a2f'

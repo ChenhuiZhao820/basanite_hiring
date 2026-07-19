@@ -9,7 +9,7 @@ import { HowItWorksSlider } from '@/components/HowItWorksSlider'
 import { StoneTexture } from '@/components/StoneTexture'
 import { SavingsFlow } from '@/components/SavingsFlow'
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80'
+const HERO_IMAGE = '/hero-2.png'
 
 // Single source of truth for the public booking link. Cal.com EU instance
 // keeps the booking-PII transfer inside the EU jurisdiction.
@@ -185,7 +185,7 @@ function Hero() {
       <div className="relative w-full flex-1 overflow-hidden">
         <Image
           src={HERO_IMAGE}
-          alt="Tactile surface evocative of a basanite touchstone"
+          alt="Business professionals moving through a bright glass-walled office lobby"
           fill
           className="object-cover object-center"
           priority
