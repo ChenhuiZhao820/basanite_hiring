@@ -824,7 +824,7 @@ function WhatWeMeasure() {
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
           The dimensions
         </p>
-        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-8 leading-[1.15]">
+        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-12 sm:mb-14 leading-[1.15]">
           We measure how engineers think with AI
         </h2>
         <div className="bg-basanite-900 text-earth-50 overflow-hidden shadow-[0_20px_60px_-15px_rgba(15,15,14,0.4)] text-left">
@@ -854,7 +854,7 @@ function WhatWeMeasure() {
           </table>
         </div>
 
-        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mt-12 mb-4 max-w-3xl text-left">
+        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mt-16 sm:mt-20 mb-4 max-w-3xl text-left">
           Coding tests assume the candidate works alone. That world is gone.{' '}
           <span className="font-semibold text-basanite-900">
             76% of technical candidates now use AI mid-interview.
