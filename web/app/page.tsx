@@ -769,7 +769,7 @@ function FourLevers() {
         </div>
 
         <div className="border-t border-earth-200/40 mt-16 pt-10" />
-        <p className="italic text-basanite-500 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto text-left">
+        <p className="italic text-basanite-500 text-sm sm:text-base leading-relaxed max-w-2xl text-left">
           And it bends to your role, not the other way around. Custom
           dimensions, custom rubrics, and custom workbench tasks for
           engineering, data, ML, security, or wherever you take it next.
@@ -827,7 +827,7 @@ function WhatWeMeasure() {
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-8 leading-[1.15]">
           We measure how engineers think with AI
         </h2>
-        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mb-4 max-w-3xl mx-auto text-left">
+        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mb-4 max-w-3xl text-left">
           Coding tests assume the candidate works alone. That world is gone.{' '}
           <span className="font-semibold text-basanite-900">
             76% of technical candidates now use AI mid-interview.
@@ -836,7 +836,7 @@ function WhatWeMeasure() {
           &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
           think with it?&rdquo;
         </p>
-        <p className="text-basanite-700 text-base sm:text-lg mb-12 max-w-3xl mx-auto text-left">
+        <p className="text-basanite-700 text-base sm:text-lg mb-12 max-w-3xl text-left">
           Eight dimensions. One rubric. Defensible scoring.
         </p>
 
@@ -975,7 +975,7 @@ function HowItWorks() {
       <div ref={ref} className="reveal max-w-4xl mx-auto text-center">
         <p className="text-gold-600 text-xs font-semibold uppercase tracking-[0.2em] mb-3">The process</p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl mb-3">How Basanite works</h2>
-        <p className="text-basanite-600 text-base mb-16 max-w-xl mx-auto">
+        <p className="text-basanite-600 text-base mb-16 max-w-xl mx-auto text-justify">
           A two-round assessment: a conversational round that reveals what a candidate thinks, and an AI Collaboration Workbench round that reveals what they actually do.
         </p>
 
