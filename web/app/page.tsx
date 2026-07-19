@@ -827,19 +827,6 @@ function WhatWeMeasure() {
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-8 leading-[1.15]">
           We measure how engineers think with AI
         </h2>
-        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mb-4 max-w-3xl text-left">
-          Coding tests assume the candidate works alone. That world is gone.{' '}
-          <span className="font-semibold text-basanite-900">
-            76% of technical candidates now use AI mid-interview.
-          </span>{' '}
-          The question that predicts on-the-job performance has shifted from
-          &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
-          think with it?&rdquo;
-        </p>
-        <p className="text-basanite-700 text-base sm:text-lg mb-12 max-w-3xl text-left">
-          Eight dimensions. One rubric. Defensible scoring.
-        </p>
-
         <div className="bg-basanite-900 text-earth-50 overflow-hidden shadow-[0_20px_60px_-15px_rgba(15,15,14,0.4)] text-left">
           <table className="w-full border-collapse">
             <tbody>
@@ -867,7 +854,20 @@ function WhatWeMeasure() {
           </table>
         </div>
 
-        <div className="mt-10">
+        <p className="text-basanite-700 text-base sm:text-lg leading-relaxed mt-12 mb-4 max-w-3xl text-left">
+          Coding tests assume the candidate works alone. That world is gone.{' '}
+          <span className="font-semibold text-basanite-900">
+            76% of technical candidates now use AI mid-interview.
+          </span>{' '}
+          The question that predicts on-the-job performance has shifted from
+          &ldquo;can they code without it?&rdquo; to &ldquo;how well do they
+          think with it?&rdquo;
+        </p>
+        <p className="text-basanite-700 text-base sm:text-lg max-w-3xl text-left">
+          Eight dimensions. One rubric. Defensible scoring.
+        </p>
+
+        <div className="mt-8 text-left">
           <a
             href="/methodology"
             className="text-gold-700 hover:text-gold-600 underline underline-offset-4 decoration-gold-500/60 font-medium text-base sm:text-lg"
