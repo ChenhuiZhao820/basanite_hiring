@@ -199,6 +199,9 @@ export default function VoiceInterview({
     },
     onMessage: ({ message, source }) => {
       if (!message) return
+      // The redo directive is injected via sendUserMessage so it echoes back
+      // as a 'user' message. Keep it out of the visible transcript.
+      if (source === 'user' && message.startsWith('SYSTEM DIRECTIVE')) return
       messageCountRef.current += 1
       const role: Bubble['role'] = source === 'user' ? 'user' : 'assistant'
       setBubbles(prev => [...prev, { role, content: message }])
@@ -366,8 +369,12 @@ export default function VoiceInterview({
       // "Reverting" forever.
       if (revertTimeoutRef.current != null) window.clearTimeout(revertTimeoutRef.current)
       revertTimeoutRef.current = window.setTimeout(() => { setReverting(false); revertTimeoutRef.current = null }, 25_000)
-      conversation.sendContextualUpdate(
-        `SYSTEM DIRECTIVE: The candidate pressed the 'Redo answer' button (redo ${redoCountRef.current} of 3 for this question). Completely disregard their most recent answer to the CURRENT question. Say exactly: "No problem, let's restart." Then repeat the SAME current question again. Do not advance to a new question.`,
+      // Must be sendUserMessage, not sendContextualUpdate: contextual updates
+      // are absorbed silently and only influence the agent's NEXT turn, so
+      // Baz would sit there until the candidate spoke again. A user message
+      // is a real turn and triggers an immediate response.
+      conversation.sendUserMessage(
+        `SYSTEM DIRECTIVE (not spoken by the candidate): The candidate pressed the 'Redo answer' button (redo ${redoCountRef.current} of 3 for this question). Completely disregard their most recent answer to the CURRENT question. Respond now, saying exactly: "No problem, let's restart." Then repeat the SAME current question again. Do not advance to a new question.`,
       )
       const left = 3 - redoCountRef.current
       setRedoNotice(
