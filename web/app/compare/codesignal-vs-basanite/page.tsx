@@ -8,7 +8,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { LogoMark } from '@/components/Logo'
+import { SiteNav } from '@/components/SiteNav'
 import { buildMetadata, faqPageJsonLd, breadcrumbJsonLd } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
@@ -139,7 +139,7 @@ export default async function CodeSignalVsBasanitePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ldCrumbs) }}
       />
 
-      <SlimNav />
+      <SiteNav />
 
       <main className="max-w-4xl mx-auto px-6 pt-24 pb-32">
         <header className="mb-14">
@@ -316,31 +316,6 @@ export default async function CodeSignalVsBasanitePage() {
 
       <SlimFooter />
     </div>
-  )
-}
-
-function SlimNav() {
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-earth-50/85 backdrop-blur-md border-b border-earth-200/60">
-      <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <LogoMark size={26} dark />
-          <span className="font-display text-basanite-900 text-lg">Basanite</span>
-        </Link>
-        <div className="flex items-center gap-3 sm:gap-5 text-sm text-basanite-600">
-          <Link href="/pricing" className="hidden sm:inline hover:text-basanite-900 transition-colors">Pricing</Link>
-          <Link href="/faq" className="hidden sm:inline hover:text-basanite-900 transition-colors">FAQ</Link>
-          <a
-            href="https://cal.eu/basanite/intro"
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-basanite-900 border border-basanite-900 px-4 py-2 hover:bg-basanite-900 hover:text-earth-50 transition-colors duration-200"
-          >
-            Book a call
-          </a>
-        </div>
-      </div>
-    </nav>
   )
 }
 

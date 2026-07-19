@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LogoMark } from '@/components/Logo'
+import { SiteNav } from '@/components/SiteNav'
 
 export const metadata: Metadata = {
   title: 'Basanite vs HackerRank, CodeSignal, HireVue & Karat | Basanite',
@@ -162,26 +162,7 @@ function PipelineRow({ label, labelClass, nodes, note }: { label: string; labelC
 export default function ComparePage() {
   return (
     <div className="min-h-screen bg-earth-50 text-basanite-900">
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-earth-50/85 backdrop-blur-md border-b border-earth-200/60">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <LogoMark size={26} dark />
-            <span className="font-display text-basanite-900 text-lg">Basanite</span>
-          </Link>
-          <div className="flex items-center gap-3 sm:gap-5 text-sm text-basanite-600">
-            <Link href="/pricing" className="hidden sm:inline hover:text-basanite-900 transition-colors">Pricing</Link>
-            <Link href="/faq" className="hidden sm:inline hover:text-basanite-900 transition-colors">FAQ</Link>
-            <a
-              href={BOOK_A_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-semibold text-earth-50 bg-basanite-900 px-4 py-2 hover:bg-gold-600 transition-colors duration-200"
-            >
-              Book a call
-            </a>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main className="max-w-5xl mx-auto px-6 pt-28 pb-24">
         <header className="mb-14 max-w-3xl">

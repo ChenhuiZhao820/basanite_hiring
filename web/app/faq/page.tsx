@@ -11,7 +11,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { headers } from 'next/headers'
-import { LogoMark } from '@/components/Logo'
+import { SiteNav } from '@/components/SiteNav'
 import { buildMetadata, faqPageJsonLd, breadcrumbJsonLd } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
@@ -350,7 +350,7 @@ export default async function FaqPage() {
         nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ldCrumbs) }}
       />
-      <FaqNav />
+      <SiteNav />
 
       <main className="max-w-4xl mx-auto px-6 pt-24 pb-32">
         <header className="mb-16">
@@ -442,34 +442,6 @@ export default async function FaqPage() {
   )
 }
 
-// ─── Slim nav (logo + back-to-home + sign-in) ─────────────────────────────
-
-function FaqNav() {
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-earth-50/85 backdrop-blur-md border-b border-earth-200/60">
-      <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <LogoMark size={26} dark />
-          <span className="font-display text-basanite-900 text-lg">Basanite</span>
-        </Link>
-        <div className="flex items-center gap-3 sm:gap-5 text-sm text-basanite-600">
-          <Link href="/#how-it-works" className="hidden sm:inline hover:text-basanite-900 transition-colors">
-            How it works
-          </Link>
-          <Link href="/#research" className="hidden sm:inline hover:text-basanite-900 transition-colors">
-            Research
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-basanite-900 border border-basanite-900 px-4 py-2 hover:bg-basanite-900 hover:text-earth-50 transition-colors duration-200"
-          >
-            Sign in
-          </Link>
-        </div>
-      </div>
-    </nav>
-  )
-}
 
 function FaqFooter() {
   return (

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { LogoMark } from '@/components/Logo'
+import { SiteNav } from '@/components/SiteNav'
 import { SpiderChart } from '@/components/SpiderChart'
 
 export const metadata: Metadata = { title: 'Methodology' }
@@ -85,7 +85,7 @@ const DIMENSIONS: Dimension[] = [
 export default function MethodologyPage() {
   return (
     <div className="min-h-screen bg-earth-50 text-basanite-900">
-      <MethodologyNav />
+      <SiteNav />
 
       <main className="max-w-4xl mx-auto px-6 pt-24 pb-32">
         <Link
@@ -300,39 +300,6 @@ export default function MethodologyPage() {
 
       <MethodologyFooter />
     </div>
-  )
-}
-
-function MethodologyNav() {
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-40 bg-earth-50/85 backdrop-blur-md border-b border-earth-200/60">
-      <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <LogoMark size={26} dark />
-          <span className="font-display text-basanite-900 text-lg">Basanite</span>
-        </Link>
-        <div className="flex items-center gap-3 sm:gap-5 text-sm text-basanite-600">
-          <Link
-            href="/#how-it-works"
-            className="hidden sm:inline hover:text-basanite-900 transition-colors"
-          >
-            How it works
-          </Link>
-          <Link
-            href="/faq"
-            className="hidden sm:inline hover:text-basanite-900 transition-colors"
-          >
-            FAQ
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-basanite-900 border border-basanite-900 px-4 py-2 hover:bg-basanite-900 hover:text-earth-50 transition-colors duration-200"
-          >
-            Sign in
-          </Link>
-        </div>
-      </div>
-    </nav>
   )
 }
 
