@@ -54,11 +54,11 @@ function Hero() {
             <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
           </svg>
           <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
-            Hire with confidence.<br />
+            Interview with Confidence.<br />
             <span className="text-gold-400">Know your candidates better.</span>
           </h1>
           <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
-            AI-augmented interviews for more informed hiring, faster time to hire, and better candidate understanding.
+            AI-enhanced interviews for more informed and faster hiring, measuring the skills that matter today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
             <a
