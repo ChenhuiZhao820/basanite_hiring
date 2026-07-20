@@ -522,6 +522,11 @@ export function HowItWorksSlider() {
   // Swipe navigation (mouse drag or touch).
   const dragStartX = useRef<number | null>(null)
   const onPointerDown = useCallback((e: React.PointerEvent) => {
+    // The arrow buttons sit inside the stage. If we capture the pointer here,
+    // the capture retargets pointerup to the stage and the button never gets a
+    // matching down+up pair, so its onClick never fires. Let presses that start
+    // on an interactive control through untouched.
+    if ((e.target as HTMLElement).closest('button')) return
     dragStartX.current = e.clientX
     e.currentTarget.setPointerCapture(e.pointerId)
   }, [])
