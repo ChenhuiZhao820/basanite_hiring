@@ -60,6 +60,31 @@ body {
   transform: translateY(0);
 }
 
+/* ── Hero entrance cascade ──
+   Above the fold, so it fires on mount (via .hero-in) rather than on
+   scroll. Each item rises and fades in on a stagger set by --d, matching
+   the .reveal feel (translateY, 0.5s ease) used across the rest of the page. */
+.hero-item {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.hero-in .hero-item {
+  animation: hero-item-in 0.5s ease var(--d, 0ms) both;
+}
+@keyframes hero-item-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-item {
+    opacity: 1;
+    transform: none;
+  }
+  .hero-in .hero-item {
+    animation: none;
+  }
+}
+
 /* ── Homepage "What is Basanite" flow chart ──
    Items stagger in once .flow-in is set. When .flow-swapped is added,
    the three early-round nodes collapse and fade while a single gold

@@ -34,6 +34,15 @@ function useReveal() {
 
 // ─── Hero (original full-bleed) ─────────────────────────────────────────
 function Hero() {
+  // Above the fold, so the entrance cascade fires on mount rather than on
+  // scroll. .hero-in unlocks the staggered .hero-item animations; each item
+  // carries its own --d delay to arrive top-to-bottom.
+  const [entered, setEntered] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setEntered(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+
   return (
     <section className="pt-16 min-h-screen flex flex-col">
       <div className="relative w-full flex-1 overflow-hidden">
@@ -45,22 +54,22 @@ function Hero() {
           priority
         />
         <div className="absolute inset-0 bg-basanite-950/70" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-          <svg width="40" height="54" viewBox="0 0 40 54" fill="none" aria-hidden="true" className="mb-8">
+        <div className={`absolute inset-0 flex flex-col items-center justify-center px-6 text-center ${entered ? 'hero-in' : ''}`}>
+          <svg width="40" height="54" viewBox="0 0 40 54" fill="none" aria-hidden="true" className="hero-item mb-8" style={{ ['--d' as string]: '0ms' }}>
             <path d="M20 0 L0 18 L20 18 Z" fill="#e8c555" />
             <path d="M20 0 L40 18 L20 18 Z" fill="#d4a843" />
             <path d="M0 18 L20 18 L20 54 Z" fill="#c49a2f" />
             <path d="M40 18 L20 18 L20 54 Z" fill="#a87f24" />
             <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
           </svg>
-          <h1 className="font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl">
+          <h1 className="hero-item font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl" style={{ ['--d' as string]: '120ms' }}>
             Interview with Confidence.<br />
             <span className="text-gold-400">Know your candidates better.</span>
           </h1>
-          <p className="text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">
+          <p className="hero-item text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10" style={{ ['--d' as string]: '380ms' }}>
             AI-enhanced interviews for more informed and faster hiring, measuring the skills that matter today.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+          <div className="hero-item flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto" style={{ ['--d' as string]: '520ms' }}>
             <a
               href={BOOK_A_CALL_URL}
               target="_blank"
