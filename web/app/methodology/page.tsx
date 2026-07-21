@@ -2,276 +2,51 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { SiteNav } from '@/components/SiteNav'
-import { SpiderChart } from '@/components/SpiderChart'
+import { StoneTexture } from '@/components/StoneTexture'
 
 export const metadata: Metadata = { title: 'Methodology' }
-
-type Dimension = {
-  name: string
-  shortName: string
-  summary: string
-  provenance: ReactNode
-}
-
-const DIMENSIONS: Dimension[] = [
-  {
-    name: 'Judgment Under Ambiguity',
-    shortName: 'Judgment',
-    summary:
-      'Committing to a defensible course of action when information is incomplete — without either paralysis or false confidence.',
-    provenance: <>Knight, <em>Risk, Uncertainty and Profit</em>; Tetlock&apos;s superforecasting work.</>,
-  },
-  {
-    name: 'Tacit-Knowledge Articulation',
-    shortName: 'Tacit',
-    summary:
-      'Surfacing knowledge that lives in practice rather than in text — the things experienced engineers know but cannot easily say.',
-    provenance: <>Polanyi, <em>The Tacit Dimension</em>; Nonaka &amp; Takeuchi; Collins.</>,
-  },
-  {
-    name: 'Intuition Under Data Scarcity',
-    shortName: 'Intuition',
-    summary:
-      'Recognition-primed judgment that distinguishes real expertise from vocabulary. The pattern-matching that fires before you can explain it.',
-    provenance: <>Klein, <em>Sources of Power</em>; Dreyfus &amp; Dreyfus; Kahneman &amp; Klein.</>,
-  },
-  {
-    name: 'Psychological Safety & Collective Learning',
-    shortName: 'Safety',
-    summary:
-      'Creating conditions where errors surface early and dissent is voiced — the team-level capability that lets engineering organisations actually learn.',
-    provenance: <>Edmondson, <em>The Fearless Organization</em>; Google&apos;s Project Aristotle.</>,
-  },
-  {
-    name: 'Creative Problem Reframing',
-    shortName: 'Reframing',
-    summary:
-      'Recognising when the team is solving the wrong problem — and reformulating it before more effort is poured into the wrong shape.',
-    provenance: <>Schön, <em>The Reflective Practitioner</em>; Dorst, <em>Frame Innovation</em>.</>,
-  },
-  {
-    name: 'Ethical Reasoning in Practice',
-    shortName: 'Ethics',
-    summary:
-      'Feeling the weight of real tradeoffs and navigating them with integrity — the practical wisdom that abstract ethics training does not produce.',
-    provenance: (
-      <>
-        Aristotle&apos;s <em>phronesis</em>; Rest&apos;s four-component model; the
-        applied AI-ethics literature.
-      </>
-    ),
-  },
-  {
-    name: 'Transformative Learning From Experience',
-    shortName: 'Learning',
-    summary:
-      'Updating prior beliefs in proportion to disconfirming evidence. The capacity to be changed by experience, not merely accumulate it.',
-    provenance: <>Flavell; Kolb; Mezirow; Argyris &amp; Schön.</>,
-  },
-  {
-    name: 'Human–AI Collaboration Intelligence',
-    shortName: 'Human–AI',
-    summary:
-      'Fluent, calibrated orchestration of AI tooling — the dimension no other interview measures. Where to delegate, where to verify, where to override.',
-    provenance: (
-      <>
-        Mollick, <em>Co-Intelligence</em>; Dell&apos;Acqua et al., <em>Navigating the
-        Jagged Technological Frontier</em>.
-      </>
-    ),
-  },
-]
 
 export default function MethodologyPage() {
   return (
     <div className="min-h-screen bg-earth-50 text-basanite-900">
       <SiteNav />
 
-      <main className="max-w-4xl mx-auto px-6 pt-24 pb-32">
-        <Link
-          href="/"
-          className="inline-block text-sm text-basanite-600 hover:text-basanite-900 transition-colors mb-8"
-        >
-          &larr; Back to homepage
-        </Link>
-
-        <header className="mb-16">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.25em] mb-4">
-            The research
+      {/* Lean dark opener — the "What Basanite is built on" band that used
+          to live on the homepage. pt clears the fixed nav; elements rise in
+          on mount via the hiw-rise utility (CSS-only, so it works from this
+          server component and respects prefers-reduced-motion). */}
+      <section className="relative pt-32 pb-16 sm:pt-36 sm:pb-20 px-6 bg-basanite-900 overflow-hidden">
+        <StoneTexture />
+        <div className="relative z-10 w-full max-w-3xl mx-auto text-center">
+          <p
+            className="hiw-rise text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4"
+            style={{ ['--d' as string]: '0ms' }}
+          >
+            What Basanite is built on
           </p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.1] mb-6">
-            How we measure capability.
+          <h1
+            className="hiw-rise font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6 leading-[1.15]"
+            style={{ ['--d' as string]: '140ms' }}
+          >
+            We measure genuine capability, not{' '}
+            <em className="text-gold-400">performed</em> competence.
           </h1>
-          <p className="text-basanite-600 text-lg leading-relaxed max-w-2xl">
-            Eight metacognitive dimensions drawn from cognitive science,
-            philosophy of knowledge, and the emerging literature on human–AI
-            collaboration. Each has a formal construct definition, intellectual
-            provenance, and an empirical reference list.
+          <p
+            className="hiw-rise text-earth-300 text-base sm:text-lg leading-relaxed"
+            style={{ ['--d' as string]: '300ms' }}
+          >
+            Most hiring tools reward the candidate who best approximates the
+            idea of a good hire. Basanite is built to surface whether they
+            actually are one. Real ability has blurry edges, performed ability
+            doesn&rsquo;t. Every decision below exists to find that edge.
           </p>
-        </header>
+        </div>
+      </section>
 
-        <section className="mb-20 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-          <div>
-            <SpiderChart />
-          </div>
-          <div>
-            <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
-              Shape, not score
-            </p>
-            <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-4">
-              Capability is a shape.
-            </h2>
-            <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
-              Every candidate is scored across eight metacognitive dimensions.
-              The visualization above illustrates what a single candidate
-              profile looks like — strengths and gaps surfaced together, not
-              collapsed into one number.
-            </p>
-          </div>
-        </section>
+      <FourDecisions />
 
-        <section className="mb-20 border-l-2 border-gold-500/50 pl-6 sm:pl-8 py-2 max-w-3xl">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
-            Methodology
-          </p>
-          <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-5">
-            Construct-Templated Adaptive Interviewing.
-          </h2>
-          <div className="space-y-4 text-basanite-600 text-base sm:text-lg leading-relaxed">
-            <p>
-              These are the qualities that distinguish high performers in
-              complex, AI-era engineering work — and the ones that conventional
-              technical-interview instruments cannot detect. They cannot be
-              retrieved from a knowledge base. They are forged through real
-              experience and legible only to evaluators who know what to look
-              for.
-            </p>
-            <p>
-              We call the methodology{' '}
-              <span className="font-semibold text-basanite-900">
-                Construct-Templated Adaptive Interviewing
-              </span>
-              , or CTAI. Every candidate is asked different questions, drawn
-              from their own CV — but the underlying constructs and scoring
-              rubrics are identical. A self-taught engineer is evaluated against
-              the same evidence bar as a Cambridge graduate.
-            </p>
-            <p>
-              No dimension may receive a high score without a specific verbatim
-              statement from the candidate cited as evidence — drawn either from
-              the Round 1 transcript or the Round 2 reflection conversation, or
-              from observable patterns in the Round 2 trace. Scores are grounded
-              in what was actually said and done, not overall impression.
-            </p>
-          </div>
-        </section>
-
-        <section className="mb-16">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
-            The eight dimensions
-          </p>
-          <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-10">
-            Capability is a shape, not a number.
-          </h2>
-
-          <ol className="space-y-6">
-            {DIMENSIONS.map((d, i) => (
-              <li
-                key={d.name}
-                className="border border-earth-200 bg-white p-6 sm:p-8"
-              >
-                <div className="flex items-baseline gap-4 mb-3">
-                  <span className="font-display text-gold-600 text-sm tracking-widest">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <h3 className="font-display text-basanite-900 text-xl sm:text-2xl leading-tight">
-                    {d.name}
-                  </h3>
-                </div>
-                <p className="text-basanite-600 text-base leading-relaxed mb-3">
-                  {d.summary}
-                </p>
-                <p className="text-basanite-500 text-sm leading-relaxed">
-                  <span className="font-semibold text-basanite-700">
-                    Provenance:
-                  </span>{' '}
-                  {d.provenance}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section
-          id="roi-assumptions"
-          className="border-t border-earth-200 pt-12 mb-20 scroll-mt-24"
-        >
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
-            ROI calculator
-          </p>
-          <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-6">
-            The assumptions behind your number.
-          </h2>
-          <p className="text-basanite-600 text-base leading-relaxed mb-8 max-w-2xl">
-            The calculator on the homepage uses six constants. Each is set
-            conservatively against the cited benchmark — we&rsquo;d rather
-            understate the recovered value than overstate it.
-          </p>
-          <ul className="space-y-5">
-            <li className="border-l-2 border-gold-500/40 pl-5">
-              <p className="text-basanite-900 font-semibold mb-1">
-                Time saved per hire (15 hours)
-              </p>
-              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
-                Derived from Zivaro 2025 and Ashby 2026 benchmarks for
-                technical screening hours.
-              </p>
-            </li>
-            <li className="border-l-2 border-gold-500/40 pl-5">
-              <p className="text-basanite-900 font-semibold mb-1">
-                Blended hourly cost (&pound;80)
-              </p>
-              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
-                Weighted mix of recruiter and engineering time.
-              </p>
-            </li>
-            <li className="border-l-2 border-gold-500/40 pl-5">
-              <p className="text-basanite-900 font-semibold mb-1">
-                Mishire reduction (10 percentage points)
-              </p>
-              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
-                Conservative estimate against a 46% baseline (Leadership IQ,
-                n=20,000).
-              </p>
-            </li>
-            <li className="border-l-2 border-gold-500/40 pl-5">
-              <p className="text-basanite-900 font-semibold mb-1">
-                Replacement cost multiplier (0.5 &times; annual salary)
-              </p>
-              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
-                Low end of SHRM 2025 replacement cost range.
-              </p>
-            </li>
-            <li className="border-l-2 border-gold-500/40 pl-5">
-              <p className="text-basanite-900 font-semibold mb-1">
-                Days of vacancy avoided (10)
-              </p>
-              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
-                Conservative estimate against 30-day average reduction.
-              </p>
-            </li>
-            <li className="border-l-2 border-gold-500/40 pl-5">
-              <p className="text-basanite-900 font-semibold mb-1">
-                Vacancy cost per day (&pound;500)
-              </p>
-              <p className="text-basanite-600 text-sm sm:text-base leading-relaxed">
-                Floor estimate from McKinsey developer-productivity research.
-              </p>
-            </li>
-          </ul>
-        </section>
-
-        <section className="border-t border-earth-200 pt-12 text-center">
+      <main className="max-w-4xl mx-auto px-6 pt-4 pb-24">
+        <section className="pt-12 text-center">
           <h2 className="font-display text-2xl text-basanite-900 mb-3">
             More questions?
           </h2>
@@ -300,6 +75,245 @@ export default function MethodologyPage() {
 
       <MethodologyFooter />
     </div>
+  )
+}
+
+// ─── How we get a true signal · four decisions ───────────────────────────
+// Redesigned from the reference layout in the homepage's own language:
+// centered header, hairline-divided rows that alternate text and visual,
+// white bordered cards, gold for the real signal and clay for the accent,
+// and the same uppercase micro-label vocabulary used everywhere else.
+
+function RoundsCard() {
+  return (
+    <div className="border border-earth-200 bg-white p-8 sm:p-10">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-5 sm:gap-7">
+        <div className="flex flex-col items-center justify-center text-center gap-2.5">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a87f24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            <line x1="8" y1="9" x2="16" y2="9" />
+            <line x1="8" y1="12" x2="13" y2="12" />
+          </svg>
+          <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
+            Round one
+          </p>
+          <p className="font-display text-basanite-900 text-xl sm:text-2xl leading-none">
+            Conversation
+          </p>
+          <p className="text-basanite-500 text-sm italic">what they think</p>
+        </div>
+        <div className="flex flex-col items-center gap-2" aria-hidden="true">
+          <span className="flex-1 w-px bg-earth-300" />
+          <span className="text-gold-500 text-xs select-none">&#9670;</span>
+          <span className="flex-1 w-px bg-earth-300" />
+        </div>
+        <div className="flex flex-col items-center justify-center text-center gap-2.5">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#b03f28" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="1" />
+            <polyline points="6 9 9 12 6 15" />
+            <line x1="12" y1="15" x2="17" y2="15" />
+          </svg>
+          <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
+            Round two
+          </p>
+          <p className="font-display text-clay-600 text-xl sm:text-2xl leading-none">
+            Workbench
+          </p>
+          <p className="text-basanite-500 text-sm italic">what they do</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function OneBarCard() {
+  return (
+    <div className="border border-earth-200 bg-white p-6 sm:p-8">
+      <svg viewBox="0 0 340 200" className="w-full h-auto" aria-hidden="true">
+        {[
+          { y: 40, label: 'CV A' },
+          { y: 84, label: 'CV B' },
+          { y: 128, label: 'CV C' },
+          { y: 172, label: 'CV D' },
+        ].map(cv => (
+          <g key={cv.label}>
+            <text x="34" y={cv.y - 9} fontSize="10" letterSpacing="1.5" fill="#a49a8c">
+              {cv.label}
+            </text>
+            <circle cx="38" cy={cv.y} r="3.5" fill="#c49a2f" />
+            <path
+              d={`M42 ${cv.y} C 130 ${cv.y}, 180 106, 252 106`}
+              stroke="#c49a2f"
+              strokeWidth="1.5"
+              opacity="0.65"
+              fill="none"
+            />
+          </g>
+        ))}
+        <line x1="256" y1="72" x2="256" y2="140" stroke="#b03f28" strokeWidth="3.5" strokeLinecap="round" />
+        <text x="268" y="101" fontSize="11" letterSpacing="1" fill="#b03f28" fontWeight="600">
+          one
+        </text>
+        <text x="268" y="116" fontSize="11" letterSpacing="1" fill="#b03f28" fontWeight="600">
+          bar
+        </text>
+      </svg>
+    </div>
+  )
+}
+
+function EvidenceCard() {
+  return (
+    <div className="border border-earth-200 bg-white p-7 sm:p-8 text-left">
+      <div className="flex items-center justify-between gap-4 mb-5">
+        <p className="text-basanite-900 font-semibold text-sm">
+          Judgment under ambiguity
+        </p>
+        <div className="flex items-center gap-1.5" aria-label="Scored four out of five">
+          {[0, 1, 2, 3].map(i => (
+            <span key={i} className="w-2 h-2 rounded-full bg-gold-500" />
+          ))}
+          <span className="w-2 h-2 rounded-full bg-earth-200" />
+        </div>
+      </div>
+      <blockquote className="border-l-2 border-clay-500/70 pl-4">
+        <p className="font-display italic text-basanite-800 text-base sm:text-lg leading-relaxed">
+          &ldquo;I shipped the read path first and left writes behind a flag,
+          we didn&rsquo;t have the load data to commit to the sharding scheme
+          yet.&rdquo;
+        </p>
+      </blockquote>
+      <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.18em] mt-4">
+        Verbatim &middot; Round 1 transcript
+      </p>
+    </div>
+  )
+}
+
+// Semicircular gauge. `fraction` fills the arc clockwise from the left.
+function Gauge({ fraction, color, value, label }: { fraction: number; color: string; value: string; label: string }) {
+  const r = 56
+  const len = Math.PI * r
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 140 78" className="w-32 sm:w-36 h-auto" aria-hidden="true">
+        <path
+          d={`M14 72 A ${r} ${r} 0 0 1 126 72`}
+          stroke="#e8e3d8"
+          strokeWidth="9"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d={`M14 72 A ${r} ${r} 0 0 1 126 72`}
+          stroke={color}
+          strokeWidth="9"
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={`${len * fraction} ${len}`}
+        />
+        <text x="70" y="62" textAnchor="middle" fontSize="20" fill="#26241f" className="font-display">
+          {value}
+        </text>
+      </svg>
+      <p className="text-basanite-600 text-xs font-semibold mt-1">{label}</p>
+    </div>
+  )
+}
+
+function TwoReadingsCard() {
+  return (
+    <div className="border border-earth-200 bg-white p-8 sm:p-10">
+      <div className="flex items-center justify-center gap-8 sm:gap-12">
+        <Gauge fraction={0.82} color="#c49a2f" value="High" label="Capability" />
+        <span className="self-stretch w-px border-l border-dashed border-earth-300" aria-hidden="true" />
+        <Gauge fraction={0.5} color="#6b6558" value="Med" label="AI reliance" />
+      </div>
+      <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em] text-center mt-6">
+        Measured separately
+      </p>
+    </div>
+  )
+}
+
+const DECISIONS: {
+  kicker: string
+  title: string
+  body: string
+  visual: ReactNode
+}[] = [
+  {
+    kicker: '01 · Two rounds',
+    title: 'What they think, and what they do.',
+    body:
+      'Round one is a conversation about their real work: how they reason, and the things experienced engineers know but rarely say out loud. Round two drops them into a sandbox that looks like the job: a real codebase, an AI coding agent, a ticket to ship. One reveals thinking. The other reveals doing. The gap between them is itself the signal.',
+    visual: <RoundsCard />,
+  },
+  {
+    kicker: '02 · AI use is a plus, not a red flag',
+    title: 'We report "did they lean on AI" separately from "are they good."',
+    body:
+      "A candidate who used an agent and produced strong, verified work is not the same as one who used it to paper over a gap, and you shouldn't have to guess which. Basanite keeps the two readings apart and hands you both. You get the read, not a verdict.",
+    visual: <TwoReadingsCard />,
+  },
+  {
+    kicker: '03 · Evidence, not vibes',
+    title: 'Every score is tied to something they said or did.',
+    body:
+      'Nothing scores high on impression. A strong rating has to be backed by a specific, quoted moment from the interview, surfaced in the report so the hirer sees the evidence, not just the number.',
+    visual: <EvidenceCard />,
+  },
+  {
+    kicker: '04 · Same bar, different questions',
+    title: "Everyone's questions differ. The bar doesn't.",
+    body:
+      "No two candidates get the same questions. Each interview is built from their own CV, so it can't be leaked, rehearsed, or looked up. But the qualities being measured, and the standard they're held to, are identical. A self-taught engineer is measured against the same bar as a Cambridge graduate.",
+    visual: <OneBarCard />,
+  },
+]
+
+function FourDecisions() {
+  return (
+    <section className="py-16 sm:py-20 px-6 bg-earth-50 border-b border-earth-200/80">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto">
+          <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
+            How we get a true signal
+          </p>
+          <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl leading-[1.15] mb-5">
+            Four decisions do the work.
+          </h2>
+          <p className="text-basanite-600 text-base sm:text-lg leading-relaxed">
+            Not a question bank. A method built so the signal survives contact
+            with a prepared, AI-assisted candidate.
+          </p>
+        </div>
+
+        <div className="mt-8 divide-y divide-earth-200">
+          {DECISIONS.map((d, i) => (
+            <div
+              key={d.kicker}
+              className="grid md:grid-cols-2 gap-8 md:gap-14 items-center py-12 sm:py-14"
+            >
+              <div className={i % 2 === 1 ? 'md:order-2' : undefined}>
+                <p className="text-clay-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
+                  {d.kicker}
+                </p>
+                <h3 className="font-display text-basanite-900 text-2xl sm:text-3xl leading-tight mb-4">
+                  {d.title}
+                </h3>
+                <p className="text-basanite-600 text-base leading-relaxed">
+                  {d.body}
+                </p>
+              </div>
+              <div className={i % 2 === 1 ? 'md:order-1' : undefined}>
+                {d.visual}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 

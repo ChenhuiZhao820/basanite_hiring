@@ -265,7 +265,7 @@ function MockRound1() {
           className="hiw-rise self-end max-w-[80%] bg-gold-500/10 border border-gold-500/40 px-3.5 py-2.5 text-xs text-basanite-800"
           style={{ ['--d' as string]: '750ms' }}
         >
-          The retry queue — we&rsquo;d assumed idempotency that wasn&rsquo;t there&hellip;
+          The retry queue: we&rsquo;d assumed idempotency that wasn&rsquo;t there&hellip;
         </div>
         <div
           className="hiw-rise self-start max-w-[80%] bg-earth-100 border border-earth-200 px-3.5 py-2.5 text-xs text-basanite-800"
