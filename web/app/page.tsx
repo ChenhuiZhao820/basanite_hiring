@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
 import { AuthFragmentHandler } from '@/components/AuthFragmentHandler'
@@ -178,10 +178,65 @@ function FlowNode({ label, caption, dim, delay }: { label: string; caption?: str
   )
 }
 
+// Shared parallax backdrop spanning "What is Basanite", "The problem" and
+// "The reframe".
+// The image layer is taller than the group and shifts upward as the group
+// scrolls, clipped by overflow-hidden so it slides away behind the hero
+// above. The 45% factor and 45% top/bottom buffer (h-[190%]) both scale with
+// the container height, so the clamp fits exactly regardless of how tall the
+// combined sections are.
+function ParallaxGroup({ children }: { children: ReactNode }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const parallaxRef = useRef<HTMLDivElement>(null)
+  const [reduced, setReduced] = useState(false)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
+  }, [])
+
+  useEffect(() => {
+    if (reduced) return
+    const wrap = wrapRef.current
+    const layer = parallaxRef.current
+    if (!wrap || !layer) return
+
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const rect = wrap.getBoundingClientRect()
+      const max = rect.height * 0.45
+      const shift = Math.max(-max, Math.min(max, rect.top * 0.45))
+      layer.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [reduced])
+
+  return (
+    <div ref={wrapRef} className="relative overflow-hidden border-b border-earth-200/80">
+      <div
+        ref={parallaxRef}
+        aria-hidden="true"
+        className="absolute inset-x-0 -top-[45%] h-[190%] will-change-transform"
+      >
+        <Image src="/bg_pic_sections.png" alt="" fill className="object-cover object-center" />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-earth-100/80" />
+      <div className="relative">{children}</div>
+    </div>
+  )
+}
+
 function WhereBasaniteFits() {
   const ref = useRef<HTMLDivElement>(null)
-  const sectionRef = useRef<HTMLElement>(null)
-  const parallaxRef = useRef<HTMLDivElement>(null)
   const [entered, setEntered] = useState(false)
   const [inView, setInView] = useState(false)
   const [swapped, setSwapped] = useState(false)
@@ -218,58 +273,11 @@ function WhereBasaniteFits() {
     return () => clearTimeout(t)
   }, [reduced, entered, inView, swapped])
 
-  // Parallax: the background layer is taller than the section and shifts
-  // upward as the section scrolls, clipped by the section's overflow-hidden
-  // so the image slides away behind the section above it. The layer has a
-  // 30% buffer top and bottom (h-[160%], -top-[30%]) so no gap is exposed
-  // within the clamped translate range.
-  useEffect(() => {
-    if (reduced) return
-    const section = sectionRef.current
-    const layer = parallaxRef.current
-    if (!section || !layer) return
-
-    let raf = 0
-    const update = () => {
-      raf = 0
-      const rect = section.getBoundingClientRect()
-      // rect.top is 0 when the section top meets the viewport top and grows
-      // negative as it scrolls past. Positive factor => image drifts up.
-      const max = rect.height * 0.45
-      const shift = Math.max(-max, Math.min(max, rect.top * 0.45))
-      layer.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`
-    }
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
-
-    update()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [reduced])
-
   return (
     <section
-      ref={sectionRef}
       aria-label="What Basanite is and where it fits in your hiring process, and who backs and recognises Basanite"
-      className="relative min-h-screen flex items-center py-12 sm:py-16 px-6 border-b border-earth-200/80 overflow-hidden"
+      className="min-h-screen flex items-center py-12 sm:py-16 px-6"
     >
-      <div
-        ref={parallaxRef}
-        aria-hidden="true"
-        className="absolute inset-x-0 -top-[45%] h-[190%] will-change-transform"
-      >
-        <Image
-          src="/sec1_pic_2.png"
-          alt=""
-          fill
-          className="object-cover object-center"
-        />
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-white/90 to-earth-100/90" />
       <div ref={ref} className={`reveal ${entered ? 'visible' : ''} relative max-w-5xl mx-auto text-center`}>
         <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.28em] mb-4">What is Basanite</p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-[1.05]">
@@ -519,7 +527,7 @@ function RotatingFakes() {
 function SignalNoise() {
   const ref = useReveal()
   return (
-    <section className="min-h-screen flex items-center py-10 sm:py-12 px-6 bg-earth-50">
+    <section className="min-h-screen flex items-center py-10 sm:py-12 px-6">
       <div ref={ref} className="reveal w-full max-w-5xl mx-auto text-left">
         <div className="max-w-3xl">
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
@@ -597,42 +605,70 @@ const BROKEN_STATS = [
 ]
 
 // ─── The reframe ─────────────────────────────────────────────────────
-// Deliberately not a full-screen section: this is the pivot between "The
-// problem" (the signals broke) and "The dimensions" (what we measure
-// instead). The gradient blends out of and back into the earth-50 bands on
-// either side, and gold connector threads stitch the three sections into one
-// continuous argument.
+// The pivot between "The problem" (the signals broke) and "The dimensions"
+// (what we measure instead). The delegate / verify / override triad names the
+// skill that replaces "can they code without AI?" — rendered in the site's
+// own idiom (gold top-rules and serif step numbers) rather than plain columns.
+const REFRAME_CAPABILITIES = [
+  {
+    step: '01',
+    title: 'Delegate',
+    desc: 'Knows which work to hand to the agent, and how to brief it well.',
+  },
+  {
+    step: '02',
+    title: 'Verify',
+    desc: 'Checks what the agent produces before any of it ships.',
+  },
+  {
+    step: '03',
+    title: 'Override',
+    desc: 'Recognises when the agent is wrong and takes back control.',
+  },
+]
+
 function Reframe() {
   const ref = useReveal()
   return (
-    <section className="relative py-14 sm:py-16 px-6 bg-gradient-to-b from-earth-50 via-earth-100 to-earth-50">
+    <section className="relative py-14 sm:py-16 px-6">
       <div ref={ref} className="reveal w-full max-w-5xl mx-auto text-right">
-        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-transparent to-gold-500/60 mx-auto mb-8" />
-        <div className="max-w-3xl ml-auto">
+        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-transparent to-gold-500/60 ml-auto mb-8" />
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
           The reframe
         </p>
-        <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl md:text-4xl mb-5 leading-[1.15]">
+        <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl md:text-4xl mb-6 leading-[1.15] max-w-3xl ml-auto">
           The same tool that broke hiring is the thing worth hiring for.
         </h2>
-        <p className="text-basanite-600 text-base sm:text-lg leading-relaxed max-w-2xl ml-auto">
-          An engineer who can direct an AI agent to ship real work, knowing
-          what to delegate, what to verify, and when to override, is a genuine
-          multiplier for your team. That&rsquo;s not something to screen out.
-          It&rsquo;s the capability you actually want.
+        <p className="text-basanite-600 text-base sm:text-lg leading-relaxed max-w-2xl ml-auto mb-12">
+          An engineer who can direct an AI agent to ship real work is a genuine
+          multiplier &mdash; not something to screen out, but the capability you
+          actually want.
         </p>
 
-        <div className="max-w-2xl ml-auto mt-9 text-right">
+        <div className="grid gap-8 sm:grid-cols-3 max-w-4xl ml-auto text-right">
+          {REFRAME_CAPABILITIES.map(cap => (
+            <div key={cap.step} className="pt-4 border-t-2 border-gold-500/40">
+              <h3 className="font-display text-basanite-900 text-xl sm:text-2xl mb-2 leading-none">
+                {cap.title}
+              </h3>
+              <p className="text-basanite-600 text-sm leading-relaxed">
+                {cap.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="max-w-2xl ml-auto mt-14">
           <p className="font-display text-basanite-400 text-lg sm:text-xl leading-snug line-through decoration-clay-500/70 decoration-2">
             Can they work without AI?
           </p>
-          <p className="font-display text-basanite-900 text-lg sm:text-xl leading-snug mt-3">
+          <p className="font-display text-basanite-900 text-xl sm:text-2xl leading-snug mt-3">
             What can they genuinely do, and how well do they do it with
             AI in the room?
           </p>
         </div>
-        </div>
-        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-gold-500/60 to-transparent mx-auto mt-8" />
+
+        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-gold-500/60 to-transparent ml-auto mt-10" />
       </div>
     </section>
   )
@@ -811,23 +847,23 @@ function ForBoth() {
             <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed text-left flex-1">
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                An interview briefing that gives your team deeper insight into every candidate, enhancing the rest of your interview process rather than just adding another screen
+                <span><span className="font-medium text-basanite-900">Basanite agent</span> runs your round. An adaptive voice interview built from the candidate&rsquo;s own CV, followed by a written briefing for your team.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Decision-validation that improves hiring confidence while shortening your time-to-hire: fewer rounds, and your engineers stay on the projects that need them
+                <span><span className="font-medium text-basanite-900">Basanite co-pilot</span> sits with your interviewers in your rounds. It suggests what to probe next, then writes up the session for you.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Every candidate receives identical assessment quality. The tenth candidate is evaluated as rigorously as the first
+                The tenth candidate gets the same rigour as the first. No drift from interviewer fatigue.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Dimension scores grounded in specific candidate quotes, not opaque numbers
+                Scores are anchored to what the candidate actually said. Every number opens to the quote behind it.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Hirer report designed as a briefing document: what to probe further in the final human interview
+                Fewer rounds, and your engineers stay on the projects that need them.
               </li>
             </ul>
             <a
@@ -1100,9 +1136,11 @@ export default function HomePage() {
       <AuthFragmentHandler />
       <SiteNav />
       <Hero />
-      <WhereBasaniteFits />
-      <SignalNoise />
-      <Reframe />
+      <ParallaxGroup>
+        <WhereBasaniteFits />
+        <SignalNoise />
+        <Reframe />
+      </ParallaxGroup>
       <WhatWeMeasure />
       <ImpactSection />
       <HowItWorks />
