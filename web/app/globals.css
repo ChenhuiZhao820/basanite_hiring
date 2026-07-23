@@ -18,6 +18,20 @@ html {
   background-color: var(--earth-bg);
 }
 
+/* Fluid root scaling for the marketing site. Because Tailwind sizes in rem,
+   scaling the root font-size scales every text size, gap, padding and
+   max-w-* container proportionally with the viewport — so the page keeps the
+   same visual density on a narrow laptop and a wide high-res display instead
+   of leaving content stranded in whitespace on large screens.
+
+   clamp floors at 16px up to ~1280px wide (typical laptops are unchanged),
+   then grows linearly to 20px at ~1920px and holds. Scoped away from the
+   dark dashboard/app (`:has(.dark)`), which wants fixed density rather than
+   ballooning text on large monitors. */
+html:not(:has(.dark)) {
+  font-size: clamp(16px, calc(8px + 0.625vw), 20px);
+}
+
 /* When any descendant carries the `.dark` class (dashboard ThemeShell or
    candidate-screening ThemeProvider), flip the html background so the
    overscroll area matches. Uses :has(), supported in all modern browsers. */
