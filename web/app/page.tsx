@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import Image from 'next/image'
 import { LogoMark } from '@/components/Logo'
 import { AuthFragmentHandler } from '@/components/AuthFragmentHandler'
@@ -10,7 +10,7 @@ import { HowItWorksSlider } from '@/components/HowItWorksSlider'
 import { StoneTexture } from '@/components/StoneTexture'
 import { SiteNav } from '@/components/SiteNav'
 
-const HERO_IMAGE = '/hero-2.png'
+const HERO_VIDEO = '/bsnt_vid.mp4'
 
 // Single source of truth for the public booking link. Cal.com EU instance
 // keeps the booking-PII transfer inside the EU jurisdiction.
@@ -46,15 +46,17 @@ function Hero() {
   return (
     <section className="pt-16 min-h-screen flex flex-col">
       <div className="relative w-full flex-1 overflow-hidden">
-        <Image
-          src={HERO_IMAGE}
-          alt="Business professionals moving through a bright glass-walled office lobby"
-          fill
-          className="object-cover object-center"
-          priority
+        <video
+          src={HERO_VIDEO}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-basanite-900/90" />
-        <div className={`absolute inset-0 flex flex-col items-center justify-center px-6 text-center ${entered ? 'hero-in' : ''}`}>
+        <div className="absolute inset-0 bg-basanite-900/70" />
+        <div className={`absolute inset-0 flex flex-col items-center px-6 text-center ${entered ? 'hero-in' : ''}`}>
+          <div className="flex-1 flex flex-col items-center justify-center">
           <svg width="40" height="54" viewBox="0 0 40 54" fill="none" aria-hidden="true" className="hero-item mb-8" style={{ ['--d' as string]: '0ms' }}>
             <path d="M20 0 L0 18 L20 18 Z" fill="#e8c555" />
             <path d="M20 0 L40 18 L20 18 Z" fill="#d4a843" />
@@ -62,41 +64,30 @@ function Hero() {
             <path d="M40 18 L20 18 L20 54 Z" fill="#a87f24" />
             <path d="M0 18 L40 18" stroke="#1a1a18" strokeOpacity="0.18" strokeWidth="0.5" />
           </svg>
-          <p className="hero-item text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5" style={{ ['--d' as string]: '80ms' }}>
+          <p className="hero-item text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-8" style={{ ['--d' as string]: '80ms' }}>
             Talent selection with Basanite
           </p>
-          <h1 className="hero-item font-display text-earth-50 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8 max-w-4xl" style={{ ['--d' as string]: '160ms' }}>
+          <h1 className="hero-item font-display text-earth-50 text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.1] mb-14 max-w-5xl" style={{ ['--d' as string]: '160ms' }}>
             Hire the right person,{' '}
             <em className="text-gold-400">faster</em>
           </h1>
-          <p className="hero-item text-earth-200 text-lg md:text-xl max-w-2xl leading-relaxed mb-10" style={{ ['--d' as string]: '380ms' }}>
+          <p className="hero-item text-earth-200 text-base md:text-lg max-w-lg leading-relaxed mb-8 text-justify [text-align-last:justify]" style={{ ['--d' as string]: '380ms' }}>
             AI-enhanced interviews for more informed and faster hiring,
             measuring genuine capability, not performed competence.
           </p>
-          <div className="hero-item flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto" style={{ ['--d' as string]: '520ms' }}>
-            <a
-              href={BOOK_A_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="w-full sm:w-auto px-7 py-3 bg-gold-500 hover:bg-gold-400 text-white text-[13px] font-semibold uppercase tracking-[0.16em] transition-colors duration-200"
-            >
-              Book a call
-            </a>
-            <a
-              href="#demo"
-              className="w-full sm:w-auto px-7 py-3 border border-earth-200/40 text-earth-100 hover:border-gold-400/70 hover:text-gold-300 text-[13px] font-semibold uppercase tracking-[0.16em] transition-colors duration-200"
-            >
-              Watch the demo
-            </a>
+          <a
+            href="#demo"
+            className="hero-item text-gold-400 hover:text-gold-300 text-lg md:text-xl font-medium tracking-wide underline underline-offset-8 decoration-gold-500/50 hover:decoration-gold-300 transition-colors duration-200"
+            style={{ ['--d' as string]: '520ms' }}
+          >
+            See it run
+          </a>
           </div>
-          <div className="hero-item mt-14 sm:mt-16 w-full" style={{ ['--d' as string]: '680ms' }}>
-            <p className="text-earth-400 text-[10px] font-semibold uppercase tracking-[0.2em] mb-7">
-              Backed &amp; recognised by
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-8 sm:gap-x-12 gap-y-4">
+          <div className="hero-item w-full pb-8" style={{ ['--d' as string]: '680ms' }}>
+            <div className="flex flex-wrap items-center justify-center gap-x-7 sm:gap-x-10 gap-y-3">
               {SOCIAL_PROOF.map(item => (
-                <div key={item.alt} className="flex w-32 flex-col items-center gap-1.5 text-center">
-                  <div className="flex h-7 items-center">
+                <div key={item.alt} className="flex w-28 flex-col items-center gap-1 text-center">
+                  <div className="flex h-6 items-center">
                     <img
                       src={item.src}
                       alt={item.alt}
@@ -104,7 +95,7 @@ function Hero() {
                       draggable={false}
                     />
                   </div>
-                  <span className="text-earth-300 text-[11px] leading-snug">{item.caption}</span>
+                  <span className="text-earth-300 text-[10px] leading-snug">{item.caption}</span>
                 </div>
               ))}
             </div>
@@ -121,25 +112,25 @@ const SOCIAL_PROOF: { src: string; alt: string; caption: string; logoClass: stri
     src: '/logos/yc.svg',
     alt: 'Y Combinator',
     caption: 'Top 10% of S26 applicants',
-    logoClass: 'h-6 sm:h-7',
+    logoClass: 'h-5 sm:h-6',
   },
   {
     src: '/logos/redwood-founders.svg',
     alt: 'Redwood Founders',
     caption: 'Backed by Redwood Founders',
-    logoClass: 'h-6 sm:h-7',
+    logoClass: 'h-5 sm:h-6',
   },
   {
     src: '/logos/university-of-manchester.png',
     alt: 'The University of Manchester',
     caption: 'Masood Entrepreneurship Centre',
-    logoClass: 'h-5 sm:h-6',
+    logoClass: 'h-4 sm:h-5',
   },
   {
     src: '/logos/stripe.svg',
     alt: 'Stripe',
     caption: 'Partnered with Stripe VC',
-    logoClass: 'h-5 sm:h-6',
+    logoClass: 'h-4 sm:h-5',
   },
 ]
 
@@ -187,6 +178,63 @@ function FlowNode({ label, caption, dim, delay }: { label: string; caption?: str
   )
 }
 
+// Shared parallax backdrop spanning "What is Basanite", "The problem" and
+// "The reframe".
+// The image layer is taller than the group and shifts upward as the group
+// scrolls, clipped by overflow-hidden so it slides away behind the hero
+// above. The 45% factor and 45% top/bottom buffer (h-[190%]) both scale with
+// the container height, so the clamp fits exactly regardless of how tall the
+// combined sections are.
+function ParallaxGroup({ children }: { children: ReactNode }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const parallaxRef = useRef<HTMLDivElement>(null)
+  const [reduced, setReduced] = useState(false)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
+  }, [])
+
+  useEffect(() => {
+    if (reduced) return
+    const wrap = wrapRef.current
+    const layer = parallaxRef.current
+    if (!wrap || !layer) return
+
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const rect = wrap.getBoundingClientRect()
+      const max = rect.height * 0.45
+      const shift = Math.max(-max, Math.min(max, rect.top * 0.45))
+      layer.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [reduced])
+
+  return (
+    <div ref={wrapRef} className="relative overflow-hidden border-b border-earth-200/80">
+      <div
+        ref={parallaxRef}
+        aria-hidden="true"
+        className="absolute inset-x-0 -top-[45%] h-[190%] will-change-transform"
+      >
+        <Image src="/bg_pic_sections.png" alt="" fill className="object-cover object-center" />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-earth-100/80" />
+      <div className="relative">{children}</div>
+    </div>
+  )
+}
+
 function WhereBasaniteFits() {
   const ref = useRef<HTMLDivElement>(null)
   const [entered, setEntered] = useState(false)
@@ -228,9 +276,9 @@ function WhereBasaniteFits() {
   return (
     <section
       aria-label="What Basanite is and where it fits in your hiring process, and who backs and recognises Basanite"
-      className="bg-gradient-to-b from-white to-earth-100 py-12 sm:py-16 px-6 border-b border-earth-200/80"
+      className="min-h-screen flex items-center py-12 sm:py-16 px-6"
     >
-      <div ref={ref} className={`reveal ${entered ? 'visible' : ''} max-w-5xl mx-auto text-center`}>
+      <div ref={ref} className={`reveal ${entered ? 'visible' : ''} relative max-w-5xl mx-auto text-center`}>
         <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.28em] mb-4">What is Basanite</p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl leading-[1.05]">
           AI interviewer agents to help you make better hiring decisions.
@@ -373,7 +421,7 @@ function LivingWave() {
       viewBox="0 0 800 120"
       fill="none"
       aria-hidden="true"
-      className="w-full h-20 sm:h-24"
+      className="w-full h-16 sm:h-20"
       preserveAspectRatio="none"
     >
       <defs>
@@ -445,7 +493,7 @@ function RotatingFakes() {
   if (reduced) {
     return (
       <p
-        className="mt-4 text-base sm:text-lg font-medium leading-relaxed max-w-2xl mx-auto"
+        className="mt-4 text-sm sm:text-base font-medium leading-relaxed max-w-2xl"
         style={{ color: SIGNAL_RED }}
       >
         {FAKE_PHRASES.join(' · ')}
@@ -456,7 +504,7 @@ function RotatingFakes() {
   const items = [...FAKE_PHRASES, FAKE_PHRASES[0]]
 
   return (
-    <div className="h-16 sm:h-10 mt-4 overflow-hidden" aria-live="polite">
+    <div className="h-14 sm:h-9 mt-4 overflow-hidden" aria-live="polite">
       <div
         className={instant ? '' : 'transition-transform duration-700 ease-in-out'}
         style={{ transform: `translateY(-${(active * 100) / items.length}%)` }}
@@ -464,7 +512,7 @@ function RotatingFakes() {
         {items.map((phrase, i) => (
           <span
             key={`${phrase}-${i}`}
-            className="flex h-16 sm:h-10 items-center justify-center px-4 text-lg sm:text-2xl font-medium leading-snug"
+            className="flex h-14 sm:h-9 items-center justify-start text-base sm:text-xl font-medium leading-snug"
             style={{ color: SIGNAL_RED }}
             aria-hidden={i !== active}
           >
@@ -479,15 +527,16 @@ function RotatingFakes() {
 function SignalNoise() {
   const ref = useReveal()
   return (
-    <section className="min-h-screen flex items-center py-10 sm:py-12 px-6 bg-earth-50">
-      <div ref={ref} className="reveal w-full max-w-5xl mx-auto text-center">
+    <section className="min-h-screen flex items-center py-10 sm:py-12 px-6">
+      <div ref={ref} className="reveal w-full max-w-5xl mx-auto text-left">
+        <div className="max-w-3xl">
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
           The problem
         </p>
-        <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-5 leading-[1.15]">
+        <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl md:text-4xl mb-4 leading-[1.15]">
           The CV and the interview stopped telling you the truth.
         </h2>
-        <p className="text-basanite-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+        <p className="text-basanite-600 text-sm sm:text-base leading-relaxed max-w-2xl">
           <span className="block">
             A polished CV used to mean effort. A clean coding screen used to
             mean skill.
@@ -497,9 +546,9 @@ function SignalNoise() {
 
         <RotatingFakes />
 
-        <div className="max-w-3xl mx-auto mt-12">
+        <div className="max-w-3xl mt-10">
           <LivingWave />
-          <div className="flex items-baseline justify-between mt-5 text-[10px] sm:text-[11px] uppercase tracking-[0.18em]">
+          <div className="flex items-baseline justify-between mt-4 text-[9px] sm:text-[10px] uppercase tracking-[0.18em]">
             <span className="text-basanite-500">
               Once: <span className="text-clay-700 font-bold">a real signal</span>
             </span>
@@ -509,18 +558,18 @@ function SignalNoise() {
           </div>
         </div>
 
-        <p className="text-basanite-900 font-semibold text-lg sm:text-xl leading-relaxed mt-12">
+        <p className="text-basanite-900 font-semibold text-base sm:text-lg leading-relaxed mt-10">
           The old signals still look like signals. They just don&rsquo;t track
           the work anymore.
         </p>
 
-        <div className="grid sm:grid-cols-3 gap-6 text-left mt-16 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-3 gap-5 text-left mt-12 max-w-4xl">
           {BROKEN_STATS.map(stat => (
             <div key={stat.value} className="relative pt-3 border-t-2 border-clay-500/40">
-              <div className="font-display text-clay-600 text-2xl sm:text-3xl leading-none mb-2">
+              <div className="font-display text-clay-600 text-xl sm:text-2xl leading-none mb-2">
                 {stat.value}
               </div>
-              <p className="text-basanite-600 text-xs sm:text-sm leading-relaxed mb-2">
+              <p className="text-basanite-600 text-[11px] sm:text-xs leading-relaxed mb-2">
                 {stat.desc}
               </p>
               <p className="text-basanite-400 text-[9px] font-semibold uppercase tracking-[0.18em]">
@@ -528,6 +577,7 @@ function SignalNoise() {
               </p>
             </div>
           ))}
+        </div>
         </div>
       </div>
     </section>
@@ -555,50 +605,70 @@ const BROKEN_STATS = [
 ]
 
 // ─── The reframe ─────────────────────────────────────────────────────
-// Deliberately not a full-screen section: this is the pivot between "The
-// problem" (the signals broke) and "The dimensions" (what we measure
-// instead). The gradient blends out of and back into the earth-50 bands on
-// either side, and gold connector threads stitch the three sections into one
-// continuous argument.
+// The pivot between "The problem" (the signals broke) and "The dimensions"
+// (what we measure instead). The delegate / verify / override triad names the
+// skill that replaces "can they code without AI?" — rendered in the site's
+// own idiom (gold top-rules and serif step numbers) rather than plain columns.
+const REFRAME_CAPABILITIES = [
+  {
+    step: '01',
+    title: 'Delegate',
+    desc: 'Knows which work to hand to the agent, and how to brief it well.',
+  },
+  {
+    step: '02',
+    title: 'Verify',
+    desc: 'Checks what the agent produces before any of it ships.',
+  },
+  {
+    step: '03',
+    title: 'Override',
+    desc: 'Recognises when the agent is wrong and takes back control.',
+  },
+]
+
 function Reframe() {
   const ref = useReveal()
   return (
-    <section className="relative py-14 sm:py-16 px-6 bg-gradient-to-b from-earth-50 via-earth-100 to-earth-50">
-      <div ref={ref} className="reveal w-full max-w-5xl mx-auto text-center">
-        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-transparent to-gold-500/60 mx-auto mb-8" />
+    <section className="relative py-14 sm:py-16 px-6">
+      <div ref={ref} className="reveal w-full max-w-5xl mx-auto text-right">
+        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-transparent to-gold-500/60 ml-auto mb-8" />
         <p className="text-gold-600 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">
           The reframe
         </p>
-        <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl md:text-4xl mb-5 leading-[1.15] max-w-3xl mx-auto">
+        <h2 className="font-display text-basanite-900 text-2xl sm:text-3xl md:text-4xl mb-6 leading-[1.15] max-w-3xl ml-auto">
           The same tool that broke hiring is the thing worth hiring for.
         </h2>
-        <p className="text-basanite-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-          An engineer who can direct an AI agent to ship real work, knowing
-          what to delegate, what to verify, and when to override, is a genuine
-          multiplier for your team. That&rsquo;s not something to screen out.
-          It&rsquo;s the capability you actually want.
+        <p className="text-basanite-600 text-base sm:text-lg leading-relaxed max-w-2xl ml-auto mb-12">
+          An engineer who can direct an AI agent to ship real work is a genuine
+          multiplier &mdash; not something to screen out, but the capability you
+          actually want.
         </p>
 
-        <div className="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto mt-9 text-left">
-          <div className="border border-earth-300/60 bg-white p-5 sm:p-6">
-            <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em] mb-3">
-              The old question
-            </p>
-            <p className="font-display text-basanite-400 text-lg sm:text-xl leading-snug line-through decoration-clay-500/70 decoration-2">
-              Can they code without AI?
-            </p>
-          </div>
-          <div className="border border-gold-500/60 bg-white p-5 sm:p-6">
-            <p className="text-gold-600 text-[10px] font-semibold uppercase tracking-[0.2em] mb-3">
-              The question now
-            </p>
-            <p className="font-display text-basanite-900 text-lg sm:text-xl leading-snug">
-              What can they genuinely do, and how well do they do it with
-              AI in the room?
-            </p>
-          </div>
+        <div className="grid gap-8 sm:grid-cols-3 max-w-4xl ml-auto text-right">
+          {REFRAME_CAPABILITIES.map(cap => (
+            <div key={cap.step} className="pt-4 border-t-2 border-gold-500/40">
+              <h3 className="font-display text-basanite-900 text-xl sm:text-2xl mb-2 leading-none">
+                {cap.title}
+              </h3>
+              <p className="text-basanite-600 text-sm leading-relaxed">
+                {cap.desc}
+              </p>
+            </div>
+          ))}
         </div>
-        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-gold-500/60 to-transparent mx-auto mt-8" />
+
+        <div className="max-w-2xl ml-auto mt-14">
+          <p className="font-display text-basanite-400 text-lg sm:text-xl leading-snug line-through decoration-clay-500/70 decoration-2">
+            Can they work without AI?
+          </p>
+          <p className="font-display text-basanite-900 text-xl sm:text-2xl leading-snug mt-3">
+            What can they genuinely do, and how well do they do it with
+            AI in the room?
+          </p>
+        </div>
+
+        <div className="w-px h-10 sm:h-14 bg-gradient-to-b from-gold-500/60 to-transparent ml-auto mt-10" />
       </div>
     </section>
   )
@@ -608,8 +678,48 @@ function Reframe() {
 // The eight dimensions and their probing questions live in DimensionsRadar,
 // which renders them around an animated spider chart (and carries the
 // screen-reader-friendly list).
+const DIMENSION_ROLES = [
+  'product managers',
+  'AI engineers',
+  'QA engineers',
+  'developers',
+  'platform engineers',
+  'data scientists',
+  'junior engineers',
+  'team leads',
+]
+
+function TypedRole({ word }: { word: string }) {
+  const [text, setText] = useState(word)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setText(word)
+      return
+    }
+    const id = setInterval(() => {
+      setText(cur => {
+        if (cur === word) {
+          clearInterval(id)
+          return cur
+        }
+        return word.startsWith(cur) ? word.slice(0, cur.length + 1) : cur.slice(0, -1)
+      })
+    }, 50)
+    return () => clearInterval(id)
+  }, [word])
+
+  return (
+    <span aria-hidden="true" className="text-gold-600">
+      {text}
+      <span className="inline-block w-[3px] h-[0.85em] ml-0.5 bg-gold-600/70 animate-pulse" />
+    </span>
+  )
+}
+
 function WhatWeMeasure() {
   const ref = useReveal()
+  const [role, setRole] = useState('tech people')
   return (
     <section className="py-12 sm:py-16 px-6 bg-earth-50 border-b border-earth-200/80">
       <div ref={ref} className="reveal max-w-6xl mx-auto text-center">
@@ -617,10 +727,11 @@ function WhatWeMeasure() {
           The dimensions
         </p>
         <h2 className="font-display text-basanite-900 text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3 leading-[1.15]">
-          We measure how engineers think with AI
+          We measure how <span className="sr-only">tech people</span>
+          <TypedRole word={role} /> think with AI
         </h2>
 
-        <DimensionsRadar />
+        <DimensionsRadar onActiveChange={i => setRole(DIMENSION_ROLES[i])} />
 
         <div
           className="max-w-[41rem] mx-auto mt-8 sm:mt-10 mb-3 text-left"
@@ -736,23 +847,23 @@ function ForBoth() {
             <ul className="space-y-3 text-basanite-600 text-sm leading-relaxed text-left flex-1">
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                An interview briefing that gives your team deeper insight into every candidate, enhancing the rest of your interview process rather than just adding another screen
+                <span><span className="font-medium text-basanite-900">Basanite agent</span> runs your round. An adaptive voice interview built from the candidate&rsquo;s own CV, followed by a written briefing for your team.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Decision-validation that improves hiring confidence while shortening your time-to-hire: fewer rounds, and your engineers stay on the projects that need them
+                <span><span className="font-medium text-basanite-900">Basanite co-pilot</span> sits with your interviewers in your rounds. It suggests what to probe next, then writes up the session for you.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Every candidate receives identical assessment quality. The tenth candidate is evaluated as rigorously as the first
+                The tenth candidate gets the same rigour as the first. No drift from interviewer fatigue.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Dimension scores grounded in specific candidate quotes, not opaque numbers
+                Scores are anchored to what the candidate actually said. Every number opens to the quote behind it.
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-gold-500 mt-0.5">&#9670;</span>
-                Hirer report designed as a briefing document: what to probe further in the final human interview
+                Fewer rounds, and your engineers stay on the projects that need them.
               </li>
             </ul>
             <a
@@ -1025,9 +1136,11 @@ export default function HomePage() {
       <AuthFragmentHandler />
       <SiteNav />
       <Hero />
-      <WhereBasaniteFits />
-      <SignalNoise />
-      <Reframe />
+      <ParallaxGroup>
+        <WhereBasaniteFits />
+        <SignalNoise />
+        <Reframe />
+      </ParallaxGroup>
       <WhatWeMeasure />
       <ImpactSection />
       <HowItWorks />
