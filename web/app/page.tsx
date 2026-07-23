@@ -908,10 +908,18 @@ function ForBoth() {
 }
 
 // ─── Team ────────────────────────────────────────────────────────────────
-const TEAM = [
+type TeamMember = {
+  name: string
+  role: string
+  bullets: string[]
+  img: string
+  linkedin: string
+  x?: string
+}
+const TEAM: TeamMember[] = [
   {
     name: 'Aditya Shah',
-    role: 'CEO',
+    role: 'Co-founder',
     bullets: [
       'Data Analyst and Technology Modeller at Virgin Media O2 (13 month placement)',
       'Serial entrepreneur, previously funded startup in edtech',
@@ -920,21 +928,22 @@ const TEAM = [
     img: '/team/aditya.png',
     linkedin: 'https://www.linkedin.com/in/adityashah100/',
   },
-  {
-    name: 'Drew Robertson',
-    role: 'CTO',
-    bullets: [
-      'SWE Intern at The Trade Desk, Rothschild and Co, Cisco',
-      'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
-      'Computer Science, University of Manchester',
-    ],
-    img: '/team/drew.png',
-    linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
-    x: 'https://x.com/NeoDrewX',
-  },
+  // Temporarily hidden — restore this entry to bring Drew back into the team grid.
+  // {
+  //   name: 'Drew Robertson',
+  //   role: 'CTO',
+  //   bullets: [
+  //     'SWE Intern at The Trade Desk, Rothschild and Co, Cisco',
+  //     'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
+  //     'Computer Science, University of Manchester',
+  //   ],
+  //   img: '/team/drew.png',
+  //   linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
+  //   x: 'https://x.com/NeoDrewX',
+  // },
   {
     name: 'Lynn Zhao',
-    role: 'CPO',
+    role: 'Co-founder',
     bullets: [
       'BSc Artificial Intelligence, University of Manchester',
       'AI Safety Fellowship at BlueDot Impact, OpenAI, Cambridge',
@@ -958,7 +967,7 @@ function Team() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {TEAM.map(member => (
             <div key={member.name} className="card-hover border border-earth-300/60 bg-white flex flex-col">
               <div className="p-7 flex flex-col flex-1">
@@ -1081,7 +1090,8 @@ function Footer() {
             <span className="text-earth-300 text-sm font-display">Basanite</span>
           </div>
           <p className="text-basanite-500 text-xs text-center sm:text-right">
-            Built in Manchester by Drew, Lynn and Aditya.
+            {/* Drew temporarily hidden from the credit line alongside the team grid. */}
+            Built in Manchester by Aditya and Lynn.
             <br className="sm:hidden" />
             <span className="hidden sm:inline"> &middot; </span>
             &copy; {new Date().getFullYear()} Basanite.
