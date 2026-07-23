@@ -196,11 +196,20 @@ function Chart({ scores, active, className }: { scores: number[]; active: number
   )
 }
 
-export function DimensionsRadar() {
+export function DimensionsRadar({ onActiveChange }: { onActiveChange?: (active: number) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(0)
   const [inView, setInView] = useState(false)
   const [reduced, setReduced] = useState(false)
+  const notifiedRef = useRef(false)
+
+  useEffect(() => {
+    if (!notifiedRef.current) {
+      notifiedRef.current = true
+      return
+    }
+    onActiveChange?.(active)
+  }, [active, onActiveChange])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
