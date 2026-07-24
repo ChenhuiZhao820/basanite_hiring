@@ -301,3 +301,69 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .progress-indeterminate::before { animation-duration: 2.4s; }
 }
+
+/* ── Methodology "01 · Two rounds" — stacked-image crossfade ──
+   One desk photographed twice. convo.jpeg (base) crossfades to
+   workbench.jpeg as the card scrolls through the viewport, driven by a
+   single named view timeline on the card. Opacity only on the images, so
+   the paper, pen and desk edge stay perfectly registered between frames.
+   Both images share one object-position; never override it per-image. */
+.tr-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 62%;
+}
+/* Static / fallback resting state (also the reduced-motion end state):
+   convo visible, workbench hidden, both labels at full opacity (their
+   default), progress rule empty. A clean single frame. */
+.tr-workbench { opacity: 0; }
+.tr-progress-fill {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The card defines the timeline; its descendants below reference it,
+       so the images, labels and progress rule all read from one clock. */
+    .two-rounds {
+      view-timeline-name: --two-rounds;
+    }
+    .tr-workbench,
+    .tr-label-a,
+    .tr-label-b,
+    .tr-progress-fill {
+      animation-timeline: --two-rounds;
+      animation-range: cover 25% cover 75%;
+      animation-fill-mode: both;
+    }
+    /* Leading + trailing holds so the viewer sees each photo cleanly once,
+       with an eased ~800ms-feeling fade through the middle of the range. */
+    .tr-workbench { animation-name: tr-crossfade; }
+    .tr-label-a { animation-name: tr-fade-dim; animation-timing-function: linear; }
+    .tr-label-b { animation-name: tr-fade-up; animation-timing-function: linear; }
+    .tr-progress-fill { animation-name: tr-fill; animation-timing-function: linear; }
+  }
+}
+
+@keyframes tr-crossfade {
+  0%   { opacity: 0; }
+  30%  { opacity: 0; animation-timing-function: ease-in-out; }
+  70%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+@keyframes tr-fade-dim {
+  from { opacity: 1; }
+  to   { opacity: 0.4; }
+}
+@keyframes tr-fade-up {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+@keyframes tr-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}

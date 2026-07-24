@@ -84,16 +84,25 @@ export default function MethodologyPage() {
 // white bordered cards, gold for the real signal and clay for the accent,
 // and the same uppercase micro-label vocabulary used everywhere else.
 
+// The right-hand visual for "01 · Two rounds": one desk photographed twice.
+// convo.jpeg (mic, blank paper) crossfades to workbench.jpeg (keyboard, the
+// same paper now written on) as the card scrolls past. The crossfade is
+// scroll-driven and opacity-only (see .two-rounds rules in globals.css), so
+// the shared paper/pen/desk stay registered; the label bar below carries the
+// meaning, which is why both photographs get empty alt text.
 function RoundsCard() {
   return (
-    <div className="border border-earth-200 bg-white p-8 sm:p-10">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-5 sm:gap-7">
-        <div className="flex flex-col items-center justify-center text-center gap-2.5">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a87f24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <line x1="8" y1="9" x2="16" y2="9" />
-            <line x1="8" y1="12" x2="13" y2="12" />
-          </svg>
+    <div className="two-rounds border border-earth-200 bg-white p-8 sm:p-10">
+      {/* Stage: both frames stacked, identical object-position, opacity only */}
+      <div className="tr-stage relative w-full aspect-video overflow-hidden bg-earth-100">
+        <img src="/convo.jpeg" alt="" className="tr-img" />
+        <img src="/workbench.jpeg" alt="" className="tr-img tr-workbench" />
+      </div>
+
+      {/* Label bar: round one on the left, round two on the right, a brass
+          progress rule filling between them as the crossfade runs. */}
+      <div className="tr-labels mt-6 flex flex-col md:flex-row md:items-center gap-4 md:gap-5">
+        <div className="tr-label-a flex flex-col gap-1.5">
           <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
             Round one
           </p>
@@ -102,17 +111,12 @@ function RoundsCard() {
           </p>
           <p className="text-basanite-500 text-sm italic">what they think</p>
         </div>
-        <div className="flex flex-col items-center gap-2" aria-hidden="true">
-          <span className="flex-1 w-px bg-earth-300" />
-          <span className="text-gold-500 text-xs select-none">&#9670;</span>
-          <span className="flex-1 w-px bg-earth-300" />
+
+        <div className="tr-progress relative hidden md:block md:flex-1 h-px bg-earth-300" aria-hidden="true">
+          <span className="tr-progress-fill absolute inset-0 bg-gold-500" />
         </div>
-        <div className="flex flex-col items-center justify-center text-center gap-2.5">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#b03f28" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="2" y="4" width="20" height="16" rx="1" />
-            <polyline points="6 9 9 12 6 15" />
-            <line x1="12" y1="15" x2="17" y2="15" />
-          </svg>
+
+        <div className="tr-label-b flex flex-col gap-1.5 md:text-right md:items-end">
           <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
             Round two
           </p>
