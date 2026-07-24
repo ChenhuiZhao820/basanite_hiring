@@ -86,7 +86,7 @@ export function QuoteForm() {
           tabIndex={-1}
           className="font-display text-2xl sm:text-3xl text-basanite-900 mb-3 focus:outline-none"
         >
-          Thanks, {name.split(' ')[0] || 'there'} &mdash; we&rsquo;ll put a quote together
+          Thanks, {name.split(' ')[0] || 'there'}. We&rsquo;ll put a quote together
         </h2>
         <p className="text-basanite-600 text-sm mb-6">
           We&rsquo;ll email you shortly with pricing for your volume and role mix. Want to talk it

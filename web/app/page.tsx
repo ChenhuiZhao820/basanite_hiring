@@ -641,8 +641,7 @@ function Reframe() {
         </h2>
         <p className="text-basanite-600 text-base sm:text-lg leading-relaxed max-w-2xl ml-auto mb-12">
           An engineer who can direct an AI agent to ship real work is a genuine
-          multiplier &mdash; not something to screen out, but the capability you
-          actually want.
+          multiplier, not something to screen out.
         </p>
 
         <div className="grid gap-8 sm:grid-cols-3 max-w-4xl ml-auto text-right">
