@@ -31,9 +31,9 @@ function useReveal() {
 // justification live side by side.
 const ASSUMPTIONS = [
   {
-    figure: '15 hours',
+    figure: '8 hours',
     label: 'Time saved per hire',
-    source: 'Derived from Zivaro 2025 and Ashby 2026 benchmarks for technical screening hours.',
+    source: 'Conservative estimate from Zivaro 2025 and Ashby 2026 technical-screening benchmarks.',
   },
   {
     figure: '£80',

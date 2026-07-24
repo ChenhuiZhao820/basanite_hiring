@@ -26,14 +26,14 @@ function useReveal() {
 
 const NUMBERS = [
   {
-    value: '17 hours',
+    value: '6–10 hrs',
     desc: 'of senior engineering time saved per hire.',
-    caption: 'Replaces the screening + first technical round.',
+    caption: 'Replaces the screening and first technical round.',
   },
   {
-    value: '30 days',
-    desc: 'cut from time-to-hire.',
-    caption: 'From 10 weeks to 6, on average.',
+    value: '1–2 weeks',
+    desc: 'off your time-to-hire.',
+    caption: 'By collapsing the slowest early rounds into one.',
   },
   {
     value: '£10–15k',
@@ -110,7 +110,7 @@ export function ImpactSection() {
   const [s, setS] = useState(80000)
 
   const recovered = useMemo(() => {
-    const perHire = 15 * 80 + 0.10 * s * 0.5 + 10 * 500
+    const perHire = 8 * 80 + 0.10 * s * 0.5 + 10 * 500
     const round = (v: number) => Math.round(v / 1000) * 1000
     return round(n * perHire)
   }, [n, s])
@@ -120,8 +120,12 @@ export function ImpactSection() {
   return (
     <section
       id="roi-calculator"
-      className="relative py-16 sm:py-20 px-6 bg-basanite-900 overflow-hidden scroll-mt-16"
+      className="relative py-16 sm:py-20 px-6 overflow-hidden scroll-mt-16"
     >
+      <div className="absolute inset-0">
+        <img src="/bsnt_3.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-basanite-900/95" />
+      </div>
       <StoneTexture />
       <div ref={ref} className="reveal relative z-10 max-w-5xl mx-auto text-center">
         <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">
