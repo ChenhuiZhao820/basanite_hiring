@@ -1038,18 +1038,13 @@ const CTA_STATS = [
 function WaitlistCTA() {
   const ref = useReveal()
   return (
-    <section id="request-access" className="relative py-24 sm:py-32 px-6 bg-basanite-900 overflow-hidden">
+    <section id="request-access" className="relative py-24 sm:py-32 px-6 overflow-hidden">
+      <div className="absolute inset-0">
+        <img src="/bsnt_2.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-basanite-900/95" />
+      </div>
       <StoneTexture />
       <div ref={ref} className="reveal relative z-10 max-w-3xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 border-y border-earth-300/20 py-8 mb-16">
-          {CTA_STATS.map(s => (
-            <div key={s.label} className="text-center">
-              <div className="font-display text-2xl sm:text-3xl text-earth-50">{s.value}</div>
-              <div className="text-earth-300/70 text-[10px] sm:text-xs mt-1 uppercase tracking-wide">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
         <div className="max-w-xl mx-auto text-center">
           <h2 className="font-display text-earth-50 text-3xl sm:text-4xl md:text-5xl mb-6">
             Ready to hire with confidence?

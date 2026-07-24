@@ -120,8 +120,12 @@ export function ImpactSection() {
   return (
     <section
       id="roi-calculator"
-      className="relative py-16 sm:py-20 px-6 bg-basanite-900 overflow-hidden scroll-mt-16"
+      className="relative py-16 sm:py-20 px-6 overflow-hidden scroll-mt-16"
     >
+      <div className="absolute inset-0">
+        <img src="/bsnt_3.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-basanite-900/95" />
+      </div>
       <StoneTexture />
       <div ref={ref} className="reveal relative z-10 max-w-5xl mx-auto text-center">
         <p className="text-gold-500 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">

@@ -44,18 +44,19 @@ const TEAM = [
     ],
     blurb: 'Owns commercial, fundraising, customer discovery and positioning. Has lived the candidate side of the broken hiring funnel first-hand.',
   },
-  {
-    name: 'Andrew Robertson',
-    role: 'CTO',
-    img: '/team/drew.png',
-    linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
-    bullets: [
-      'SWE Intern at The Trade Desk, Rothschild & Co, Cisco',
-      'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
-      'Final-year Computer Science, University of Manchester',
-    ],
-    blurb: 'Owns the agent architecture, the Next.js + FastAPI + Supabase stack, and the production engineering of the interview itself.',
-  },
+  // Temporarily hidden from frontend
+  // {
+  //   name: 'Andrew Robertson',
+  //   role: 'CTO',
+  //   img: '/team/drew.png',
+  //   linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
+  //   bullets: [
+  //     'SWE Intern at The Trade Desk, Rothschild & Co, Cisco',
+  //     'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
+  //     'Final-year Computer Science, University of Manchester',
+  //   ],
+  //   blurb: 'Owns the agent architecture, the Next.js + FastAPI + Supabase stack, and the production engineering of the interview itself.',
+  // },
   {
     name: 'Lynn Zhao',
     role: 'CPO',
@@ -140,7 +141,10 @@ export default async function AboutPage() {
           <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">Our mission</p>
           <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-6">Measure what the work actually needs</h2>
           <p className="text-basanite-600 text-base leading-relaxed max-w-3xl mb-4">
-            Technical hiring has two breakdowns we want to solve. The first is that coding tests have collapsed into a cheating arms race: capable AI agents and screen overlays make take-homes and live-coding screens trivial to pass without exercising the underlying skill. The second is that the capability that <em>does</em> matter, engineering effectiveness when working alongside AI, is not measured anywhere.
+            Technical hiring has two breakdowns we want to solve.
+          </p>
+          <p className="text-basanite-600 text-base leading-relaxed max-w-3xl mb-4">
+            The first is that coding tests have collapsed into a cheating arms race: capable AI agents and screen overlays make take-homes and live-coding screens trivial to pass without exercising the underlying skill. The second is that the capability that <em>does</em> matter, engineering effectiveness when working alongside AI, is not measured anywhere.
           </p>
           <p className="text-basanite-600 text-base leading-relaxed max-w-3xl mb-4">
             Banning AI from the interview selects for unaided coding while leaving the AI-orchestration skill entirely untested. We do something different. We give every candidate a unique conversation built from their own CV, then put them in a real codebase alongside the AI tool of their choice and watch how they ship.
@@ -209,10 +213,9 @@ export default async function AboutPage() {
         {/* Team */}
         <Reveal as="section" className="mb-20" id="team">
           <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">The team</p>
-          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-2">Built by people who felt the problem</h2>
-          <p className="text-basanite-500 text-sm mb-10">Three final-year computer scientists at the University of Manchester.</p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {TEAM.map(m => (
+          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-10">Built by people who felt the problem</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {TEAM.filter(m => m.name !== 'Andrew Robertson').map(m => (
               <div key={m.name} className="card-hover border border-earth-300/60 bg-white p-7 flex flex-col">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="relative w-14 h-14 rounded-full overflow-hidden bg-earth-200 shrink-0">
