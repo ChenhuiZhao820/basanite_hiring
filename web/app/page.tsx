@@ -1084,10 +1084,6 @@ function Footer() {
             <span className="text-earth-300 text-sm font-display">Basanite</span>
           </div>
           <p className="text-basanite-500 text-xs text-center sm:text-right">
-            {/* Drew temporarily hidden from the credit line alongside the team grid. */}
-            Built in Manchester by Aditya and Lynn.
-            <br className="sm:hidden" />
-            <span className="hidden sm:inline"> &middot; </span>
             &copy; {new Date().getFullYear()} Basanite.
           </p>
         </div>

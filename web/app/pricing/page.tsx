@@ -272,7 +272,7 @@ function SlimFooter() {
   return (
     <footer className="border-t border-earth-200 bg-white">
       <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-basanite-500">
-        <p>Built in Manchester by Drew, Lynn and Aditya. &copy; {new Date().getFullYear()} Basanite.</p>
+        <p>&copy; {new Date().getFullYear()} Basanite.</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <Link href="/" className="hover:text-basanite-900 transition-colors">Home</Link>
           <Link href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</Link>
