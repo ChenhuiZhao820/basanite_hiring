@@ -89,7 +89,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  console.error('[DIAG] mw: before getUser', request.nextUrl.pathname)
   const { data: { user } } = await supabase.auth.getUser()
+  console.error('[DIAG] mw: after getUser', request.nextUrl.pathname, 'user=', !!user)
 
   const path = request.nextUrl.pathname
   const isDashboard = path.startsWith('/dashboard')
