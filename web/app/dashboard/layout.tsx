@@ -12,15 +12,31 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // Resolve workspace switcher data server-side so the org name paints with
   // the rest of the page instead of waiting for client hydration + two extra
-  // round-trips. Both calls go to the same FastAPI service so they're cheap.
-  const [orgsResp, activeResp] = await Promise.all([
-    pipelineFetch(`/orgs?user_id=${encodeURIComponent(user.id)}`),
-    pipelineFetch(`/orgs/active?user_id=${encodeURIComponent(user.id)}`),
-  ])
-  const orgs: Org[] = orgsResp.ok ? (((await orgsResp.json())?.orgs ?? []) as Org[]) : []
-  const activeOrgId: string | null = activeResp.ok
-    ? ((await activeResp.json())?.active_org_id ?? null)
-    : null
+  // round-trips. Both calls go to the same FastAPI service.
+  //
+  // This data is non-critical page chrome. A slow or unreachable backend must
+  // never hang the whole dashboard render — on Vercel that surfaces as a
+  // FUNCTION_INVOCATION_TIMEOUT (504) and locks the user out entirely. So we
+  // cap the calls with a short abort timeout and degrade to an empty switcher
+  // on any failure, letting the rest of the dashboard load normally.
+  let orgs: Org[] = []
+  let activeOrgId: string | null = null
+  try {
+    const ctrl = new AbortController()
+    const timeout = setTimeout(() => ctrl.abort(), 4000)
+    try {
+      const [orgsResp, activeResp] = await Promise.all([
+        pipelineFetch(`/orgs?user_id=${encodeURIComponent(user.id)}`, { signal: ctrl.signal }),
+        pipelineFetch(`/orgs/active?user_id=${encodeURIComponent(user.id)}`, { signal: ctrl.signal }),
+      ])
+      orgs = orgsResp.ok ? (((await orgsResp.json())?.orgs ?? []) as Org[]) : []
+      activeOrgId = activeResp.ok ? ((await activeResp.json())?.active_org_id ?? null) : null
+    } finally {
+      clearTimeout(timeout)
+    }
+  } catch (err) {
+    console.error('[dashboard/layout] workspace switcher load failed; rendering empty:', err)
+  }
 
   return (
     <DashboardThemeShell
