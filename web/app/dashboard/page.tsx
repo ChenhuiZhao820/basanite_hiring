@@ -6,18 +6,22 @@ import RolesList from './RolesList'
 export const metadata = { title: 'Dashboard' }
 
 export default async function DashboardPage() {
+  console.error('[DIAG] page: start')
   // Middleware already validated the session; we just need the user id to
   // scope queries. getAuthUserId reads it from the cookie JWT — no network.
   const userId = await getAuthUserId()
+  console.error('[DIAG] page: userId =', userId)
   if (!userId) redirect('/login')
 
   const service = createServiceClient()
+  console.error('[DIAG] page: service client created; querying roles…')
 
   const { data: roles } = await service
     .from('roles')
     .select('id, title, company_name, status, dimensions, created_at, assessment_link_token')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+  console.error('[DIAG] page: roles query done, count =', roles?.length ?? 0)
 
   const roleIds = (roles ?? []).map(r => r.id)
   const assessmentCounts: Record<string, { total: number; completed: number }> = {}
@@ -27,6 +31,7 @@ export default async function DashboardPage() {
       .from('assessments')
       .select('role_id, status')
       .in('role_id', roleIds)
+    console.error('[DIAG] page: assessments query done, count =', assessments?.length ?? 0)
 
     for (const a of assessments ?? []) {
       if (!assessmentCounts[a.role_id]) {

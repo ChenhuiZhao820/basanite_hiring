@@ -6,8 +6,10 @@ import { DashboardThemeShell } from './DashboardThemeShell'
 type Org = { id: string; name: string; description: string | null; role: string }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  console.error('[DIAG] layout: start')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  console.error('[DIAG] layout: getUser done, user =', !!user)
   if (!user) redirect('/login')
 
   // Resolve workspace switcher data server-side so the org name paints with
@@ -37,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   } catch (err) {
     console.error('[dashboard/layout] workspace switcher load failed; rendering empty:', err)
   }
+  console.error('[DIAG] layout: org block done, orgs =', orgs.length)
 
   return (
     <DashboardThemeShell
