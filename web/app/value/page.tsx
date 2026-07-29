@@ -31,9 +31,9 @@ function useReveal() {
 // justification live side by side.
 const ASSUMPTIONS = [
   {
-    figure: '15 hours',
+    figure: '8 hours',
     label: 'Time saved per hire',
-    source: 'Derived from Zivaro 2025 and Ashby 2026 benchmarks for technical screening hours.',
+    source: 'Conservative estimate from Zivaro 2025 and Ashby 2026 technical-screening benchmarks.',
   },
   {
     figure: '£80',
@@ -123,7 +123,7 @@ function ValueFooter() {
   return (
     <footer className="border-t border-earth-200 bg-white">
       <div className="max-w-4xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-basanite-500">
-        <p>Built in Manchester by Drew, Lynn and Aditya.</p>
+        <p>&copy; {new Date().getFullYear()} Basanite.</p>
         <div className="flex items-center gap-5">
           <Link href="/" className="hover:text-basanite-900 transition-colors">
             Home

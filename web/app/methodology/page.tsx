@@ -84,87 +84,22 @@ export default function MethodologyPage() {
 // white bordered cards, gold for the real signal and clay for the accent,
 // and the same uppercase micro-label vocabulary used everywhere else.
 
-function RoundsCard() {
+// Two-rounds visual: single image displayed to the right of the text.
+function TwoRoundsVisual() {
   return (
-    <div className="border border-earth-200 bg-white p-8 sm:p-10">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-5 sm:gap-7">
-        <div className="flex flex-col items-center justify-center text-center gap-2.5">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a87f24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <line x1="8" y1="9" x2="16" y2="9" />
-            <line x1="8" y1="12" x2="13" y2="12" />
-          </svg>
-          <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
-            Round one
-          </p>
-          <p className="font-display text-basanite-900 text-xl sm:text-2xl leading-none">
-            Conversation
-          </p>
-          <p className="text-basanite-500 text-sm italic">what they think</p>
-        </div>
-        <div className="flex flex-col items-center gap-2" aria-hidden="true">
-          <span className="flex-1 w-px bg-earth-300" />
-          <span className="text-gold-500 text-xs select-none">&#9670;</span>
-          <span className="flex-1 w-px bg-earth-300" />
-        </div>
-        <div className="flex flex-col items-center justify-center text-center gap-2.5">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#b03f28" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="2" y="4" width="20" height="16" rx="1" />
-            <polyline points="6 9 9 12 6 15" />
-            <line x1="12" y1="15" x2="17" y2="15" />
-          </svg>
-          <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
-            Round two
-          </p>
-          <p className="font-display text-clay-600 text-xl sm:text-2xl leading-none">
-            Workbench
-          </p>
-          <p className="text-basanite-500 text-sm italic">what they do</p>
-        </div>
-      </div>
-    </div>
+    <img src="/two_rounds.png" alt="" className="w-full h-auto" />
   )
 }
 
 function OneBarCard() {
   return (
-    <div className="border border-earth-200 bg-white p-6 sm:p-8">
-      <svg viewBox="0 0 340 200" className="w-full h-auto" aria-hidden="true">
-        {[
-          { y: 40, label: 'CV A' },
-          { y: 84, label: 'CV B' },
-          { y: 128, label: 'CV C' },
-          { y: 172, label: 'CV D' },
-        ].map(cv => (
-          <g key={cv.label}>
-            <text x="34" y={cv.y - 9} fontSize="10" letterSpacing="1.5" fill="#a49a8c">
-              {cv.label}
-            </text>
-            <circle cx="38" cy={cv.y} r="3.5" fill="#c49a2f" />
-            <path
-              d={`M42 ${cv.y} C 130 ${cv.y}, 180 106, 252 106`}
-              stroke="#c49a2f"
-              strokeWidth="1.5"
-              opacity="0.65"
-              fill="none"
-            />
-          </g>
-        ))}
-        <line x1="256" y1="72" x2="256" y2="140" stroke="#b03f28" strokeWidth="3.5" strokeLinecap="round" />
-        <text x="268" y="101" fontSize="11" letterSpacing="1" fill="#b03f28" fontWeight="600">
-          one
-        </text>
-        <text x="268" y="116" fontSize="11" letterSpacing="1" fill="#b03f28" fontWeight="600">
-          bar
-        </text>
-      </svg>
-    </div>
+    <img src="/same_bar.png" alt="" className="w-full h-auto" />
   )
 }
 
 function EvidenceCard() {
   return (
-    <div className="border border-earth-200 bg-white p-7 sm:p-8 text-left">
+    <div className="border border-earth-200 bg-[#F7F4ED] p-7 sm:p-8 text-left">
       <div className="flex items-center justify-between gap-4 mb-5">
         <p className="text-basanite-900 font-semibold text-sm">
           Judgment under ambiguity
@@ -177,7 +112,7 @@ function EvidenceCard() {
         </div>
       </div>
       <blockquote className="border-l-2 border-clay-500/70 pl-4">
-        <p className="font-display italic text-basanite-800 text-base sm:text-lg leading-relaxed">
+        <p className="font-display italic text-[#B1944E] text-base sm:text-lg leading-relaxed">
           &ldquo;I shipped the read path first and left writes behind a flag,
           we didn&rsquo;t have the load data to commit to the sharding scheme
           yet.&rdquo;
@@ -223,16 +158,7 @@ function Gauge({ fraction, color, value, label }: { fraction: number; color: str
 
 function TwoReadingsCard() {
   return (
-    <div className="border border-earth-200 bg-white p-8 sm:p-10">
-      <div className="flex items-center justify-center gap-8 sm:gap-12">
-        <Gauge fraction={0.82} color="#c49a2f" value="High" label="Capability" />
-        <span className="self-stretch w-px border-l border-dashed border-earth-300" aria-hidden="true" />
-        <Gauge fraction={0.5} color="#6b6558" value="Med" label="AI reliance" />
-      </div>
-      <p className="text-basanite-400 text-[10px] font-semibold uppercase tracking-[0.2em] text-center mt-6">
-        Measured separately
-      </p>
-    </div>
+    <img src="/separate.png" alt="" className="w-full h-auto" />
   )
 }
 
@@ -247,7 +173,7 @@ const DECISIONS: {
     title: 'What they think, and what they do.',
     body:
       'Round one is a conversation about their real work: how they reason, and the things experienced engineers know but rarely say out loud. Round two drops them into a sandbox that looks like the job: a real codebase, an AI coding agent, a ticket to ship. One reveals thinking. The other reveals doing. The gap between them is itself the signal.',
-    visual: <RoundsCard />,
+    visual: <TwoRoundsVisual />,
   },
   {
     kicker: '02 · AI use is a plus, not a red flag',
@@ -306,9 +232,11 @@ function FourDecisions() {
                   {d.body}
                 </p>
               </div>
-              <div className={i % 2 === 1 ? 'md:order-1' : undefined}>
-                {d.visual}
-              </div>
+              {d.visual && (
+                <div className={i % 2 === 1 ? 'md:order-1' : undefined}>
+                  {d.visual}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -321,7 +249,7 @@ function MethodologyFooter() {
   return (
     <footer className="border-t border-earth-200 bg-white">
       <div className="max-w-4xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-basanite-500">
-        <p>Built in Manchester by Drew, Lynn and Aditya.</p>
+        <p>&copy; {new Date().getFullYear()} Basanite.</p>
         <div className="flex items-center gap-5">
           <Link href="/" className="hover:text-basanite-900 transition-colors">
             Home
