@@ -165,6 +165,31 @@ if _USE_PROMPT_WEBHOOK and not _INTERVIEW_SESSION_SECRET:
     _USE_PROMPT_WEBHOOK = False
 
 
+# ─── Test Mode (internal tester walkthrough) ────────────────────────────────
+# Lets an internal tester walk the full candidate journey against ONE
+# designated test role. Sessions started on that role are stamped
+# `is_mock` at /start; every other consumer (prompt assembly, Director,
+# report generation, dashboard) reads the stored flag. Mock-ness is
+# decided once, server-side, from the role the link resolves to — no
+# client input is ever consulted, so a tampered browser can neither
+# create a mock session on a real role nor turn a mock one real.
+#
+# Both vars must be set for any session to be mock:
+#
+#   TEST_MODE_ENABLED=true
+#   TEST_MODE_ROLE_ID=<uuid of the designated test role>
+#
+# Leave them unset in production and no mock row can ever be created.
+_TEST_MODE_ENABLED = os.getenv("TEST_MODE_ENABLED", "").lower() in {"1", "true", "yes"}
+_TEST_MODE_ROLE_ID = os.getenv("TEST_MODE_ROLE_ID", "")
+
+
+def _is_test_mode_role(role_id: str) -> bool:
+    """True only when Test Mode is enabled AND this is the designated
+    test role. Reads module state (not env) so tests can monkeypatch."""
+    return _TEST_MODE_ENABLED and bool(_TEST_MODE_ROLE_ID) and role_id == _TEST_MODE_ROLE_ID
+
+
 def _mint_session_prompt_token(assessment_id: str, ttl_seconds: int = 3600) -> str:
     """Sign an opaque token tying a session to an assessment_id.
 
@@ -575,13 +600,16 @@ async def start_assessment(
                 detail="An assessment already exists for this candidate on this role.",
             )
 
-    # Create assessment
+    # Create assessment. `is_mock` is stamped here, once, from the role
+    # the link resolved to (designated test role + env gate) — every
+    # downstream consumer reads this stored flag, never client input.
     assessment = create_assessment({
         "role_id": role["id"],
         "candidate_user_id": body.candidate_user_id,
         "candidate_name": body.candidate_name,
         "candidate_email": body.candidate_email,
         "status": "cv_uploaded",
+        "is_mock": _is_test_mode_role(role["id"]),
     })
     if not assessment:
         raise HTTPException(status_code=500, detail="Failed to create assessment")
@@ -696,7 +724,13 @@ async def voice_session(token: str, body: dict, request: Request):
     # uses for the opening line and as the name passed into the system
     # prompt's candidate_context block.
     canonical_name = assessment.get("candidate_name") or cv.get("name") or ""
-    prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
+    # Test Mode: mock sessions get the small-talk prompt instead of the
+    # real interview. Keyed off the stored is_mock flag, never the client.
+    if assessment.get("is_mock"):
+        from interview import assemble_smalltalk_prompt
+        prompt = assemble_smalltalk_prompt(candidate_name=canonical_name)
+    else:
+        prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
     first_name = (canonical_name or "there").split()[0]
     first_message = (
         f"Hi {first_name}, I'm Baz, I'll be your interviewer today. "
@@ -855,7 +889,13 @@ async def elevenlabs_conv_init(request: Request):
             cv = {}
 
     canonical_name = assessment.get("candidate_name") or cv.get("name") or ""
-    prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
+    # Test Mode: mock sessions get the small-talk prompt instead of the
+    # real interview. Keyed off the stored is_mock flag, never the client.
+    if assessment.get("is_mock"):
+        from interview import assemble_smalltalk_prompt
+        prompt = assemble_smalltalk_prompt(candidate_name=canonical_name)
+    else:
+        prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
     first_name = (canonical_name or "there").split()[0]
     first_message = (
         f"Hi {first_name}, I'm Baz, I'll be your interviewer today. "
@@ -1202,6 +1242,12 @@ async def director_tick(
     if not isinstance(role["dimensions"], list):
         role["dimensions"] = []
 
+    # Test Mode: nothing to supervise in a small-talk session, and a
+    # Director directive would push the agent back toward evaluative
+    # questioning. Skip (and save the Opus call).
+    if assessment and assessment.get("is_mock"):
+        return {"skip": True, "reason": "test_mode"}
+
     raw_messages = body.get("messages") or []
     messages: list[dict] = []
     for m in raw_messages[-120:]:
@@ -1394,7 +1440,10 @@ async def finalize_voice_session(token: str, body: dict):
         update_fields["recording_path"] = recording_path
     update_assessment(assessment_id, **update_fields)
 
-    if messages:
+    # Test Mode: mock sessions never generate reports — no rows land in
+    # `reports` or `dimension_scores`. The completion flow above still
+    # ran, so the tester sees the normal completion screen.
+    if messages and not _assessment.get("is_mock"):
         asyncio.create_task(generate_reports(assessment_id, role, cv))
 
     return {
@@ -1436,8 +1485,10 @@ async def complete_assessment(
         completed_at=datetime.now(timezone.utc).isoformat(),
     )
 
-    # Generate reports in background
-    asyncio.create_task(generate_reports(assessment_id, role, cv_extracted))
+    # Generate reports in background. Test Mode: mock sessions skip this
+    # entirely — no reports, no dimension_scores.
+    if not assessment.get("is_mock"):
+        asyncio.create_task(generate_reports(assessment_id, role, cv_extracted))
 
     return {"status": "completing", "assessment_id": assessment_id}
 
