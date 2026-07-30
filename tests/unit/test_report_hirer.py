@@ -60,6 +60,12 @@ class TestGenerateHirerReport:
         # behaviour is covered explicitly by test_derives_recommendation.
         out.pop("recommendation", None)
         out.pop("recommendation_rationale", None)
+        # The redesigned hirer report (b1c0a0a) also stamps empty
+        # `headline_summary` / `at_a_glance` defaults when the model omits
+        # them, so the PDF's executive-summary and at-a-glance sections
+        # always have keys to read. Strip them for the equality check.
+        out.pop("headline_summary", None)
+        out.pop("at_a_glance", None)
         assert out == hirer_payload
 
     async def test_derives_recommendation_when_model_omits_it(

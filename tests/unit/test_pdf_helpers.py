@@ -234,10 +234,10 @@ class TestCandidateHtml:
         assert "Clear examples" in out
         assert "Be more concrete" in out
 
-    def test_includes_overall_in_blockquote(self):
+    def test_includes_overall_in_callout(self):
         out = _candidate_html("Role", "Jane", {"overall_impression": "Solid."})
         assert "Solid." in out
-        assert "<blockquote>Solid.</blockquote>" in out
+        assert '<div class="exec-callout">Solid.</div>' in out
 
     def test_escapes_summary(self):
         out = _candidate_html("R", "Jane", {"summary": "<img src=x>"})
@@ -259,7 +259,7 @@ class TestHirerHtml:
         }
         out = _hirer_html("Role", "Jane", report)
         assert "Technical Depth" in out
-        assert "4/5" in out
+        assert "4.0 / 5" in out
         assert "I built X." in out
         assert "Concrete." in out
 
@@ -298,14 +298,21 @@ class TestHirerHtml:
         assert "Solid mid-level." in out
 
     def test_renders_cheating_risk_dict(self):
+        # The redesigned report surfaces the cheating-risk LEVEL inside the
+        # Score Overview card (which requires a scoring_summary to render).
+        # Note: the new design shows only the level, not the rationale text.
         report = {
+            "scoring_summary": [
+                {"dimension": "technical_depth", "score": 4,
+                 "quotation_basis": "I built X.", "notes": "Concrete."},
+            ],
             "comprehensive_assessment": {
                 "cheating_risk": {"level": "low", "rationale": "Specific stories."}
             }
         }
         out = _hirer_html("Role", "Jane", report)
-        assert "low" in out
-        assert "Specific stories." in out
+        assert "Cheating risk" in out
+        assert "Low" in out
 
     def test_escapes_quotation_basis(self):
         report = {
@@ -331,17 +338,17 @@ class TestHirerHtmlRecommendation:
             "composite_score": 4.6,
         }
         out = _hirer_html("Role", "Jane", report)
-        assert "Strongly recommended for next round" in out
+        # The active card in the 3-card recommendation strip.
+        assert "Strongly Recommended" in out
+        # The rationale renders in the executive-summary callout.
         assert "Sustained signal across every priority dimension." in out
-        # Composite renders alongside the tier.
-        assert "4.6" in out
 
     def test_derives_recommendation_for_legacy_report(self):
         # No `recommendation` field; the banner must derive one from
         # the composite score so older reports still get the headline.
         report = {"composite_score": 2.2}
         out = _hirer_html("Role", "Jane", report)
-        assert "Not recommended for next round" in out
+        assert "Not Recommended" in out
 
     def test_recommendation_appears_before_dimension_detail(self):
         report = {
@@ -354,9 +361,9 @@ class TestHirerHtmlRecommendation:
             "composite_score": 3.8,
         }
         out = _hirer_html("Role", "Jane", report)
-        # The headline tier must appear before the dimension-scores
+        # The recommendation section must appear before the dimension-scores
         # section, mirroring the hierarchy Lynn asked for.
-        reco_at = out.index("Recommended for next round")
+        reco_at = out.index("Interview recommendation")
         scores_at = out.index("Dimension scores")
         assert reco_at < scores_at
 
