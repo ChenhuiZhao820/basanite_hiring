@@ -16,6 +16,7 @@ import { SiteNav } from '@/components/SiteNav'
 import { StoneTexture } from '@/components/StoneTexture'
 import { Reveal } from '@/components/Reveal'
 import { buildMetadata, faqPageJsonLd, breadcrumbJsonLd } from '@/lib/seo'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'FAQ',
@@ -346,7 +347,7 @@ export default async function FaqPage() {
               Everything we&rsquo;d expect you to ask.
             </h1>
             <p className="hero-item text-earth-200 text-lg leading-relaxed max-w-2xl mb-10" style={{ ['--d' as string]: '220ms' }}>
-              Straight answers on how the two rounds work, what we measure, and what happens to your data. If we&rsquo;ve missed something, book a call at the bottom of the page.
+              Straight answers on how the two rounds work, what we measure, and what happens to your data. If we&rsquo;ve missed something, register your interest at the bottom of the page and we&rsquo;ll be in touch.
             </p>
 
             <nav aria-label="FAQ sections" className="hero-item flex flex-wrap gap-2 sm:gap-3" style={{ ['--d' as string]: '340ms' }}>
@@ -416,17 +417,15 @@ export default async function FaqPage() {
                 <p className="text-gold-400 text-[10px] font-semibold uppercase tracking-[0.22em] mb-3">Still curious</p>
                 <h2 className="font-display text-2xl sm:text-3xl text-earth-50 mb-2">Still have questions?</h2>
                 <p className="text-earth-200 text-sm leading-relaxed">
-                  Book a 20-minute call with the team, or send us a note through the contact page.
+                  Register your interest and the team will reach out, or send us a note through the contact page.
                 </p>
               </div>
               <div className="shrink-0 flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://cal.eu/basanite/intro"
-                  target="_blank"
-                  rel="noreferrer"
+                  href={REGISTER_INTEREST_URL}
                   className="inline-block text-center px-6 py-3 bg-gold-500 text-basanite-900 text-sm font-semibold hover:bg-gold-400 transition-colors"
                 >
-                  Book a call
+                  Register interest
                 </a>
                 <Link
                   href="/contact"

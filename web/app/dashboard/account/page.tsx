@@ -29,10 +29,10 @@ function SectionCard({ title, description, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-white dark:bg-basanite-800 border border-slate-200 dark:border-basanite-700 p-6">
+    <div className="bg-white dark:bg-basanite-800 border border-earth-200 dark:border-basanite-700 p-6">
       <div className="mb-5">
-        <h2 className="font-semibold text-[#0b1f3d] dark:text-earth-100 text-sm">{title}</h2>
-        {description && <p className="text-xs text-slate-400 dark:text-earth-500 mt-0.5">{description}</p>}
+        <h2 className="font-semibold text-basanite-900 dark:text-earth-100 text-sm">{title}</h2>
+        {description && <p className="text-xs text-basanite-400 dark:text-earth-500 mt-0.5">{description}</p>}
       </div>
       {children}
     </div>
@@ -42,7 +42,7 @@ function SectionCard({ title, description, children }: {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium text-slate-600 dark:text-earth-300">{label}</label>
+      <label className="text-xs font-medium text-basanite-600 dark:text-earth-300">{label}</label>
       {children}
     </div>
   )
@@ -52,7 +52,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-3 py-2 text-sm text-[#0b1f3d] dark:text-earth-100 placeholder-slate-400 dark:placeholder-earth-500 focus:outline-none focus:border-[#1d4ed8] dark:focus:border-gold-500 transition-colors ${props.className ?? ''}`}
+      className={`w-full border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 px-3 py-2 text-sm text-basanite-900 dark:text-earth-100 placeholder-basanite-400 dark:placeholder-earth-500 focus:outline-none focus:border-gold-600 dark:focus:border-gold-500 transition-colors ${props.className ?? ''}`}
     />
   )
 }
@@ -62,7 +62,7 @@ function SaveButton({ loading, label = 'Save changes' }: { loading: boolean; lab
     <button
       type="submit"
       disabled={loading}
-      className="bg-[#0b1f3d] hover:bg-[#1d4ed8] dark:bg-[#1d4ed8] dark:hover:bg-[#3b82f6] active:scale-95 text-white text-xs font-semibold px-5 py-2.5 transition-all duration-150 disabled:opacity-50"
+      className="bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 active:scale-95 text-white text-xs font-semibold px-5 py-2.5 transition-all duration-150 disabled:opacity-50"
     >
       {loading ? 'Saving…' : label}
     </button>
@@ -72,7 +72,7 @@ function SaveButton({ loading, label = 'Save changes' }: { loading: boolean; lab
 function Feedback({ state }: { state: { ok: boolean; msg: string } | null }) {
   if (!state) return null
   return (
-    <p className={`text-xs mt-3 ${state.ok ? 'text-green-600' : 'text-red-600'}`}>
+    <p className={`text-xs mt-3 ${state.ok ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
       {state.msg}
     </p>
   )
@@ -129,7 +129,7 @@ function ProfileSection({ initialEmail, initialName }: { initialEmail: string; i
         <Field label="Email address">
           <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
           {email !== initialEmail && (
-            <p className="text-xs text-slate-400 dark:text-earth-500 mt-1">A verification link will be sent to the new address.</p>
+            <p className="text-xs text-basanite-400 dark:text-earth-500 mt-1">A verification link will be sent to the new address.</p>
           )}
         </Field>
         {email !== initialEmail && (
@@ -219,7 +219,7 @@ function DangerZone() {
 
   return (
     <SectionCard title="Danger zone">
-      <p className="text-xs text-slate-500 dark:text-earth-400 mb-4">
+      <p className="text-xs text-basanite-500 dark:text-earth-400 mb-4">
         Permanently delete your account and all associated searches and candidates. This cannot be undone.
       </p>
       <form onSubmit={handleDelete} className="space-y-3">
@@ -261,8 +261,8 @@ function AppearanceSection() {
               className={
                 'flex items-center justify-center gap-2 border px-3 py-3 text-xs font-medium transition-colors ' +
                 (active
-                  ? 'border-[#0b1f3d] bg-[#0b1f3d] text-white'
-                  : 'border-slate-200 dark:border-basanite-700 text-slate-600 dark:text-earth-300 hover:border-slate-300 hover:text-[#0b1f3d] dark:text-earth-100')
+                  ? 'border-basanite-900 bg-basanite-900 text-white dark:border-gold-500 dark:bg-gold-600'
+                  : 'border-earth-200 dark:border-basanite-700 text-basanite-600 dark:text-earth-300 hover:border-earth-300 hover:text-basanite-900 dark:hover:text-earth-100')
               }
             >
               {opt === 'light' ? (
@@ -291,19 +291,19 @@ export default function AccountPage() {
   const { email, name } = useUser()
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl mx-auto">
       <div className="mb-8">
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-earth-500 hover:text-[#0b1f3d] dark:text-earth-100 transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-xs text-basanite-400 dark:text-earth-500 hover:text-basanite-900 dark:hover:text-earth-100 transition-colors mb-4"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Back to dashboard
         </Link>
-        <h1 className="font-display text-2xl font-bold text-[#0b1f3d] dark:text-earth-100">Account</h1>
-        <p className="text-slate-500 dark:text-earth-400 text-sm mt-1">Manage your profile and account settings.</p>
+        <h1 className="font-display text-2xl font-bold text-basanite-900 dark:text-earth-100">Account</h1>
+        <p className="text-basanite-500 dark:text-earth-400 text-sm mt-1">Manage your profile and account settings.</p>
       </div>
 
       <div className="space-y-4">

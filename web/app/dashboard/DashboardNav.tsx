@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function DashboardNav({ email, isAdmin }: { email: string; isAdmin?: boolean }) {
+export default function DashboardNav({ isAdmin }: { isAdmin?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
@@ -15,12 +15,24 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
     router.refresh()
   }
 
+  const isDashboard = pathname === '/dashboard'
   const isAccount = pathname === '/dashboard/account'
   const isIntegrations = pathname === '/dashboard/integrations'
   const isVoices = pathname?.startsWith('/dashboard/voices') ?? false
 
   return (
     <div className="flex items-center gap-1">
+      <Link
+        href="/dashboard"
+        className={`text-xs px-3 py-1.5 transition-colors ${
+          isDashboard
+            ? 'text-[#1a1a18] dark:text-earth-100 font-medium'
+            : 'text-slate-400 dark:text-earth-500 hover:text-[#1a1a18] dark:hover:text-earth-100'
+        }`}
+      >
+        Dashboard
+      </Link>
+      <span className="text-slate-200 dark:text-basanite-700 text-xs">|</span>
       <Link
         href="/dashboard/voices"
         className={`text-xs px-3 py-1.5 transition-colors ${
@@ -51,7 +63,7 @@ export default function DashboardNav({ email, isAdmin }: { email: string; isAdmi
             : 'text-slate-400 dark:text-earth-500 hover:text-[#1a1a18] dark:hover:text-earth-100'
         }`}
       >
-        {email}
+        Account settings
       </Link>
       {isAdmin && (
         <>

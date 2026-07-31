@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { SiteNav } from '@/components/SiteNav'
 import { buildMetadata, breadcrumbJsonLd } from '@/lib/seo'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Blog',
@@ -168,15 +169,13 @@ export default async function BlogIndexPage() {
             Want to talk about your own pipeline?
           </h2>
           <p className="text-basanite-600 text-base mb-6 max-w-xl mx-auto">
-            We do 20-minute intros where we listen first. No deck.
+            Register your interest and we&rsquo;ll reach out. We listen first. No deck.
           </p>
           <a
-            href="https://cal.eu/basanite/intro"
-            target="_blank"
-            rel="noreferrer"
+            href={REGISTER_INTEREST_URL}
             className="inline-block px-6 py-3 bg-basanite-900 text-white text-sm font-medium hover:bg-gold-600 transition-colors"
           >
-            Book a call
+            Register interest
           </a>
         </section>
       </main>

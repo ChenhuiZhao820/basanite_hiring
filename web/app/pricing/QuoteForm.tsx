@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const ROLES_OPTIONS = ['1–3', '4–10', '11–25', '25+']
@@ -89,16 +89,14 @@ export function QuoteForm() {
           Thanks, {name.split(' ')[0] || 'there'}. We&rsquo;ll put a quote together
         </h2>
         <p className="text-basanite-600 text-sm mb-6">
-          We&rsquo;ll email you shortly with pricing for your volume and role mix. Want to talk it
-          through sooner?
+          We&rsquo;ll email you shortly with pricing for your volume and role mix. Want to hear
+          from us as early access opens up?
         </p>
         <a
-          href={BOOK_A_CALL_URL}
-          target="_blank"
-          rel="noreferrer"
+          href={REGISTER_INTEREST_URL}
           className={`inline-block px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-semibold hover:bg-gold-600 transition-colors ${focusRing}`}
         >
-          Book a call now
+          Register interest
         </a>
       </div>
     )
@@ -192,14 +190,12 @@ export function QuoteForm() {
         {state === 'submitting' ? 'Sending…' : 'Get a quote'}
       </button>
       <p className="text-sm text-basanite-500 text-center">
-        Prefer to talk?{' '}
+        Not ready for a quote?{' '}
         <a
-          href={BOOK_A_CALL_URL}
-          target="_blank"
-          rel="noreferrer"
+          href={REGISTER_INTEREST_URL}
           className="text-gold-700 hover:text-basanite-900 underline underline-offset-4"
         >
-          Book a call directly
+          Register your interest instead
         </a>
       </p>
     </form>

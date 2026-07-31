@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { SiteNav } from '@/components/SiteNav'
 import { buildMetadata, breadcrumbJsonLd } from '@/lib/seo'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Contact',
@@ -10,22 +11,15 @@ export const metadata: Metadata = buildMetadata({
   path: '/contact',
 })
 
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
-
 const CONTACTS = [
   {
     role: 'General enquiries',
-    email: 'hello@basanite.co.uk',
+    email: 'aditya.shah@basanite.co.uk',
     description: 'For pilots, demos, partnership conversations, and anything else.',
   },
   {
-    role: 'Privacy & data rights',
-    email: 'privacy@basanite.co.uk',
-    description: 'GDPR access, deletion, portability requests. Single point of contact for the founders acting as joint controllers.',
-  },
-  {
     role: 'Press & speaking',
-    email: 'hello@basanite.co.uk',
+    email: 'aditya.shah@basanite.co.uk',
     description: 'Interviews, conference invitations, and media enquiries.',
   },
 ]
@@ -51,7 +45,7 @@ export default async function ContactPage() {
     mainEntity: {
       '@type': 'Organization',
       name: 'Basanite',
-      email: 'hello@basanite.co.uk',
+      email: 'aditya.shah@basanite.co.uk',
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Manchester',
@@ -87,26 +81,24 @@ export default async function ContactPage() {
             Get in touch.
           </h1>
           <p className="text-basanite-600 text-lg leading-relaxed">
-            We respond within a working day, usually within a few hours. The fastest path is the 20-minute intro call.
+            We respond within a working day, usually within a few hours. The fastest path is registering your interest below.
           </p>
         </header>
 
-        {/* Primary CTA: book a call */}
+        {/* Primary CTA: register interest */}
         <section className="mb-16 border border-gold-500/40 bg-white p-8 sm:p-10">
           <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-start sm:items-center">
             <div className="flex-1">
-              <h2 className="font-display text-2xl text-basanite-900 mb-2">Book a 20-minute call</h2>
+              <h2 className="font-display text-2xl text-basanite-900 mb-2">Register your interest</h2>
               <p className="text-basanite-600 text-sm leading-relaxed">
-                Walk through Basanite live on your own job description. We&apos;ll show you the interview, the report, and the eight dimensions — and answer anything in the way.
+                Tell us who you are and we&apos;ll reach out with early access — the interview, the report, and the eight dimensions, live on your own job description.
               </p>
             </div>
             <a
-              href={BOOK_A_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
+              href={REGISTER_INTEREST_URL}
               className="shrink-0 inline-block px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-medium hover:bg-gold-600 transition-colors"
             >
-              Book a call
+              Register interest
             </a>
           </div>
         </section>

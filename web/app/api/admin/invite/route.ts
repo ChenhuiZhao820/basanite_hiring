@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
   const { data: waitlistRow, error: waitlistError } = await service
     .from('waitlist')
     .upsert(
-      { name, email, company, status: 'approved' },
+      { name, email, company, status: 'approved', approved_at: new Date().toISOString() },
       { onConflict: 'email' },
     )
     .select('id')

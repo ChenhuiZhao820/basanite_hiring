@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = {
   title: 'Basanite vs HackerRank, CodeSignal, HireVue & Karat | Basanite',
@@ -9,7 +10,6 @@ export const metadata: Metadata = {
     'Where Basanite sits in your hiring process, and how it compares head-to-head with HackerRank, CodeSignal, HireVue and Karat on gaming-resistance, AI-collaboration, what your team receives, adaptivity, and cost.',
 }
 
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
 // Muted red-brown for struck captions and weak answers. Spec-mandated hue; it is
 // below WCAG AA contrast on the light background, but meaning is never carried by
 // colour alone here (line-through styling + explicit "No"/word answers also convey it).
@@ -272,12 +272,10 @@ export default function ComparePage() {
               See a sample briefing
             </Link>
             <a
-              href={BOOK_A_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
+              href={REGISTER_INTEREST_URL}
               className="w-full sm:w-auto px-8 py-4 border border-basanite-900 text-basanite-900 font-semibold text-base hover:bg-basanite-900 hover:text-earth-50 transition-colors"
             >
-              Book a call
+              Register interest
             </a>
           </div>
           <p className="text-basanite-500 text-sm mt-6">
@@ -291,7 +289,6 @@ export default function ComparePage() {
           <p>&copy; {new Date().getFullYear()} Basanite.</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <Link href="/" className="hover:text-basanite-900 transition-colors">Home</Link>
-            <Link href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</Link>
             <Link href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</Link>
           </div>
         </div>

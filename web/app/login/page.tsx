@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
 import { safeNext } from '@/lib/validate'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 function LoginForm() {
   useDocumentTitle('Sign in')
@@ -110,12 +111,10 @@ function LoginForm() {
         <p className="text-xs text-slate-400 text-center mt-5">
           Don&apos;t have access?{' '}
           <a
-            href="https://cal.eu/basanite/intro"
-            target="_blank"
-            rel="noreferrer"
+            href={REGISTER_INTEREST_URL}
             className="text-gold-600 hover:underline"
           >
-            Book a call
+            Register interest
           </a>
         </p>
       </div>

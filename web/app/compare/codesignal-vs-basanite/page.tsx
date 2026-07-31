@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { SiteNav } from '@/components/SiteNav'
 import { buildMetadata, faqPageJsonLd, breadcrumbJsonLd } from '@/lib/seo'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'CodeSignal vs Basanite — assessment library vs AI-instrumented interview',
@@ -298,15 +299,13 @@ export default async function CodeSignalVsBasanitePage() {
         <section className="mt-16 border-t border-earth-200 pt-12 text-center">
           <h2 className="font-display text-2xl text-basanite-900 mb-3">See Basanite live</h2>
           <p className="text-basanite-600 text-base mb-6 max-w-xl mx-auto">
-            Book a 20-minute call. Bring a sample CodeSignal report if you have one — we will sit Basanite next to it.
+            Register your interest and we&rsquo;ll be in touch. Bring a sample CodeSignal report if you have one — we will sit Basanite next to it.
           </p>
           <a
-            href="https://cal.eu/basanite/intro"
-            target="_blank"
-            rel="noreferrer"
+            href={REGISTER_INTEREST_URL}
             className="inline-block px-6 py-3 bg-basanite-900 text-white text-sm font-medium hover:bg-gold-600 transition-colors"
           >
-            Book a call
+            Register interest
           </a>
           <p className="mt-4 text-sm text-basanite-500">
             Or <Link href="/contact" className="underline hover:text-basanite-900">send us a note</Link>.
@@ -326,7 +325,6 @@ function SlimFooter() {
         <p>&copy; {new Date().getFullYear()} Basanite.</p>
         <div className="flex items-center gap-5">
           <Link href="/" className="hover:text-basanite-900 transition-colors">Home</Link>
-          <Link href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</Link>
           <Link href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</Link>
           <Link href="/about" className="hover:text-basanite-900 transition-colors">About</Link>
           <Link href="/contact" className="hover:text-basanite-900 transition-colors">Contact</Link>

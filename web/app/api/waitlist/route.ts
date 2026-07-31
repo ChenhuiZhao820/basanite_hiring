@@ -13,7 +13,14 @@ export async function POST(request: Request) {
     )
   }
 
-  let body: { name?: string; email?: string; company?: string }
+  let body: {
+    name?: string
+    email?: string
+    company?: string
+    phone?: string
+    referral_source?: string
+    persona?: string
+  }
   try {
     body = await request.json()
   } catch {
@@ -23,6 +30,9 @@ export async function POST(request: Request) {
   const name = (body.name ?? '').trim()
   const email = (body.email ?? '').trim().toLowerCase()
   const company = (body.company ?? '').trim() || null
+  const phone = (body.phone ?? '').trim() || null
+  const referralSource = (body.referral_source ?? '').trim() || null
+  const persona = (body.persona ?? '').trim() || null
 
   if (!name) {
     return NextResponse.json({ error: 'Name is required.' }, { status: 400 })
@@ -30,14 +40,33 @@ export async function POST(request: Request) {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: 'A valid email is required.' }, { status: 400 })
   }
-  if (name.length > 200 || email.length > 320 || (company && company.length > 200)) {
+  if (persona && !['hirer', 'interviewer', 'candidate'].includes(persona)) {
+    return NextResponse.json({ error: 'Invalid persona.' }, { status: 400 })
+  }
+  if (phone && !/^[+\d][\d\s().-]{4,24}$/.test(phone)) {
+    return NextResponse.json({ error: 'Please enter a valid phone number.' }, { status: 400 })
+  }
+  if (
+    name.length > 200 ||
+    email.length > 320 ||
+    (company && company.length > 200) ||
+    (referralSource && referralSource.length > 200)
+  ) {
     return NextResponse.json({ error: 'Input too long.' }, { status: 400 })
   }
 
   const service = createServiceClient()
   const { error } = await service
     .from('waitlist')
-    .insert({ name, email, company, status: 'pending' })
+    .insert({
+      name,
+      email,
+      company,
+      phone,
+      referral_source: referralSource,
+      persona,
+      status: 'pending',
+    })
 
   if (error) {
     // A duplicate email (23505) is reported as success with the SAME body as a
