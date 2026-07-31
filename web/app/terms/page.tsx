@@ -87,7 +87,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="Contact">
-          <p><a href="mailto:hello@basanite.co.uk" className="text-gold-600 underline">hello@basanite.co.uk</a></p>
+          <p><a href="mailto:aditya.shah@basanite.co.uk" className="text-gold-600 underline">aditya.shah@basanite.co.uk</a></p>
         </Section>
       </main>
     </div>

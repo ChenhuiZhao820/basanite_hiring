@@ -12,6 +12,7 @@ import type { ReactNode } from 'react'
 import { headers } from 'next/headers'
 import { SiteNav } from '@/components/SiteNav'
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/seo'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 type Props = {
   title: string
@@ -138,12 +139,10 @@ function ClosingCta() {
       </p>
       <div className="flex flex-wrap gap-3">
         <a
-          href="https://cal.eu/basanite/intro"
-          target="_blank"
-          rel="noreferrer"
+          href={REGISTER_INTEREST_URL}
           className="inline-block px-6 py-3 bg-basanite-900 text-white text-sm font-medium hover:bg-gold-600 transition-colors"
         >
-          Book a 20-minute call
+          Register interest
         </a>
         <Link
           href="/faq"

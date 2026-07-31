@@ -40,7 +40,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <DashboardThemeShell
-      email={user.email ?? ''}
       isAdmin={!!user.app_metadata?.is_admin}
       initialOrgs={orgs}
       initialActiveOrgId={activeOrgId}

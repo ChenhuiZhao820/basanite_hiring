@@ -16,7 +16,7 @@ const PUBLIC_PAGES: Entry[] = [
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/legal/subprocessors', changeFrequency: 'yearly', priority: 0.3 },
-  { path: '/pricing', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/register-interest', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/value', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/blog', changeFrequency: 'weekly', priority: 0.7 },
 ]
