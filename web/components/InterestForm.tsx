@@ -38,6 +38,7 @@ export function InterestForm() {
   const [company, setCompany] = useState('')
   const [phone, setPhone] = useState('')
   const [referralSource, setReferralSource] = useState('')
+  const [referralOther, setReferralOther] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
 
@@ -69,6 +70,12 @@ export function InterestForm() {
       return
     }
 
+    const trimmedReferralOther = referralOther.trim()
+    const referral =
+      referralSource === 'Other' && trimmedReferralOther
+        ? `Other: ${trimmedReferralOther}`
+        : referralSource
+
     setStatus('submitting')
     setError('')
     try {
@@ -80,7 +87,7 @@ export function InterestForm() {
           email: trimmedEmail,
           company: company.trim(),
           phone: trimmedPhone,
-          referral_source: referralSource,
+          referral_source: referral,
           persona,
         }),
       })
@@ -220,7 +227,11 @@ export function InterestForm() {
                 key={source}
                 type="button"
                 aria-pressed={selected}
-                onClick={() => setReferralSource(selected ? '' : source)}
+                onClick={() => {
+                  const next = selected ? '' : source
+                  setReferralSource(next)
+                  if (next !== 'Other') setReferralOther('')
+                }}
                 className={`px-3.5 py-2 border text-xs font-medium transition-colors ${
                   selected
                     ? 'border-gold-500 bg-gold-500/10 text-gold-400'
@@ -232,6 +243,20 @@ export function InterestForm() {
             )
           })}
         </div>
+        {referralSource === 'Other' && (
+          <label className="block mt-3">
+            <span className="sr-only">Where did you hear about us?</span>
+            <input
+              type="text"
+              name="referral_other"
+              placeholder="Where did you hear about us?"
+              value={referralOther}
+              onChange={e => setReferralOther(e.target.value)}
+              maxLength={150}
+              className={inputClass}
+            />
+          </label>
+        )}
       </fieldset>
 
       {status === 'error' && error && (
