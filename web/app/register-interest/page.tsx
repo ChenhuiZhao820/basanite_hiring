@@ -27,8 +27,7 @@ export default function RegisterInterestPage() {
               Register your interest.
             </h1>
             <p className="text-earth-300 text-lg leading-relaxed max-w-xl mx-auto">
-              Tell us who you are and how to reach you &mdash; we&rsquo;ll be in touch as access
-              opens up. Three quick questions, nothing else.
+              We&rsquo;ll be in touch as access opens up
             </p>
           </header>
 
