@@ -56,6 +56,10 @@ export default function NewRolePage() {
   const [jdUploading, setJdUploading] = useState(false)
   const [jdDragActive, setJdDragActive] = useState(false)
   const [jdTruncated, setJdTruncated] = useState(false)
+  // Upload problems render inline next to the drop zone (not the top-of-page
+  // banner, which is reserved for form-level errors) so the message sits
+  // beside the control that caused it.
+  const [jdUploadError, setJdUploadError] = useState('')
   const jdFileInputRef = useRef<HTMLInputElement>(null)
 
   const JD_UNSUPPORTED_MESSAGE =
@@ -76,15 +80,15 @@ export default function NewRolePage() {
   }
 
   async function handleJdFile(file: File) {
-    setError('')
+    setJdUploadError('')
     setJdTruncated(false)
     if (!isAcceptedJdFile(file)) {
-      setError(JD_UNSUPPORTED_MESSAGE)
+      setJdUploadError(JD_UNSUPPORTED_MESSAGE)
       return
     }
     const MAX_JD_BYTES = 10 * 1024 * 1024
     if (file.size > MAX_JD_BYTES) {
-      setError('That file is too large. Please upload a file under 10 MB.')
+      setJdUploadError('That file is too large. Please upload a file under 10 MB.')
       return
     }
     setJdUploading(true)
@@ -101,7 +105,7 @@ export default function NewRolePage() {
       setJobDescription(data.jd_text ?? '')
       setJdTruncated(Boolean(data.truncated))
     } catch (e: any) {
-      setError(e.message ?? 'Failed to read that file.')
+      setJdUploadError(e.message ?? 'Failed to read that file.')
       setJdFileName(null)
     } finally {
       setJdUploading(false)
@@ -297,6 +301,12 @@ export default function NewRolePage() {
                       : 'Click to upload a file, or drag it here'}
                 <span className="block text-xs mt-1 opacity-70">PDF, Word (.docx), .txt or .md</span>
               </div>
+
+              {jdUploadError && (
+                <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-4 py-3 mb-3">
+                  {jdUploadError}
+                </p>
+              )}
 
               {jdTruncated && (
                 <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
