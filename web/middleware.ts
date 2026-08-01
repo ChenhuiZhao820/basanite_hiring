@@ -111,6 +111,19 @@ export async function middleware(request: NextRequest) {
   // /api/auth/tag-candidate route.
   const isCandidate = user?.app_metadata?.is_candidate === true
 
+  // Suspended accounts (repeated corroborated prompt-injection attempts,
+  // or a manual admin action) are parked on /suspended until an admin
+  // reinstates them. The flag lives in app_metadata — service-role-only,
+  // same tamper-proofing rationale as is_candidate below. Admins are
+  // exempt so an accidental self-suspension can't lock the admin out.
+  const isSuspended = user?.app_metadata?.suspended === true
+  if (isSuspended && !isAdmin && isDashboard) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/suspended'
+    url.search = ''
+    return NextResponse.redirect(url)
+  }
+
   // Dashboard routes require auth
   if (isDashboard && !user) {
     const url = request.nextUrl.clone()

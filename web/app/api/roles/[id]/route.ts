@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { isSuspended, suspendedResponse } from '@/lib/suspension'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 const PIPELINE_SECRET = process.env.PIPELINE_API_SECRET ?? ''
@@ -8,6 +9,9 @@ async function assertRoleOwner(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  // A suspended user with a stale session must not act via direct fetch;
+  // the middleware only guards page navigation.
+  if (isSuspended(user)) return { error: suspendedResponse() }
 
   const service = createServiceClient()
   const { data: role } = await service
@@ -64,6 +68,7 @@ export async function DELETE(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (isSuspended(user)) return suspendedResponse()
 
   const service = createServiceClient()
 

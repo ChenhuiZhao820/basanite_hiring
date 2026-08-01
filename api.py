@@ -462,6 +462,233 @@ async def get_candidates(
     return {"candidates": assessments}
 
 
+# ─── JD file upload (hirer) ────────────────────────────────────────────────
+# Hirers can upload the job description as a file (PDF / .docx / .txt / .md)
+# instead of pasting it. The endpoint extracts text, then runs the hybrid
+# safety gate (agents/jd_validate): deterministic regex + JD-likeness scorer
+# corroborating a Haiku classifier. Confirmed injection attempts follow the
+# tiered strike policy — block + security_events strike + admin alert first,
+# auto-suspend on the second corroborated attempt within the window.
+
+_MAX_JD_UPLOAD_BYTES = 10 * 1024 * 1024  # same ceiling as CV uploads
+_JD_TEXT_LIMIT = 20000                    # CreateRoleRequest.job_description cap
+_JD_STRIKE_KIND = "jd_injection_attempt"
+_JD_STRIKE_WINDOW_DAYS = 30
+_JD_STRIKES_TO_SUSPEND = 2
+
+# Legacy pre-2007 Word (.doc) is an OLE compound file. We don't parse it —
+# conversion is one "Save As" away — but we recognise it to give a precise,
+# kind message instead of a generic "unsupported format".
+_OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
+_JD_UNSUPPORTED_DETAIL = (
+    "We can accept PDF, Word (.docx), .txt or .md files. That file looks "
+    "like something else — you can also paste the job description directly."
+)
+
+_JD_NOT_A_JD_DETAIL = (
+    "This doesn't look like a job description, have you uploaded something "
+    "else by mistake?"
+)
+
+_JD_INJECTION_BLOCKED_DETAIL = (
+    "This document contains content that attempts to manipulate our AI "
+    "systems, and has been declined. The incident has been logged for "
+    "review — if you believe this is a mistake, contact support@basanite.co.uk."
+)
+
+_JD_SUSPENDED_DETAIL = (
+    "Repeated attempts to manipulate our AI systems were detected, and your "
+    "account has been suspended pending review. Contact "
+    "support@basanite.co.uk to resolve this."
+)
+
+
+def _extract_jd_text(data: bytes, filename: str) -> str:
+    """Sniff the upload's real format and extract text, or raise a kind
+    HTTPException. Magic bytes are authoritative; the filename is only a
+    hint for the text path (same rationale as the CV endpoint)."""
+    from core.docx import DocxExtractError, extract_docx_text
+    from core.pdf import extract_pdf_text
+    from core.textfile import TextDecodeError, decode_text_file, normalize_text
+
+    if data[:4] == b"%PDF":
+        try:
+            return normalize_text(extract_pdf_text(data))
+        except Exception as e:
+            print(f"  [jd-upload] pdf parse failed: {e}")
+            raise HTTPException(
+                status_code=422,
+                detail="We couldn't read that PDF. Try re-exporting it, or paste the text instead.",
+            )
+
+    if data[:4] == b"PK\x03\x04":
+        try:
+            return normalize_text(extract_docx_text(data))
+        except DocxExtractError as e:
+            raise HTTPException(status_code=415, detail=e.detail)
+
+    if data[:8] == _OLE_MAGIC:
+        raise HTTPException(
+            status_code=415,
+            detail=(
+                "That looks like an older Word format (.doc). Please re-save "
+                "it as .docx or PDF and try again."
+            ),
+        )
+
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext in ("txt", "md", "markdown", "text"):
+        try:
+            return decode_text_file(data)
+        except TextDecodeError as e:
+            raise HTTPException(status_code=422, detail=e.detail)
+
+    raise HTTPException(status_code=415, detail=_JD_UNSUPPORTED_DETAIL)
+
+
+async def _handle_jd_injection_strike(
+    user_id: str, org_id: str | None, filename: str, verdict: dict
+) -> None:
+    """Record a corroborated injection attempt and escalate per the tiered
+    policy. Always raises (403) — the upload never proceeds."""
+    from core.db import (
+        count_recent_security_events,
+        log_security_event,
+        set_user_suspended,
+    )
+    from core.email import send_ops_alert
+
+    detail = {
+        "filename": filename[:200],
+        "injection_risk": verdict.get("injection_risk"),
+        "confidence": verdict.get("confidence"),
+        "evidence": [e[:300] for e in (verdict.get("injection_evidence") or [])[:10]],
+        "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
+    }
+    log_security_event(
+        user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+        severity="strike", detail=detail,
+    )
+
+    strikes = count_recent_security_events(
+        user_id, _JD_STRIKE_KIND, severity="strike", days=_JD_STRIKE_WINDOW_DAYS,
+    )
+    # count_recent... returns 0 on DB failure; treat the strike just
+    # logged as the floor so a read hiccup can't skip straight past the
+    # warning tier, and never suspends on its own.
+    strikes = max(strikes, 1)
+
+    if strikes >= _JD_STRIKES_TO_SUSPEND:
+        suspended = set_user_suspended(
+            user_id, True, reason="Repeated JD prompt-injection attempts",
+        )
+        if suspended:
+            log_security_event(
+                user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+                severity="suspension",
+                detail={"strikes": strikes, "window_days": _JD_STRIKE_WINDOW_DAYS},
+            )
+        send_ops_alert(
+            "Account auto-suspended: repeated JD injection attempts",
+            f"user_id: {user_id}\nstrikes in window: {strikes}\n"
+            f"evidence: {detail['evidence']}\nReview: /dashboard/admin/security",
+        )
+        raise HTTPException(status_code=403, detail=_JD_SUSPENDED_DETAIL)
+
+    send_ops_alert(
+        "JD injection attempt blocked (strike 1)",
+        f"user_id: {user_id}\nfilename: {detail['filename']}\n"
+        f"evidence: {detail['evidence']}\nReview: /dashboard/admin/security",
+    )
+    raise HTTPException(status_code=403, detail=_JD_INJECTION_BLOCKED_DETAIL)
+
+
+@app.post("/roles/jd-upload")
+async def jd_upload(
+    request: Request,
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    org_id: str | None = Form(default=None),
+    authorization: str | None = Header(default=None),
+):
+    """Extract + validate JD text from an uploaded file. The extracted text
+    is returned to the role-creation wizard, which keeps it editable and
+    submits it through the normal POST /roles path."""
+    _verify_internal(authorization)
+    # Belt-and-braces alongside the Next.js per-user cap: parsing and the
+    # classifier call are the expensive parts worth throttling per IP.
+    _rate_limit(request, bucket="jd-upload", max_requests=60, window_seconds=3600)
+
+    from core.textfile import looks_like_readable_text
+    from agents.jd_validate import (
+        is_confirmed_injection,
+        is_confirmed_not_jd,
+        validate_jd,
+    )
+
+    data = await _read_bounded(file, _MAX_JD_UPLOAD_BYTES)
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty file")
+
+    text = _extract_jd_text(data, file.filename or "")
+
+    if not text or len(text) < 80:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "That file didn't contain enough readable text (it may be a "
+                "scan). Try a different export, or paste the text instead."
+            ),
+        )
+    if not looks_like_readable_text(text):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "We couldn't extract readable text from that file — it may "
+                "use unusual fonts or be corrupted. Try re-exporting it, or "
+                "paste the text directly."
+            ),
+        )
+
+    truncated = len(text) > _JD_TEXT_LIMIT
+    if truncated:
+        text = text[:_JD_TEXT_LIMIT].rstrip()
+
+    verdict = await validate_jd(text)
+
+    if is_confirmed_injection(verdict):
+        await _handle_jd_injection_strike(
+            user_id, org_id, file.filename or "", verdict,
+        )
+
+    # Sub-punitive findings ('suspicious' grade, or regex hits the
+    # classifier judged benign) pass through — downstream prompt assembly
+    # sanitises markers anyway — but leave an audit trail.
+    if verdict.get("injection_risk") == "suspicious" or verdict.get("regex_markers"):
+        from core.db import log_security_event
+        log_security_event(
+            user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+            severity="info",
+            detail={
+                "filename": (file.filename or "")[:200],
+                "injection_risk": verdict.get("injection_risk"),
+                "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
+                "action": "allowed",
+            },
+        )
+
+    if is_confirmed_not_jd(verdict):
+        raise HTTPException(status_code=422, detail=_JD_NOT_A_JD_DETAIL)
+
+    return {
+        "jd_text": text,
+        "char_count": len(text),
+        "truncated": truncated,
+        "document_type": verdict.get("document_type"),
+    }
+
+
 # ─── Assessment (candidate-facing) ─────────────────────────────────────────
 
 @app.get("/assess/{token}")
