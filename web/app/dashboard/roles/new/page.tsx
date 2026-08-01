@@ -137,7 +137,12 @@ export default function NewRolePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, company_name: companyName, job_description: jobDescription }),
       })
-      if (!res.ok) throw new Error('Failed to create role')
+      if (!res.ok) {
+        // Surface the real reason (e.g. the injection-gate 403 on pasted
+        // text) — FastAPI errors are { detail }, the proxy's own { error }.
+        const data = await res.json().catch(() => ({} as any))
+        throw new Error(data.detail ?? data.error ?? 'Failed to create role')
+      }
       const role = await res.json()
       setRoleId(role.id)
 
