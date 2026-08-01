@@ -331,6 +331,21 @@ async def create_role(
 ):
     _verify_internal(authorization)
     from core.db import create_role as db_create_role
+    from agents.jd_validate import is_confirmed_injection, validate_jd
+
+    # A pasted JD gets the same injection gate (and strike ladder) as a
+    # file upload — otherwise the textbox is a free bypass of the upload
+    # defence. The "is this actually a JD" bounce deliberately does NOT
+    # apply here: pasting is an explicit act, and the paste path has
+    # always accepted whatever the hirer typed.
+    verdict = await validate_jd(body.job_description)
+    if is_confirmed_injection(verdict):
+        await _handle_jd_injection_strike(
+            body.user_id, None, "(pasted job description)", verdict,
+        )
+    _log_subpunitive_jd_finding(
+        body.user_id, None, "(pasted job description)", verdict,
+    )
 
     role = db_create_role({
         "user_id": body.user_id,
@@ -553,6 +568,26 @@ def _extract_jd_text(data: bytes, filename: str) -> str:
     raise HTTPException(status_code=415, detail=_JD_UNSUPPORTED_DETAIL)
 
 
+def _log_subpunitive_jd_finding(
+    user_id: str, org_id: str | None, filename: str, verdict: dict
+) -> None:
+    """Audit-log 'suspicious'-grade findings (or regex hits the classifier
+    judged benign) that were allowed through. Non-punitive, best-effort."""
+    if verdict.get("injection_risk") != "suspicious" and not verdict.get("regex_markers"):
+        return
+    from core.db import log_security_event
+    log_security_event(
+        user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+        severity="info",
+        detail={
+            "filename": (filename or "")[:200],
+            "injection_risk": verdict.get("injection_risk"),
+            "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
+            "action": "allowed",
+        },
+    )
+
+
 async def _handle_jd_injection_strike(
     user_id: str, org_id: str | None, filename: str, verdict: dict
 ) -> None:
@@ -685,18 +720,7 @@ async def jd_upload(
     # Sub-punitive findings ('suspicious' grade, or regex hits the
     # classifier judged benign) pass through — downstream prompt assembly
     # sanitises markers anyway — but leave an audit trail.
-    if verdict.get("injection_risk") == "suspicious" or verdict.get("regex_markers"):
-        from core.db import log_security_event
-        log_security_event(
-            user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
-            severity="info",
-            detail={
-                "filename": (file.filename or "")[:200],
-                "injection_risk": verdict.get("injection_risk"),
-                "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
-                "action": "allowed",
-            },
-        )
+    _log_subpunitive_jd_finding(user_id, org_id, file.filename or "", verdict)
 
     if is_confirmed_not_jd(verdict):
         raise HTTPException(status_code=422, detail=_JD_NOT_A_JD_DETAIL)

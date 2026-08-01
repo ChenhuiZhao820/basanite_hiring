@@ -153,8 +153,11 @@ async def validate_jd(text: str) -> dict:
 
     # Layer 1: emphatic deterministic rejection skips the classifier
     # entirely — no LLM tokens are spent on an obvious CV/invoice/sales
-    # script. injection markers still carry through for the audit trail.
-    if fails_deterministic_prefilter(text[:_JD_MAX_CHARS]):
+    # script. EXCEPT when the regex layer found injection markers: then
+    # the classifier must still run so intent is judged and the strike
+    # ladder can act — otherwise padding an attack document with sales
+    # keywords would dodge the injection verdict entirely.
+    if not regex_markers and fails_deterministic_prefilter(text[:_JD_MAX_CHARS]):
         verdict = JdValidation(
             document_type="other",
             is_job_description=False,
