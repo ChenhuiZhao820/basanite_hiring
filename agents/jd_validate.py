@@ -70,28 +70,67 @@ _OTHER_MARKERS = (
     "invoice", "receipt", "total due", "amount due", "vat", "subtotal",
     "dear sir", "dear madam", "dear hiring manager", "yours sincerely",
     "yours faithfully", "terms and conditions", "hereinafter",
+    # Sales / marketing / product material. Documents ABOUT hiring tools
+    # (sales scripts, pitch decks, product docs) light up JD vocabulary
+    # ("candidate", "hiring", "role") while being nothing like a JD —
+    # these markers pull them back down.
+    "sales script", "pitch deck", "value proposition", "pain point",
+    "objection", "book a demo", "book a call", "discovery call",
+    "cold call", "case study", "testimonial", "pricing plan",
+    "pricing tier", "sign up today", "free trial", "our product",
+    "our platform", "our customers", "our pricing", "close the deal",
+    "follow-up email", "target audience", "conversion",
 )
+
+
+def _marker_counts(text: str) -> tuple[int, int]:
+    """(jd_hits, negative_hits) for the deterministic marker scan."""
+    lowered = text.lower()
+    jd_hits = sum(1 for m in _JD_MARKERS if m in lowered)
+    cv_hits = sum(1 for m in _CV_MARKERS if m in lowered)
+    other_hits = sum(1 for m in _OTHER_MARKERS if m in lowered)
+    return jd_hits, cv_hits + other_hits
 
 
 def score_jd_likeness(text: str) -> float:
     """Score how JD-like a document reads, in [-1.0, 1.0].
 
-    Positive → JD-like, negative → looks like a CV/invoice/letter,
-    near zero → no strong signal either way. Deliberately coarse: this
-    exists to catch the classifier hallucinating "not a JD" on an
-    obvious JD (or vice versa), not to be a classifier itself.
+    Positive → JD-like, negative → looks like a CV/invoice/sales-script/
+    letter, near zero → no strong signal either way. Deliberately coarse:
+    it pre-filters obvious non-JDs before the LLM spends tokens, and
+    breaks ties when the classifier is unsure — it is not a classifier
+    itself.
     """
     if not text:
         return -1.0
-    lowered = text.lower()
-    jd_hits = sum(1 for m in _JD_MARKERS if m in lowered)
-    cv_hits = sum(1 for m in _CV_MARKERS if m in lowered)
-    other_hits = sum(1 for m in _OTHER_MARKERS if m in lowered)
-    negative = cv_hits + other_hits
+    jd_hits, negative = _marker_counts(text)
     total = jd_hits + negative
     if total == 0:
         return 0.0
     return (jd_hits - negative) / total
+
+
+# Layer-1 pre-filter: reject before the LLM call when the deterministic
+# scan is emphatic. Requires BOTH a strongly negative ratio and multiple
+# concrete negative-marker hits, so a short quirky-but-real JD can't be
+# bounced by a single stray keyword.
+_PREFILTER_SCORE_CEILING = -0.5
+_PREFILTER_MIN_NEGATIVE_HITS = 2
+
+
+def fails_deterministic_prefilter(text: str) -> bool:
+    """True when the marker scan alone is confident this isn't a JD.
+
+    Used as the first checking layer: documents failing it are rejected
+    without spending any LLM tokens.
+    """
+    if not text:
+        return True
+    jd_hits, negative = _marker_counts(text)
+    total = jd_hits + negative
+    if total == 0 or negative < _PREFILTER_MIN_NEGATIVE_HITS:
+        return False
+    return (jd_hits - negative) / total <= _PREFILTER_SCORE_CEILING
 
 
 async def validate_jd(text: str) -> dict:
@@ -111,6 +150,20 @@ async def validate_jd(text: str) -> dict:
     """
     regex_markers = detect_injection_markers(text, _JD_MAX_CHARS)
     jd_likeness = score_jd_likeness(text[:_JD_MAX_CHARS])
+
+    # Layer 1: emphatic deterministic rejection skips the classifier
+    # entirely — no LLM tokens are spent on an obvious CV/invoice/sales
+    # script. injection markers still carry through for the audit trail.
+    if fails_deterministic_prefilter(text[:_JD_MAX_CHARS]):
+        verdict = JdValidation(
+            document_type="other",
+            is_job_description=False,
+            confidence="high",
+        ).model_dump()
+        verdict["regex_markers"] = regex_markers
+        verdict["jd_likeness"] = jd_likeness
+        verdict["llm_skipped"] = True
+        return verdict
 
     llm = get_llm_service()
     system = _load_prompt("validate_jd")
@@ -163,14 +216,16 @@ def is_confirmed_injection(verdict: dict) -> bool:
 
 
 def is_confirmed_not_jd(verdict: dict) -> bool:
-    """True when "this is not a JD" is corroborated enough to bounce.
+    """True when "this is not a JD" is confirmed enough to bounce.
 
-    Requires the classifier to be highly confident AND the deterministic
-    scorer not to strongly disagree — a legitimate-but-unusual JD scoring
-    clearly JD-like on keywords is given the benefit of the doubt.
+    Double-layered by construction: a high-confidence classifier verdict
+    stands on its own (documents ABOUT hiring — sales scripts, marketing
+    copy — read keyword-JD-like, so the scorer must not veto it). Only a
+    low-confidence verdict falls back to the deterministic scorer as the
+    tiebreak, accepting solely when the document actually reads JD-like.
     """
     if verdict.get("is_job_description", True):
         return False
-    if verdict.get("confidence") != "high":
-        return False
-    return verdict.get("jd_likeness", 0.0) < 0.5
+    if verdict.get("confidence") == "high":
+        return True
+    return verdict.get("jd_likeness", 0.0) < 0.2

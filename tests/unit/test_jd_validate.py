@@ -68,6 +68,16 @@ class TestDetectInjectionMarkers:
         assert detect_injection_markers(None) == []
 
 
+SAMPLE_SALES_SCRIPT = """Basanite sales script — discovery call
+
+Value proposition: our platform interviews every candidate with AI.
+Pain point: hiring teams drown in CVs.
+Objection: "we already have an ATS" — our product plugs into it.
+Case study: Acme cut screening time by 80%. Book a demo today.
+Pricing plan: from £99/month, free trial available.
+Close the deal by offering the annual pricing tier."""
+
+
 class TestScoreJdLikeness:
     def test_jd_scores_positive(self):
         assert jd_validate.score_jd_likeness(SAMPLE_JD) > 0.5
@@ -79,11 +89,39 @@ class TestScoreJdLikeness:
         text = "Invoice #42\nSubtotal: 100\nVAT: 20\nTotal due: 120"
         assert jd_validate.score_jd_likeness(text) < 0
 
+    def test_sales_script_scores_negative(self):
+        # Regression: a sales script for a hiring product reads keyword-
+        # JD-like ("candidate", "hiring") but must score negative.
+        assert jd_validate.score_jd_likeness(SAMPLE_SALES_SCRIPT) < 0
+
     def test_neutral_text_scores_zero(self):
         assert jd_validate.score_jd_likeness("The quick brown fox jumps over a lazy dog.") == 0.0
 
     def test_empty_scores_negative(self):
         assert jd_validate.score_jd_likeness("") == -1.0
+
+
+class TestDeterministicPrefilter:
+    def test_jd_passes(self):
+        assert not jd_validate.fails_deterministic_prefilter(SAMPLE_JD)
+
+    def test_sales_script_fails(self):
+        assert jd_validate.fails_deterministic_prefilter(SAMPLE_SALES_SCRIPT)
+
+    def test_cv_fails(self):
+        assert jd_validate.fails_deterministic_prefilter(SAMPLE_CV)
+
+    def test_single_stray_marker_does_not_fail(self):
+        # One negative hit alone must not bounce a quirky-but-real doc.
+        assert not jd_validate.fails_deterministic_prefilter(
+            "Unusual role writeup mentioning an invoice process for clients."
+        )
+
+    def test_neutral_text_passes_to_llm(self):
+        # No signal either way → defer to the classifier, don't prejudge.
+        assert not jd_validate.fails_deterministic_prefilter(
+            "The quick brown fox jumps over a lazy dog."
+        )
 
 
 @pytest.mark.asyncio
@@ -139,6 +177,18 @@ class TestValidateJd:
         await jd_validate.validate_jd(SAMPLE_JD)
         assert fake_anthropic.messages.create.call_args.kwargs["model"] == "some-oss-model"
 
+    async def test_prefilter_rejection_skips_llm(self, fake_anthropic, make_response):
+        # Layer 1: an emphatic deterministic non-JD never reaches the
+        # classifier — zero LLM tokens spent.
+        fake_anthropic.messages.create = AsyncMock(
+            return_value=make_response(json.dumps(_verdict())))
+        out = await jd_validate.validate_jd(SAMPLE_SALES_SCRIPT)
+        fake_anthropic.messages.create.assert_not_called()
+        assert out["is_job_description"] is False
+        assert out["confidence"] == "high"
+        assert out["llm_skipped"] is True
+        assert jd_validate.is_confirmed_not_jd(out)
+
 
 class TestIsConfirmedInjection:
     def test_clear_attempt_high_confidence(self):
@@ -165,16 +215,24 @@ class TestIsConfirmedInjection:
 
 
 class TestIsConfirmedNotJd:
-    def test_high_confidence_cv_with_low_likeness(self):
+    def test_high_confidence_rejects_outright(self):
         v = {"is_job_description": False, "confidence": "high", "jd_likeness": -0.8}
         assert jd_validate.is_confirmed_not_jd(v)
 
-    def test_low_confidence_not_bounced(self):
-        v = {"is_job_description": False, "confidence": "low", "jd_likeness": -0.8}
-        assert not jd_validate.is_confirmed_not_jd(v)
-
-    def test_heuristic_disagreement_gives_benefit_of_doubt(self):
+    def test_high_confidence_rejects_despite_jd_like_keywords(self):
+        # Regression: a sales script about a hiring product scores
+        # keyword-JD-like; the scorer must NOT veto a confident classifier.
         v = {"is_job_description": False, "confidence": "high", "jd_likeness": 0.9}
+        assert jd_validate.is_confirmed_not_jd(v)
+
+    def test_low_confidence_with_negative_scorer_rejects(self):
+        v = {"is_job_description": False, "confidence": "low", "jd_likeness": -0.8}
+        assert jd_validate.is_confirmed_not_jd(v)
+
+    def test_low_confidence_with_jd_like_scorer_accepts(self):
+        # The tiebreak: a shaky classifier claim against a document that
+        # genuinely reads JD-like resolves in the hirer's favour.
+        v = {"is_job_description": False, "confidence": "low", "jd_likeness": 0.7}
         assert not jd_validate.is_confirmed_not_jd(v)
 
     def test_actual_jd_not_bounced(self):

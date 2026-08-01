@@ -472,6 +472,12 @@ async def get_candidates(
 
 _MAX_JD_UPLOAD_BYTES = 10 * 1024 * 1024  # same ceiling as CV uploads
 _JD_TEXT_LIMIT = 20000                    # CreateRoleRequest.job_description cap
+# Hard word ceiling on the parsed text, enforced BEFORE the classifier is
+# called: real JDs run 300–1,500 words, so 5,000 is generous headroom while
+# refusing to spend LLM tokens on a book-length upload. Distinct from
+# _JD_TEXT_LIMIT (silent char truncation for near-misses) — blowing past the
+# word ceiling is a rejection, not a trim.
+_JD_MAX_WORDS = 5000
 _JD_STRIKE_KIND = "jd_injection_attempt"
 _JD_STRIKE_WINDOW_DAYS = 30
 _JD_STRIKES_TO_SUSPEND = 2
@@ -648,6 +654,20 @@ async def jd_upload(
                 "We couldn't extract readable text from that file — it may "
                 "use unusual fonts or be corrupted. Try re-exporting it, or "
                 "paste the text directly."
+            ),
+        )
+
+    # Cost guard: refuse book-length documents outright before any LLM
+    # call. A JD is never 5,000+ words; silently trimming one of those
+    # would classify (and bill) a fragment of the wrong document.
+    word_count = len(text.split())
+    if word_count > _JD_MAX_WORDS:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"That document is about {word_count:,} words — far longer "
+                f"than any job description (limit {_JD_MAX_WORDS:,}). Please "
+                "upload just the job description, or paste the relevant text."
             ),
         )
 
