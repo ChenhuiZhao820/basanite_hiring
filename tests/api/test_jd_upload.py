@@ -197,14 +197,33 @@ class TestEncodingHandling:
         assert "we\u2019re" in r.json()["jd_text"]
 
 
-class TestTruncation:
-    def test_long_jd_truncated_to_limit(self, jd_client):
-        long_jd = SAMPLE_JD_TEXT + " filler" * 5000  # ~35K extra chars
+class TestSizeLimits:
+    def test_moderately_long_jd_truncated_to_char_limit(self, jd_client):
+        # Long-but-plausible: over the 20K char cap yet under the word
+        # ceiling (long words keep the count low) — trimmed, not rejected.
+        long_jd = SAMPLE_JD_TEXT + (" " + "requirement" * 4) * 600  # ~600 huge words
         r = _post(jd_client, "jd.txt", long_jd.encode("utf-8"))
         assert r.status_code == 200, r.text
         body = r.json()
         assert body["truncated"] is True
         assert body["char_count"] <= 20000
+
+    def test_book_length_upload_rejected_before_llm(self, jd_client, monkeypatch):
+        # Cost guard: past the word ceiling the endpoint refuses outright
+        # and never invokes the classifier.
+        from agents import jd_validate as jd_mod
+        calls: list[str] = []
+
+        async def _tracking(text):
+            calls.append(text)
+            return _clean_verdict()
+        monkeypatch.setattr(jd_mod, "validate_jd", _tracking)
+
+        long_jd = SAMPLE_JD_TEXT + " filler" * 6000  # ~6K words
+        r = _post(jd_client, "jd.txt", long_jd.encode("utf-8"))
+        assert r.status_code == 422
+        assert "longer than any job description" in r.json()["detail"]
+        assert calls == []
 
 
 class TestValidationOutcomes:
@@ -226,23 +245,34 @@ class TestValidationOutcomes:
         # An honest mistake is never a strike.
         assert not any(e.get("severity") == "strike" for e in jd_client.logged)
 
-    def test_low_confidence_not_jd_passes(self, jd_client, monkeypatch):
+    def test_low_confidence_not_jd_with_jd_like_scorer_passes(self, jd_client, monkeypatch):
+        from agents import jd_validate as jd_mod
+
+        async def _shaky(text):
+            return _clean_verdict(is_job_description=False, confidence="low", jd_likeness=0.7)
+        monkeypatch.setattr(jd_mod, "validate_jd", _shaky)
+        r = _post(jd_client, "jd.txt", SAMPLE_JD_TEXT.encode())
+        assert r.status_code == 200, r.text
+
+    def test_low_confidence_not_jd_with_negative_scorer_bounced(self, jd_client, monkeypatch):
         from agents import jd_validate as jd_mod
 
         async def _shaky(text):
             return _clean_verdict(is_job_description=False, confidence="low", jd_likeness=-0.5)
         monkeypatch.setattr(jd_mod, "validate_jd", _shaky)
         r = _post(jd_client, "jd.txt", SAMPLE_JD_TEXT.encode())
-        assert r.status_code == 200, r.text
+        assert r.status_code == 422
 
-    def test_heuristic_disagreement_gives_benefit_of_doubt(self, jd_client, monkeypatch):
+    def test_high_confidence_not_jd_bounced_despite_jd_like_keywords(self, jd_client, monkeypatch):
+        # Regression: the sales-script case — keyword-JD-like scorer must
+        # not veto a confident classifier verdict.
         from agents import jd_validate as jd_mod
 
         async def _classifier_says_no_scorer_says_yes(text):
             return _clean_verdict(is_job_description=False, confidence="high", jd_likeness=0.9)
         monkeypatch.setattr(jd_mod, "validate_jd", _classifier_says_no_scorer_says_yes)
         r = _post(jd_client, "jd.txt", SAMPLE_JD_TEXT.encode())
-        assert r.status_code == 200, r.text
+        assert r.status_code == 422
 
     def test_suspicious_allowed_but_audited(self, jd_client, monkeypatch):
         from agents import jd_validate as jd_mod
