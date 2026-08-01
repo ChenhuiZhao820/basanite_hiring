@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -48,6 +48,65 @@ export default function NewRolePage() {
   const [voiceId, setVoiceId] = useState<string | null>(null)
   const [recommendLoading, setRecommendLoading] = useState(false)
   const [roleId, setRoleId] = useState<string | null>(null)
+
+  // JD file upload (PDF / .docx / .txt / .md). The extracted text lands in
+  // the same jobDescription textarea so the hirer can review and edit it
+  // before submitting — paste remains the alternative path.
+  const [jdFileName, setJdFileName] = useState<string | null>(null)
+  const [jdUploading, setJdUploading] = useState(false)
+  const [jdDragActive, setJdDragActive] = useState(false)
+  const [jdTruncated, setJdTruncated] = useState(false)
+  const jdFileInputRef = useRef<HTMLInputElement>(null)
+
+  const JD_UNSUPPORTED_MESSAGE =
+    'We can accept PDF, Word (.docx), .txt or .md files. That file looks like something else — you can also paste the job description below.'
+
+  function isAcceptedJdFile(file: File) {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+    return ['pdf', 'docx', 'txt', 'md', 'markdown'].includes(ext)
+  }
+
+  function handleJdDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setJdDragActive(false)
+    if (jdUploading) return
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+    void handleJdFile(file)
+  }
+
+  async function handleJdFile(file: File) {
+    setError('')
+    setJdTruncated(false)
+    if (!isAcceptedJdFile(file)) {
+      setError(JD_UNSUPPORTED_MESSAGE)
+      return
+    }
+    const MAX_JD_BYTES = 10 * 1024 * 1024
+    if (file.size > MAX_JD_BYTES) {
+      setError('That file is too large. Please upload a file under 10 MB.')
+      return
+    }
+    setJdUploading(true)
+    setJdFileName(file.name)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/roles/jd-upload', { method: 'POST', body: form })
+      const data = await res.json().catch(() => ({} as any))
+      // FastAPI errors arrive as { detail }, the Next.js proxy layer's own
+      // (auth / rate-limit) as { error } — read both so the real reason
+      // isn't masked by a generic fallback.
+      if (!res.ok) throw new Error(data.detail ?? data.error ?? 'We couldn\u2019t read that file.')
+      setJobDescription(data.jd_text ?? '')
+      setJdTruncated(Boolean(data.truncated))
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to read that file.')
+      setJdFileName(null)
+    } finally {
+      setJdUploading(false)
+    }
+  }
 
   const toggleDimension = (key: string) => {
     setDimensions(prev =>
@@ -172,7 +231,7 @@ export default function NewRolePage() {
         <div>
           <h1 className="font-display text-2xl text-basanite-900 dark:text-earth-100 mb-2">Create a new role</h1>
           <p className="text-basanite-500 dark:text-earth-400 text-sm mb-8">
-            Paste the job description as-is. Basanite will analyse it and recommend evaluation dimensions.
+            Upload the job description as a file, or paste it as-is. Basanite will analyse it and recommend evaluation dimensions.
           </p>
 
           <div className="space-y-5">
@@ -200,12 +259,57 @@ export default function NewRolePage() {
 
             <div>
               <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">Job Description</label>
+
+              <input
+                ref={jdFileInputRef}
+                type="file"
+                accept=".pdf,.docx,.txt,.md,.markdown,application/pdf,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (f) void handleJdFile(f)
+                  e.target.value = ''
+                }}
+              />
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => !jdUploading && jdFileInputRef.current?.click()}
+                onKeyDown={e => {
+                  if ((e.key === 'Enter' || e.key === ' ') && !jdUploading) jdFileInputRef.current?.click()
+                }}
+                onDragOver={e => { e.preventDefault(); if (!jdUploading) setJdDragActive(true) }}
+                onDragEnter={e => { e.preventDefault(); if (!jdUploading) setJdDragActive(true) }}
+                onDragLeave={e => { e.preventDefault(); setJdDragActive(false) }}
+                onDrop={handleJdDrop}
+                className={`w-full border border-dashed text-center text-sm py-6 px-4 mb-3 cursor-pointer transition-colors ${
+                  jdDragActive
+                    ? 'border-gold-500 bg-gold-50 dark:bg-gold-500/10 text-basanite-700 dark:text-earth-200'
+                    : 'border-earth-300 dark:border-basanite-700 text-basanite-500 dark:text-earth-400 hover:border-gold-500'
+                } ${jdUploading ? 'opacity-60 cursor-wait' : ''}`}
+              >
+                {jdUploading
+                  ? 'Reading your file\u2026'
+                  : jdDragActive
+                    ? 'Drop your file here'
+                    : jdFileName
+                      ? `Loaded ${jdFileName} \u2014 click or drop a file to replace`
+                      : 'Click to upload a file, or drag it here'}
+                <span className="block text-xs mt-1 opacity-70">PDF, Word (.docx), .txt or .md</span>
+              </div>
+
+              {jdTruncated && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+                  That document was longer than 20,000 characters, so it was trimmed. Review the text below and edit as needed.
+                </p>
+              )}
+
               <textarea
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
                 rows={12}
                 className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
-                placeholder="Paste the full job description here..."
+                placeholder="Or paste the full job description here..."
               />
             </div>
 

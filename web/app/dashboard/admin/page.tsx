@@ -194,6 +194,17 @@ export default function AdminPage() {
           <p className={`font-display text-3xl font-bold ${openIssues.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-[#0b1f3d] dark:text-earth-100'}`}>{openIssues.length}</p>
           <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">open during interviews</p>
         </a>
+        <Link
+          href="/dashboard/admin/security"
+          className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Security</p>
+          <p className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100">&rarr;</p>
+          <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">
+            injection attempts &amp; suspensions
+            <span className="text-[#1d4ed8] dark:text-[#3b82f6] font-medium ml-1 group-hover:underline">Review &rarr;</span>
+          </p>
+        </Link>
       </div>
 
       {/* Candidate-reported interview issues. Newest first; open reports

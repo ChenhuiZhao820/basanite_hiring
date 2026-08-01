@@ -767,6 +767,124 @@ def log_ats_sync_error(
         return None
 
 
+# ─── Security events + account suspension ──────────────────────────────────
+# Backing store for the tiered JD-upload injection policy (migration 051):
+# strike rows are the audit trail, app_metadata.suspended is the enforcement
+# bit (read by the Next.js middleware; not writable by clients).
+
+def log_security_event(
+    *,
+    user_id: str,
+    kind: str,
+    severity: str = "info",
+    org_id: str | None = None,
+    detail: dict | None = None,
+) -> dict | None:
+    """Insert a security_events row. Returns the row or None on failure."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        row = {
+            "user_id": user_id,
+            "org_id": org_id,
+            "kind": kind,
+            "severity": severity,
+            "detail": detail or {},
+        }
+        result = client.table("security_events").insert(row).execute()
+        return result.data[0] if result.data else None
+    except Exception as e:
+        print(f"  DB log_security_event error: {e}")
+        return None
+
+
+def count_recent_security_events(
+    user_id: str,
+    kind: str,
+    *,
+    severity: str = "strike",
+    days: int = 30,
+) -> int:
+    """Count this user's events of `kind`/`severity` in the last `days`.
+
+    Used for the strike ladder: strike 2 within the window escalates to
+    suspension. Returns 0 on failure — errors must not accidentally
+    suspend anyone.
+    """
+    from datetime import timedelta
+    client = get_client()
+    if not client:
+        return 0
+    try:
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        result = (
+            client.table("security_events")
+            .select("id", count="exact")
+            .eq("user_id", user_id)
+            .eq("kind", kind)
+            .eq("severity", severity)
+            .gte("created_at", cutoff)
+            .execute()
+        )
+        if result.count is not None:
+            return int(result.count)
+        return len(result.data or [])
+    except Exception as e:
+        print(f"  DB count_recent_security_events error: {e}")
+        return 0
+
+
+def list_security_events(limit: int = 100) -> list[dict]:
+    """Newest-first security events for the admin dashboard."""
+    client = get_client()
+    if not client:
+        return []
+    try:
+        result = (
+            client.table("security_events")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return result.data or []
+    except Exception as e:
+        print(f"  DB list_security_events error: {e}")
+        return []
+
+
+def set_user_suspended(user_id: str, suspended: bool, *, reason: str | None = None) -> bool:
+    """Flip the tamper-proof suspension bit in auth.users.app_metadata.
+
+    app_metadata is only writable via the service role (clients can only
+    touch user_metadata), so the Next.js middleware can trust this flag —
+    the same trust model as the existing role / is_admin / is_candidate
+    tags. Existing app_metadata keys are preserved.
+    """
+    client = get_client()
+    if not client:
+        return False
+    try:
+        existing = client.auth.admin.get_user_by_id(user_id)
+        user = getattr(existing, "user", None)
+        current = dict(getattr(user, "app_metadata", None) or {})
+        if suspended:
+            current["suspended"] = True
+            current["suspended_at"] = datetime.now(timezone.utc).isoformat()
+            if reason:
+                current["suspended_reason"] = reason[:500]
+        else:
+            current.pop("suspended", None)
+            current.pop("suspended_at", None)
+            current.pop("suspended_reason", None)
+        client.auth.admin.update_user_by_id(user_id, {"app_metadata": current})
+        return True
+    except Exception as e:
+        print(f"  DB set_user_suspended error: {e}")
+        return False
+
+
 # ─── Org feature flags (PR7) ───────────────────────────────────────────────
 
 def get_org_feature_flags(org_id: str) -> dict:
