@@ -20,7 +20,7 @@ async function fillAndSubmit(opts?: {
   company?: string
   phone?: string
   persona?: string | null
-  referral?: string
+  referral?: string | RegExp
 }) {
   const name = opts?.name ?? 'Ada Lovelace'
   const email = opts?.email ?? 'ada@example.com'
@@ -107,6 +107,47 @@ describe('InterestForm', () => {
       }),
     )
     expect(await screen.findByRole('status')).toHaveTextContent(/on the list/i)
+  })
+
+  it('reveals a free-text field when Other is selected and hides it again on deselect', async () => {
+    render(<InterestForm />)
+    expect(screen.queryByPlaceholderText(/where did you hear about us/i)).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /^other$/i }))
+    expect(screen.getByPlaceholderText(/where did you hear about us/i)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /^other$/i }))
+    expect(screen.queryByPlaceholderText(/where did you hear about us/i)).not.toBeInTheDocument()
+  })
+
+  it('submits the Other detail as part of referral_source', async () => {
+    const fetchMock = mockFetch({ ok: true, body: { ok: true } })
+    render(<InterestForm />)
+    await userEvent.click(screen.getByRole('radio', { name: /i hire people/i }))
+    await userEvent.type(screen.getByPlaceholderText(/your name/i), 'Ada Lovelace')
+    await userEvent.type(screen.getByPlaceholderText(/work email/i), 'ada@example.com')
+    await userEvent.click(screen.getByRole('button', { name: /^other$/i }))
+    await userEvent.type(
+      screen.getByPlaceholderText(/where did you hear about us/i),
+      'A friend at a conference',
+    )
+    await userEvent.click(screen.getByRole('button', { name: /^register interest$/i }))
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/waitlist',
+      expect.objectContaining({
+        body: expect.stringContaining('"referral_source":"Other: A friend at a conference"'),
+      }),
+    )
+  })
+
+  it('submits plain "Other" when no detail is typed', async () => {
+    const fetchMock = mockFetch({ ok: true, body: { ok: true } })
+    render(<InterestForm />)
+    await fillAndSubmit({ referral: /^other$/i })
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/waitlist',
+      expect.objectContaining({
+        body: expect.stringContaining('"referral_source":"Other"'),
+      }),
+    )
   })
 
   it('surfaces the API error message on failure', async () => {
