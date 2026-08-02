@@ -6,14 +6,13 @@ import { SiteNav } from '@/components/SiteNav'
 import { StoneTexture } from '@/components/StoneTexture'
 import { Reveal } from '@/components/Reveal'
 import { buildMetadata, breadcrumbJsonLd } from '@/lib/seo'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'About',
   description: 'Basanite was founded in 2026 by three final-year computer scientists from the University of Manchester, building the technical interview we wish had filtered us.',
   path: '/about',
 })
-
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
 
 // The two products, in the same language the homepage uses so the story is
 // consistent wherever a visitor lands: the agent runs a round for you, the
@@ -256,16 +255,14 @@ export default async function AboutPage() {
           <p className="text-gold-400 text-[11px] font-semibold uppercase tracking-[0.22em] mb-4">See it for yourself</p>
           <h2 className="font-display text-earth-50 text-3xl sm:text-4xl mb-4">Want to see it run?</h2>
           <p className="text-earth-200 text-base mb-9 max-w-xl mx-auto leading-relaxed">
-            Book a 20-minute intro and we&rsquo;ll walk you through both products live, on your own job description.
+            Register your interest and we&rsquo;ll walk you through both products live, on your own job description.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <a
-              href={BOOK_A_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
+              href={REGISTER_INTEREST_URL}
               className="inline-block px-6 py-3 bg-gold-500 text-basanite-900 text-sm font-semibold hover:bg-gold-400 transition-colors"
             >
-              Book a call
+              Register interest
             </a>
             <Link
               href="/faq"

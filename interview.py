@@ -12,6 +12,8 @@ responsible for:
 import os
 from datetime import datetime, timezone
 
+import yaml
+
 from core.db import (
     get_assessment,
     get_interview_session,
@@ -321,6 +323,30 @@ themselves or to say their name — you already have it. If `Name` above is
 """
 
     return base + "\n\n" + context_block
+
+
+# Test Mode (is_mock assessments): the agent makes light small talk and
+# wraps up quickly instead of running the real evaluation interview. The
+# prompt lives in prompts/test_mode_smalltalk.yaml following the same
+# convention as the agents' prompts.
+_SMALLTALK_PROMPT_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "prompts", "test_mode_smalltalk.yaml",
+)
+
+_SMALLTALK_PROMPT: str | None = None
+
+
+def assemble_smalltalk_prompt(candidate_name: str | None = None) -> str:
+    """System prompt for Test Mode (is_mock) sessions: friendly small
+    talk, nothing evaluative, wrap up after one or two exchanges.
+    """
+    global _SMALLTALK_PROMPT
+    if _SMALLTALK_PROMPT is None:
+        with open(_SMALLTALK_PROMPT_PATH, "r", encoding="utf-8") as f:
+            _SMALLTALK_PROMPT = (yaml.safe_load(f) or {}).get("system", "")
+    name = _sanitize_untrusted(candidate_name, 120) or "there"
+    return _SMALLTALK_PROMPT.replace("{candidate_name}", name)
 
 
 _DIRECTOR_SYSTEM = """\

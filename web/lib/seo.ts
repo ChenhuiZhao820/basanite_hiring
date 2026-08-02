@@ -98,7 +98,7 @@ export function organizationJsonLd(): Record<string, unknown> {
       {
         '@type': 'ContactPoint',
         contactType: 'sales',
-        email: 'hello@basanite.co.uk',
+        email: 'aditya.shah@basanite.co.uk',
         url: `${SITE_URL}/contact`,
         areaServed: ['GB', 'EU', 'US'],
         availableLanguage: ['en'],

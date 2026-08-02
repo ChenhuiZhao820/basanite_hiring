@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import { SiteNav } from '@/components/SiteNav'
@@ -14,7 +15,6 @@ export const metadata: Metadata = buildMetadata({
   path: '/pricing',
 })
 
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
 // Self-serve free entry point. Points at the app sign-in for now; the actual
 // no-gate free-signup flow lives behind this route.
 const FREE_HREF = '/login'
@@ -65,6 +65,11 @@ const FAQ = [
 ]
 
 export default async function PricingPage() {
+  // Pricing is temporarily off the public site. The page code below is kept
+  // intact so it can be re-enabled by deleting this redirect.
+  redirect('/')
+  // eslint-disable-next-line no-unreachable
+
   const nonce = (await headers()).get('x-nonce') ?? undefined
   const ldCrumbs = breadcrumbJsonLd([
     { name: 'Home', path: '/' },

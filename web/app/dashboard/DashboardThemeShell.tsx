@@ -14,14 +14,13 @@ import DashboardNav from './DashboardNav'
 type Org = { id: string; name: string; description: string | null; role: string }
 
 type Props = {
-  email: string
   isAdmin: boolean
   initialOrgs: Org[]
   initialActiveOrgId: string | null
   children: React.ReactNode
 }
 
-export function DashboardThemeShell({ email, isAdmin, initialOrgs, initialActiveOrgId, children }: Props) {
+export function DashboardThemeShell({ isAdmin, initialOrgs, initialActiveOrgId, children }: Props) {
   return (
     <ThemeProvider storageKey="basanite-dashboard-theme" defaultTheme="light">
       <div className="min-h-screen bg-earth-50 dark:bg-basanite-900 transition-colors duration-150">
@@ -35,7 +34,7 @@ export function DashboardThemeShell({ email, isAdmin, initialOrgs, initialActive
               <span className="text-basanite-300 dark:text-basanite-700">/</span>
               <WorkspaceSwitcher initialOrgs={initialOrgs} initialActiveOrgId={initialActiveOrgId} />
             </div>
-            <DashboardNav email={email} isAdmin={isAdmin} />
+            <DashboardNav isAdmin={isAdmin} />
           </div>
         </nav>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">{children}</main>

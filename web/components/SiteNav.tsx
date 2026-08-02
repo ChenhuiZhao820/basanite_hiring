@@ -3,10 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { LogoMark } from '@/components/Logo'
-
-// Single source of truth for the public booking link. Cal.com EU instance
-// keeps the booking-PII transfer inside the EU jurisdiction.
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 // Shared marketing navigation. Rendered identically on every public page so
 // the header never shifts as visitors move between the landing page and the
@@ -15,9 +12,9 @@ const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
 // page anchors.
 const NAV_LINKS: { href: string; label: string }[] = [
   { href: '/methodology', label: 'Methodology' },
-  { href: '/pricing', label: 'Pricing' },
   { href: '/compare', label: 'Comparisons' },
   { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact Us' },
 ]
 
 // Value story split across two destinations: the impact / ROI calculator
@@ -146,12 +143,10 @@ export function SiteNav() {
         </div>
         <div className="flex items-center gap-3">
           <a
-            href={BOOK_A_CALL_URL}
-            target="_blank"
-            rel="noreferrer"
+            href={REGISTER_INTEREST_URL}
             className="text-sm font-semibold text-earth-50 bg-basanite-900 px-4 py-2 hover:bg-gold-600 transition-colors duration-200"
           >
-            Book a call
+            Register interest
           </a>
           <a
             href="/login"

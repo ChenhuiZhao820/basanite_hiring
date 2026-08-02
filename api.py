@@ -165,6 +165,31 @@ if _USE_PROMPT_WEBHOOK and not _INTERVIEW_SESSION_SECRET:
     _USE_PROMPT_WEBHOOK = False
 
 
+# ─── Test Mode (internal tester walkthrough) ────────────────────────────────
+# Lets an internal tester walk the full candidate journey against ONE
+# designated test role. Sessions started on that role are stamped
+# `is_mock` at /start; every other consumer (prompt assembly, Director,
+# report generation, dashboard) reads the stored flag. Mock-ness is
+# decided once, server-side, from the role the link resolves to — no
+# client input is ever consulted, so a tampered browser can neither
+# create a mock session on a real role nor turn a mock one real.
+#
+# Both vars must be set for any session to be mock:
+#
+#   TEST_MODE_ENABLED=true
+#   TEST_MODE_ROLE_ID=<uuid of the designated test role>
+#
+# Leave them unset in production and no mock row can ever be created.
+_TEST_MODE_ENABLED = os.getenv("TEST_MODE_ENABLED", "").lower() in {"1", "true", "yes"}
+_TEST_MODE_ROLE_ID = os.getenv("TEST_MODE_ROLE_ID", "")
+
+
+def _is_test_mode_role(role_id: str) -> bool:
+    """True only when Test Mode is enabled AND this is the designated
+    test role. Reads module state (not env) so tests can monkeypatch."""
+    return _TEST_MODE_ENABLED and bool(_TEST_MODE_ROLE_ID) and role_id == _TEST_MODE_ROLE_ID
+
+
 def _mint_session_prompt_token(assessment_id: str, ttl_seconds: int = 3600) -> str:
     """Sign an opaque token tying a session to an assessment_id.
 
@@ -306,6 +331,21 @@ async def create_role(
 ):
     _verify_internal(authorization)
     from core.db import create_role as db_create_role
+    from agents.jd_validate import is_confirmed_injection, validate_jd
+
+    # A pasted JD gets the same injection gate (and strike ladder) as a
+    # file upload — otherwise the textbox is a free bypass of the upload
+    # defence. The "is this actually a JD" bounce deliberately does NOT
+    # apply here: pasting is an explicit act, and the paste path has
+    # always accepted whatever the hirer typed.
+    verdict = await validate_jd(body.job_description)
+    if is_confirmed_injection(verdict):
+        await _handle_jd_injection_strike(
+            body.user_id, None, "(pasted job description)", verdict,
+        )
+    _log_subpunitive_jd_finding(
+        body.user_id, None, "(pasted job description)", verdict,
+    )
 
     role = db_create_role({
         "user_id": body.user_id,
@@ -509,6 +549,262 @@ async def get_candidates(
     return {"candidates": assessments}
 
 
+# ─── JD file upload (hirer) ────────────────────────────────────────────────
+# Hirers can upload the job description as a file (PDF / .docx / .txt / .md)
+# instead of pasting it. The endpoint extracts text, then runs the hybrid
+# safety gate (agents/jd_validate): deterministic regex + JD-likeness scorer
+# corroborating a Haiku classifier. Confirmed injection attempts follow the
+# tiered strike policy — block + security_events strike + admin alert first,
+# auto-suspend on the second corroborated attempt within the window.
+
+_MAX_JD_UPLOAD_BYTES = 10 * 1024 * 1024  # same ceiling as CV uploads
+_JD_TEXT_LIMIT = 20000                    # CreateRoleRequest.job_description cap
+# Hard word ceiling on the parsed text, enforced BEFORE the classifier is
+# called: real JDs run 300–1,500 words, so 5,000 is generous headroom while
+# refusing to spend LLM tokens on a book-length upload. Distinct from
+# _JD_TEXT_LIMIT (silent char truncation for near-misses) — blowing past the
+# word ceiling is a rejection, not a trim.
+_JD_MAX_WORDS = 5000
+_JD_STRIKE_KIND = "jd_injection_attempt"
+_JD_STRIKE_WINDOW_DAYS = 30
+_JD_STRIKES_TO_SUSPEND = 2
+
+# Legacy pre-2007 Word (.doc) is an OLE compound file. We don't parse it —
+# conversion is one "Save As" away — but we recognise it to give a precise,
+# kind message instead of a generic "unsupported format".
+_OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+
+_JD_UNSUPPORTED_DETAIL = (
+    "We can accept PDF, Word (.docx), .txt or .md files. That file looks "
+    "like something else — you can also paste the job description directly."
+)
+
+_JD_NOT_A_JD_DETAIL = (
+    "This doesn't look like a job description, have you uploaded something "
+    "else by mistake?"
+)
+
+_JD_INJECTION_BLOCKED_DETAIL = (
+    "This document contains content that attempts to manipulate our AI "
+    "systems, and has been declined. The incident has been logged for "
+    "review — if you believe this is a mistake, contact support@basanite.co.uk."
+)
+
+_JD_SUSPENDED_DETAIL = (
+    "Repeated attempts to manipulate our AI systems were detected, and your "
+    "account has been suspended pending review. Contact "
+    "support@basanite.co.uk to resolve this."
+)
+
+
+def _extract_jd_text(data: bytes, filename: str) -> str:
+    """Sniff the upload's real format and extract text, or raise a kind
+    HTTPException. Magic bytes are authoritative; the filename is only a
+    hint for the text path (same rationale as the CV endpoint)."""
+    from core.docx import DocxExtractError, extract_docx_text
+    from core.pdf import extract_pdf_text
+    from core.textfile import TextDecodeError, decode_text_file, normalize_text
+
+    if data[:4] == b"%PDF":
+        try:
+            return normalize_text(extract_pdf_text(data))
+        except Exception as e:
+            print(f"  [jd-upload] pdf parse failed: {e}")
+            raise HTTPException(
+                status_code=422,
+                detail="We couldn't read that PDF. Try re-exporting it, or paste the text instead.",
+            )
+
+    if data[:4] == b"PK\x03\x04":
+        try:
+            return normalize_text(extract_docx_text(data))
+        except DocxExtractError as e:
+            raise HTTPException(status_code=415, detail=e.detail)
+
+    if data[:8] == _OLE_MAGIC:
+        raise HTTPException(
+            status_code=415,
+            detail=(
+                "That looks like an older Word format (.doc). Please re-save "
+                "it as .docx or PDF and try again."
+            ),
+        )
+
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext in ("txt", "md", "markdown", "text"):
+        try:
+            return decode_text_file(data)
+        except TextDecodeError as e:
+            raise HTTPException(status_code=422, detail=e.detail)
+
+    raise HTTPException(status_code=415, detail=_JD_UNSUPPORTED_DETAIL)
+
+
+def _log_subpunitive_jd_finding(
+    user_id: str, org_id: str | None, filename: str, verdict: dict
+) -> None:
+    """Audit-log 'suspicious'-grade findings (or regex hits the classifier
+    judged benign) that were allowed through. Non-punitive, best-effort."""
+    if verdict.get("injection_risk") != "suspicious" and not verdict.get("regex_markers"):
+        return
+    from core.db import log_security_event
+    log_security_event(
+        user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+        severity="info",
+        detail={
+            "filename": (filename or "")[:200],
+            "injection_risk": verdict.get("injection_risk"),
+            "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
+            "action": "allowed",
+        },
+    )
+
+
+async def _handle_jd_injection_strike(
+    user_id: str, org_id: str | None, filename: str, verdict: dict
+) -> None:
+    """Record a corroborated injection attempt and escalate per the tiered
+    policy. Always raises (403) — the upload never proceeds."""
+    from core.db import (
+        count_recent_security_events,
+        log_security_event,
+        set_user_suspended,
+    )
+    from core.email import send_ops_alert
+
+    detail = {
+        "filename": filename[:200],
+        "injection_risk": verdict.get("injection_risk"),
+        "confidence": verdict.get("confidence"),
+        "evidence": [e[:300] for e in (verdict.get("injection_evidence") or [])[:10]],
+        "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
+    }
+    log_security_event(
+        user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+        severity="strike", detail=detail,
+    )
+
+    strikes = count_recent_security_events(
+        user_id, _JD_STRIKE_KIND, severity="strike", days=_JD_STRIKE_WINDOW_DAYS,
+    )
+    # count_recent... returns 0 on DB failure; treat the strike just
+    # logged as the floor so a read hiccup can't skip straight past the
+    # warning tier, and never suspends on its own.
+    strikes = max(strikes, 1)
+
+    if strikes >= _JD_STRIKES_TO_SUSPEND:
+        suspended = set_user_suspended(
+            user_id, True, reason="Repeated JD prompt-injection attempts",
+        )
+        if suspended:
+            log_security_event(
+                user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+                severity="suspension",
+                detail={"strikes": strikes, "window_days": _JD_STRIKE_WINDOW_DAYS},
+            )
+        send_ops_alert(
+            "Account auto-suspended: repeated JD injection attempts",
+            f"user_id: {user_id}\nstrikes in window: {strikes}\n"
+            f"evidence: {detail['evidence']}\nReview: /dashboard/admin/security",
+        )
+        raise HTTPException(status_code=403, detail=_JD_SUSPENDED_DETAIL)
+
+    send_ops_alert(
+        "JD injection attempt blocked (strike 1)",
+        f"user_id: {user_id}\nfilename: {detail['filename']}\n"
+        f"evidence: {detail['evidence']}\nReview: /dashboard/admin/security",
+    )
+    raise HTTPException(status_code=403, detail=_JD_INJECTION_BLOCKED_DETAIL)
+
+
+@app.post("/roles/jd-upload")
+async def jd_upload(
+    request: Request,
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    org_id: str | None = Form(default=None),
+    authorization: str | None = Header(default=None),
+):
+    """Extract + validate JD text from an uploaded file. The extracted text
+    is returned to the role-creation wizard, which keeps it editable and
+    submits it through the normal POST /roles path."""
+    _verify_internal(authorization)
+    # Belt-and-braces alongside the Next.js per-user cap: parsing and the
+    # classifier call are the expensive parts worth throttling per IP.
+    _rate_limit(request, bucket="jd-upload", max_requests=60, window_seconds=3600)
+
+    from core.textfile import looks_like_readable_text
+    from agents.jd_validate import (
+        is_confirmed_injection,
+        is_confirmed_not_jd,
+        validate_jd,
+    )
+
+    data = await _read_bounded(file, _MAX_JD_UPLOAD_BYTES)
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty file")
+
+    text = _extract_jd_text(data, file.filename or "")
+
+    if not text or len(text) < 80:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "That file didn't contain enough readable text (it may be a "
+                "scan). Try a different export, or paste the text instead."
+            ),
+        )
+    if not looks_like_readable_text(text):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "We couldn't extract readable text from that file — it may "
+                "use unusual fonts or be corrupted. Try re-exporting it, or "
+                "paste the text directly."
+            ),
+        )
+
+    # Cost guard: refuse book-length documents outright before any LLM
+    # call. A JD is never 5,000+ words; silently trimming one of those
+    # would classify (and bill) a fragment of the wrong document.
+    word_count = len(text.split())
+    if word_count > _JD_MAX_WORDS:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"That document is about {word_count:,} words — far longer "
+                f"than any job description (limit {_JD_MAX_WORDS:,}). Please "
+                "upload just the job description, or paste the relevant text."
+            ),
+        )
+
+    truncated = len(text) > _JD_TEXT_LIMIT
+    if truncated:
+        text = text[:_JD_TEXT_LIMIT].rstrip()
+
+    verdict = await validate_jd(text)
+
+    if is_confirmed_injection(verdict):
+        await _handle_jd_injection_strike(
+            user_id, org_id, file.filename or "", verdict,
+        )
+
+    # Sub-punitive findings ('suspicious' grade, or regex hits the
+    # classifier judged benign) pass through — downstream prompt assembly
+    # sanitises markers anyway — but leave an audit trail.
+    _log_subpunitive_jd_finding(user_id, org_id, file.filename or "", verdict)
+
+    if is_confirmed_not_jd(verdict):
+        raise HTTPException(status_code=422, detail=_JD_NOT_A_JD_DETAIL)
+
+    return {
+        "jd_text": text,
+        "char_count": len(text),
+        "truncated": truncated,
+        "document_type": verdict.get("document_type"),
+    }
+
+
 # ─── Assessment (candidate-facing) ─────────────────────────────────────────
 
 @app.get("/assess/{token}")
@@ -647,13 +943,16 @@ async def start_assessment(
                 detail="An assessment already exists for this candidate on this role.",
             )
 
-    # Create assessment
+    # Create assessment. `is_mock` is stamped here, once, from the role
+    # the link resolved to (designated test role + env gate) — every
+    # downstream consumer reads this stored flag, never client input.
     assessment = create_assessment({
         "role_id": role["id"],
         "candidate_user_id": body.candidate_user_id,
         "candidate_name": body.candidate_name,
         "candidate_email": body.candidate_email,
         "status": "cv_uploaded",
+        "is_mock": _is_test_mode_role(role["id"]),
     })
     if not assessment:
         raise HTTPException(status_code=500, detail="Failed to create assessment")
@@ -768,7 +1067,13 @@ async def voice_session(token: str, body: dict, request: Request):
     # uses for the opening line and as the name passed into the system
     # prompt's candidate_context block.
     canonical_name = assessment.get("candidate_name") or cv.get("name") or ""
-    prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
+    # Test Mode: mock sessions get the small-talk prompt instead of the
+    # real interview. Keyed off the stored is_mock flag, never the client.
+    if assessment.get("is_mock"):
+        from interview import assemble_smalltalk_prompt
+        prompt = assemble_smalltalk_prompt(candidate_name=canonical_name)
+    else:
+        prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
     first_name = (canonical_name or "there").split()[0]
     first_message = (
         f"Hi {first_name}, I'm Baz, I'll be your interviewer today. "
@@ -927,7 +1232,13 @@ async def elevenlabs_conv_init(request: Request):
             cv = {}
 
     canonical_name = assessment.get("candidate_name") or cv.get("name") or ""
-    prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
+    # Test Mode: mock sessions get the small-talk prompt instead of the
+    # real interview. Keyed off the stored is_mock flag, never the client.
+    if assessment.get("is_mock"):
+        from interview import assemble_smalltalk_prompt
+        prompt = assemble_smalltalk_prompt(candidate_name=canonical_name)
+    else:
+        prompt = assemble_interview_prompt(role, cv, candidate_name=canonical_name)
     first_name = (canonical_name or "there").split()[0]
     first_message = (
         f"Hi {first_name}, I'm Baz, I'll be your interviewer today. "
@@ -1274,6 +1585,12 @@ async def director_tick(
     if not isinstance(role["dimensions"], list):
         role["dimensions"] = []
 
+    # Test Mode: nothing to supervise in a small-talk session, and a
+    # Director directive would push the agent back toward evaluative
+    # questioning. Skip (and save the Opus call).
+    if assessment and assessment.get("is_mock"):
+        return {"skip": True, "reason": "test_mode"}
+
     raw_messages = body.get("messages") or []
     messages: list[dict] = []
     for m in raw_messages[-120:]:
@@ -1466,7 +1783,10 @@ async def finalize_voice_session(token: str, body: dict):
         update_fields["recording_path"] = recording_path
     update_assessment(assessment_id, **update_fields)
 
-    if messages:
+    # Test Mode: mock sessions never generate reports — no rows land in
+    # `reports` or `dimension_scores`. The completion flow above still
+    # ran, so the tester sees the normal completion screen.
+    if messages and not _assessment.get("is_mock"):
         asyncio.create_task(generate_reports(assessment_id, role, cv))
 
     return {
@@ -1508,8 +1828,10 @@ async def complete_assessment(
         completed_at=datetime.now(timezone.utc).isoformat(),
     )
 
-    # Generate reports in background
-    asyncio.create_task(generate_reports(assessment_id, role, cv_extracted))
+    # Generate reports in background. Test Mode: mock sessions skip this
+    # entirely — no reports, no dimension_scores.
+    if not assessment.get("is_mock"):
+        asyncio.create_task(generate_reports(assessment_id, role, cv_extracted))
 
     return {"status": "completing", "assessment_id": assessment_id}
 

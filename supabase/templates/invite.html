@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>You&rsquo;re invited to Basanite</title>
+  <!--
+    Basanite "Invite user" email template.
+    Paste into: Supabase Dashboard -> Authentication -> Email Templates -> Invite user
+    Suggested subject line: You're in — set up your Basanite account
+    Variables used: {{ .ConfirmationURL }}
+    Table-based layout + inline styles for email-client compatibility
+    (Gmail strips <style> in some contexts, SVG and webfonts are unreliable).
+  -->
+</head>
+<body style="margin:0; padding:0; background-color:#f5f3f1;">
+  <!-- Preheader: shows next to the subject line in inboxes, hidden in the body -->
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+    Your early access is ready. Set a password to start assessing candidates.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f3f1;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width:560px; max-width:100%;">
+
+          <!-- Gold streak: the touchstone mark -->
+          <tr>
+            <td style="height:4px; background:#c49a2f; background:linear-gradient(90deg, #a6821f 0%, #d4a843 45%, #e8c555 55%, #c49a2f 100%); font-size:0; line-height:0;">&nbsp;</td>
+          </tr>
+
+          <!-- Dark stone card -->
+          <tr>
+            <td style="background-color:#1a1a18; padding:44px 48px 40px 48px;">
+
+              <!-- Logo + wordmark -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 36px 0;">
+                <tr>
+                  <td style="vertical-align:middle; padding-right:12px;">
+                    <img src="https://basanite.co.uk/email/basanite-icon.jpeg" alt="Basanite" width="44" height="44"
+                         style="display:block; width:44px; height:44px; border:0; border-radius:8px;" />
+                  </td>
+                  <td style="vertical-align:middle; font-family:Georgia, 'Times New Roman', serif; font-size:20px; letter-spacing:0.5px; color:#faf8f5;">
+                    Basanite<span style="color:#c49a2f;">.</span>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Heading -->
+              <h1 style="margin:0 0 16px 0; font-family:Georgia, 'Times New Roman', serif; font-weight:normal; font-size:32px; line-height:1.2; color:#faf8f5;">
+                You&rsquo;re in.
+              </h1>
+
+              <!-- Body copy -->
+              <p style="margin:0 0 12px 0; font-family:Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#d4cdc0;">
+                Your request for early access to Basanite has been approved.
+              </p>
+              <p style="margin:0 0 32px 0; font-family:Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#d4cdc0;">
+                Set a password to finish creating your account, then start running structured, evidence-based technical assessments.
+              </p>
+
+              <!-- Bulletproof button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px 0;">
+                <tr>
+                  <td style="background-color:#c49a2f;">
+                    <a href="{{ .ConfirmationURL }}"
+                       style="display:inline-block; padding:14px 36px; font-family:Helvetica, Arial, sans-serif; font-size:15px; font-weight:bold; letter-spacing:0.3px; color:#ffffff; text-decoration:none;">
+                      Set your password
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Fallback link -->
+              <p style="margin:0 0 6px 0; font-family:Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#847d72;">
+                If the button doesn&rsquo;t work, copy and paste this link into your browser:
+              </p>
+              <p style="margin:0; font-family:Courier, monospace; font-size:12px; line-height:1.5; word-break:break-all;">
+                <a href="{{ .ConfirmationURL }}" style="color:#d4a843; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 48px 0 48px;">
+              <p style="margin:0 0 6px 0; font-family:Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#847d72;">
+                This link is single use and expires after a short while. If it has expired, reply to this email and we&rsquo;ll send a fresh one.
+              </p>
+              <p style="margin:0; font-family:Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#b3a99e;">
+                Basanite &middot; the touchstone for technical hiring &middot; <a href="https://basanite.co.uk" style="color:#847d72; text-decoration:underline;">basanite.co.uk</a>
+              </p>
+              <p style="margin:12px 0 0 0; font-family:Helvetica, Arial, sans-serif; font-size:11px; line-height:1.6; color:#b3a99e;">
+                You&rsquo;re receiving this because you registered interest at basanite.co.uk. If this wasn&rsquo;t you, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

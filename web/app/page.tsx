@@ -9,12 +9,9 @@ import { ImpactSection } from '@/components/ImpactSection'
 import { HowItWorksSlider } from '@/components/HowItWorksSlider'
 import { StoneTexture } from '@/components/StoneTexture'
 import { SiteNav } from '@/components/SiteNav'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 const HERO_VIDEO = '/bsnt_vid.mp4'
-
-// Single source of truth for the public booking link. Cal.com EU instance
-// keeps the booking-PII transfer inside the EU jurisdiction.
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
 
 // ─── Scroll reveal hook ──────────────────────────────────────────────────
 function useReveal() {
@@ -866,12 +863,10 @@ function ForBoth() {
               </li>
             </ul>
             <a
-              href={BOOK_A_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
+              href={REGISTER_INTEREST_URL}
               className="inline-block mt-8 mx-auto px-6 py-3 bg-basanite-900 text-earth-50 text-sm font-medium hover:bg-gold-600 transition-colors"
             >
-              Book a call
+              Register interest
             </a>
           </div>
 
@@ -1050,16 +1045,15 @@ function WaitlistCTA() {
             Ready to hire with confidence?
           </h2>
           <p className="text-earth-300 text-lg mb-10 leading-relaxed">
-            Get early access for your team. Book a 20-minute intro call and we&rsquo;ll walk you through the platform live.
+            Register your interest and we&rsquo;ll reach out with early access — whether you
+            hire, interview, or are looking for your next role.
           </p>
 
           <a
-            href={BOOK_A_CALL_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-block px-10 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
+            href={REGISTER_INTEREST_URL}
+            className="inline-block px-12 py-4 bg-gold-500 hover:bg-gold-400 text-white font-semibold text-base tracking-wide transition-colors duration-200"
           >
-            Book a call
+            Register interest
           </a>
 
           <p className="text-xs text-earth-300/70 mt-8">
@@ -1091,8 +1085,6 @@ function Footer() {
           <a href="/about" className="hover:text-earth-200">About</a>
           <span className="text-basanite-700">·</span>
           <a href="/contact" className="hover:text-earth-200">Contact</a>
-          <span className="text-basanite-700">·</span>
-          <a href="/pricing" className="hover:text-earth-200">Pricing</a>
           <span className="text-basanite-700">·</span>
           <a href="/blog" className="hover:text-earth-200">Blog</a>
           <span className="text-basanite-700">·</span>

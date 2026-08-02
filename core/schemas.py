@@ -169,6 +169,30 @@ class InterviewPlan(_LooseModel):
     closing_approach: str = ""
 
 
+# ───────────────────────── JD upload validation ───────────────────
+
+
+class JdValidation(_LooseModel):
+    """Classifier verdict on an uploaded "job description" document.
+
+    Produced by agents.jd_validate. Defaults are deliberately permissive
+    (accept, no injection) so a partially-malformed LLM response degrades
+    to letting a legitimate hirer through rather than blocking them.
+    """
+
+    document_type: Literal["job_description", "cv_or_resume", "other"] = "job_description"
+    document_type_hint: str = ""
+    is_job_description: bool = True
+    confidence: Literal["high", "low"] = "low"
+    injection_risk: Literal["none", "suspicious", "clear_attempt"] = "none"
+    injection_evidence: list[str] = Field(default_factory=list)
+
+    @field_validator("injection_evidence", mode="before")
+    @classmethod
+    def _coerce_evidence(cls, v: Any) -> Any:
+        return _coerce_str_list(v)
+
+
 # ───────────────────────── Hirer report ───────────────────────────
 
 

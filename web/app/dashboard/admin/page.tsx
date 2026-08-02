@@ -2,15 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 
+// Only the status is needed here; full entries live on the waitlist page.
 type WaitlistEntry = {
   id: string
-  name: string
-  email: string
-  company: string | null
   status: string
-  created_at: string
 }
 
 type IssueReport = {
@@ -37,13 +35,18 @@ const ISSUE_CATEGORY_LABELS: Record<string, string> = {
   other: 'Something else',
 }
 
+function timeGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
 export default function AdminPage() {
   useDocumentTitle('Admin')
   const [entries, setEntries] = useState<WaitlistEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const [approving, setApproving] = useState<string | null>(null)
-  const [rejecting, setRejecting] = useState<string | null>(null)
-  const [linking, setLinking] = useState<string | null>(null)
+  const [adminName, setAdminName] = useState('')
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
 
@@ -54,16 +57,19 @@ export default function AdminPage() {
   const [inviteCompany, setInviteCompany] = useState('')
   const [inviting, setInviting] = useState(false)
 
-  // Single-use sign-in link surface. Shown in a small inline panel
-  // so the admin can copy it and paste into Telegram / Signal / SMS
-  // when Supabase's email gets junked by the recipient's provider.
-  const [generatedLink, setGeneratedLink] = useState<{ email: string; url: string } | null>(null)
-
   // Candidate-reported interview issues ("Having issues?" button).
   const [issues, setIssues] = useState<IssueReport[]>([])
   const [resolvingIssue, setResolvingIssue] = useState<string | null>(null)
 
   useEffect(() => {
+    // Greet the admin by first name. Prefer explicit profile names; fall
+    // back to the email local-part so the greeting never reads bare.
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      const meta = (user?.user_metadata ?? {}) as { full_name?: string; name?: string }
+      const raw = (meta.full_name || meta.name || user?.email?.split('@')[0] || '').trim()
+      const first = raw.split(/[\s.@_-]+/)[0] || ''
+      setAdminName(first ? first[0].toUpperCase() + first.slice(1) : '')
+    })
     fetch('/api/admin/waitlist')
       .then(r => r.json())
       .then(data => { setEntries(data.entries ?? []); setLoading(false) })
@@ -134,77 +140,21 @@ export default function AdminPage() {
     }
   }
 
-  async function approve(entry: WaitlistEntry) {
-    setApproving(entry.id)
-    setError('')
-    const res = await fetch('/api/admin/approve', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: entry.id, email: entry.email }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to approve.')
-    } else {
-      setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'approved' } : e))
-      flash(`Invite emailed to ${entry.email}.`)
-    }
-    setApproving(null)
-  }
-
-  async function reject(entry: WaitlistEntry) {
-    if (!confirm(`Delete waitlist request from ${entry.email}?`)) return
-    setRejecting(entry.id)
-    setError('')
-    const res = await fetch('/api/admin/reject', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: entry.id }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to delete.')
-    } else {
-      setEntries(prev => prev.filter(e => e.id !== entry.id))
-    }
-    setRejecting(null)
-  }
-
-  async function generateLink(entry: WaitlistEntry) {
-    setLinking(entry.id)
-    setError('')
-    const res = await fetch('/api/admin/generate-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: entry.email }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to generate link.')
-    } else {
-      setGeneratedLink({ email: entry.email, url: data.action_link })
-      // Best-effort copy. clipboard.writeText is gated on a user gesture;
-      // since this fires from a click handler, it will normally succeed.
-      try {
-        await navigator.clipboard.writeText(data.action_link)
-        flash(`Sign-in link for ${entry.email} copied to clipboard.`)
-      } catch {
-        flash(`Sign-in link generated; copy from the panel below.`)
-      }
-    }
-    setLinking(null)
-  }
-
   const pending = entries.filter(e => e.status === 'pending')
   const approved = entries.filter(e => e.status === 'approved')
+  const openIssues = issues.filter(i => i.status !== 'resolved')
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-6">
       <Link href="/dashboard" className="text-xs text-slate-400 dark:text-earth-500 hover:text-[#0b1f3d] dark:text-earth-100 transition-colors mb-2 inline-block">
         &larr; Back to dashboard
       </Link>
-      <h1 className="font-display text-2xl font-bold text-[#0b1f3d] dark:text-earth-100 mb-1">Admin</h1>
-      <p className="text-slate-500 dark:text-earth-400 text-sm mb-8">Invite hirers directly, approve waitlist requests, or copy a sign-in link when an invite email doesn't land.</p>
+      <h1 className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100 mb-1">
+        {timeGreeting()}{adminName ? `, ${adminName}` : ''}.
+      </h1>
+      <p className="text-slate-500 dark:text-earth-400 text-sm mb-8">
+        {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} &mdash; here&rsquo;s where things stand.
+      </p>
 
       {error && (
         <p className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-2 mb-6">{error}</p>
@@ -214,12 +164,55 @@ export default function AdminPage() {
         <p className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-2 mb-6">{toast}</p>
       )}
 
+      {/* At-a-glance cards. The waitlist moved to its own page; these
+          keep the counts visible from the landing screen. */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <Link
+          href="/dashboard/admin/waitlist"
+          className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Waitlist</p>
+          <p className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100">{loading ? '\u2014' : pending.length}</p>
+          <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">
+            pending {pending.length === 1 ? 'request' : 'requests'}
+            <span className="text-[#1d4ed8] dark:text-[#3b82f6] font-medium ml-1 group-hover:underline">Review &rarr;</span>
+          </p>
+        </Link>
+        <Link
+          href="/dashboard/admin/waitlist"
+          className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Approved</p>
+          <p className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100">{loading ? '\u2014' : approved.length}</p>
+          <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">invited so far</p>
+        </Link>
+        <a
+          href="#issue-reports"
+          className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Issue reports</p>
+          <p className={`font-display text-3xl font-bold ${openIssues.length > 0 ? 'text-red-600 dark:text-red-400' : 'text-[#0b1f3d] dark:text-earth-100'}`}>{openIssues.length}</p>
+          <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">open during interviews</p>
+        </a>
+        <Link
+          href="/dashboard/admin/security"
+          className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Security</p>
+          <p className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100">&rarr;</p>
+          <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">
+            injection attempts &amp; suspensions
+            <span className="text-[#1d4ed8] dark:text-[#3b82f6] font-medium ml-1 group-hover:underline">Review &rarr;</span>
+          </p>
+        </Link>
+      </div>
+
       {/* Candidate-reported interview issues. Newest first; open reports
           surface a badge so they're hard to miss during a live cohort. */}
       {(() => {
-        const open = issues.filter(i => i.status !== 'resolved')
+        const open = openIssues
         return (
-          <section className="mb-10">
+          <section id="issue-reports" className="mb-10">
             <div className="flex items-center gap-2 mb-3">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500">
                 Interview issue reports
@@ -315,105 +308,6 @@ export default function AdminPage() {
           </button>
         </form>
       </section>
-
-      {generatedLink && (
-        <section className="border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/40 p-4 mb-10">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Sign-in link for {generatedLink.email}</p>
-            <button
-              onClick={() => setGeneratedLink(null)}
-              className="text-xs text-amber-700 hover:underline"
-            >
-              Dismiss
-            </button>
-          </div>
-          <p className="text-[11px] text-amber-800 dark:text-amber-200 mb-2">Single use, expires in ~1 hour. Send via Telegram, Signal, SMS, or any out-of-band channel.</p>
-          <textarea
-            readOnly
-            value={generatedLink.url}
-            onClick={e => (e.currentTarget as HTMLTextAreaElement).select()}
-            className="w-full text-[11px] font-mono bg-white dark:bg-basanite-900 border border-amber-200 dark:border-amber-500/30 p-2 break-all resize-none"
-            rows={3}
-          />
-          <button
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(generatedLink.url)
-                flash('Copied.')
-              } catch {
-                flash('Could not copy; select and copy manually.')
-              }
-            }}
-            className="mt-2 bg-amber-700 hover:bg-amber-800 text-white text-xs font-medium px-3 py-1.5 transition-colors"
-          >
-            Copy link
-          </button>
-        </section>
-      )}
-
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-3">Waitlist</h2>
-      {loading ? (
-        <p className="text-slate-400 dark:text-earth-500 text-sm">Loading…</p>
-      ) : pending.length === 0 ? (
-        <p className="text-slate-400 dark:text-earth-500 text-sm mb-10">No pending requests.</p>
-      ) : (
-        <div className="border border-slate-200 dark:border-basanite-700 divide-y divide-slate-100 dark:divide-basanite-700 mb-10">
-          {pending.map(entry => (
-            <div key={entry.id} className="flex items-center justify-between gap-4 px-5 py-4 bg-white dark:bg-basanite-800">
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-[#0b1f3d] dark:text-earth-100 truncate">{entry.name}</div>
-                <div className="text-xs text-slate-500 dark:text-earth-400 truncate">{entry.email}{entry.company ? ` · ${entry.company}` : ''}</div>
-                <div className="text-[10px] text-slate-400 dark:text-earth-500 mt-0.5">
-                  {new Date(entry.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </div>
-              </div>
-              <div className="shrink-0 flex items-center gap-2">
-                <button
-                  onClick={() => reject(entry)}
-                  disabled={rejecting === entry.id || approving === entry.id}
-                  className="text-slate-500 dark:text-earth-400 hover:text-red-600 text-xs font-medium px-3 py-2 border border-slate-200 dark:border-basanite-700 hover:border-red-200 transition-colors disabled:opacity-50"
-                >
-                  {rejecting === entry.id ? 'Deleting…' : 'Reject'}
-                </button>
-                <button
-                  onClick={() => approve(entry)}
-                  disabled={approving === entry.id || rejecting === entry.id}
-                  className="bg-[#0b1f3d] hover:bg-[#1d4ed8] dark:bg-[#1d4ed8] dark:hover:bg-[#3b82f6] text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-50"
-                >
-                  {approving === entry.id ? 'Sending…' : 'Approve'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {approved.length > 0 && (
-        <>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-3">Approved</h2>
-          <div className="border border-slate-200 dark:border-basanite-700 divide-y divide-slate-100 dark:divide-basanite-700">
-            {approved.map(entry => (
-              <div key={entry.id} className="flex items-center justify-between gap-4 px-5 py-3 bg-white dark:bg-basanite-800">
-                <div className="min-w-0">
-                  <div className="text-sm text-[#0b1f3d] dark:text-earth-100 truncate">{entry.name}</div>
-                  <div className="text-xs text-slate-500 dark:text-earth-400 truncate">{entry.email}{entry.company ? ` · ${entry.company}` : ''}</div>
-                </div>
-                <div className="shrink-0 flex items-center gap-2">
-                  <button
-                    onClick={() => generateLink(entry)}
-                    disabled={linking === entry.id}
-                    title="Generate a fresh single-use sign-in link to send via another channel"
-                    className="text-[11px] text-slate-600 dark:text-earth-300 hover:text-[#0b1f3d] dark:hover:text-earth-100 font-medium px-3 py-1.5 border border-slate-200 dark:border-basanite-700 hover:border-slate-400 transition-colors disabled:opacity-50"
-                  >
-                    {linking === entry.id ? 'Generating…' : 'Copy sign-in link'}
-                  </button>
-                  <span className="text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5">Invited</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
     </div>
   )
 }

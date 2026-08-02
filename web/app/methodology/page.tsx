@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { SiteNav } from '@/components/SiteNav'
 import { StoneTexture } from '@/components/StoneTexture'
+import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = { title: 'Methodology' }
 
@@ -62,12 +63,10 @@ export default function MethodologyPage() {
               Read the FAQ
             </Link>
             <a
-              href="https://cal.eu/basanite/intro"
-              target="_blank"
-              rel="noreferrer"
+              href={REGISTER_INTEREST_URL}
               className="inline-block px-6 py-3 bg-basanite-900 text-white text-sm font-medium hover:bg-gold-600 transition-colors"
             >
-              Book a call
+              Register interest
             </a>
           </div>
         </section>

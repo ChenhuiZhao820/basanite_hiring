@@ -72,6 +72,22 @@ def _normalise(text: str) -> str:
     return unicodedata.normalize("NFKC", text)
 
 
+def detect_injection_markers(value, max_chars: int = 100_000) -> list[str]:
+    """Return the injection-marker spans found in `value`, without mutating it.
+
+    Detection-mode counterpart to `sanitize_untrusted`: same NFKC-first
+    normalisation so Unicode-lookalike bypasses are caught, but instead of
+    substituting `[filtered]` it reports what matched. Used by the JD-upload
+    safety check as the deterministic corroboration signal alongside the
+    LLM classifier — and the matched spans double as reviewable evidence
+    for the admin security log.
+    """
+    if value is None:
+        return []
+    text = _normalise(str(value).strip())[:max_chars]
+    return [m.group(0).strip() for m in INJECTION_PATTERNS.finditer(text)]
+
+
 def sanitize_untrusted(value, max_chars: int) -> str:
     """Length-cap and neutralise obvious prompt-injection markers.
 

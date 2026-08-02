@@ -9,8 +9,6 @@ export const metadata: Metadata = {
     'Request a set of sample Basanite reports, the hirer report and the candidate report, to see exactly what an assessment produces.',
 }
 
-const BOOK_A_CALL_URL = 'https://cal.eu/basanite/intro'
-
 export default function SampleReportsPage() {
   return (
     <div className="min-h-screen bg-earth-50 text-basanite-900">
@@ -59,7 +57,6 @@ export default function SampleReportsPage() {
           <p>&copy; {new Date().getFullYear()} Basanite.</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <Link href="/" className="hover:text-basanite-900 transition-colors">Home</Link>
-            <Link href="/pricing" className="hover:text-basanite-900 transition-colors">Pricing</Link>
             <Link href="/faq" className="hover:text-basanite-900 transition-colors">FAQ</Link>
           </div>
         </div>

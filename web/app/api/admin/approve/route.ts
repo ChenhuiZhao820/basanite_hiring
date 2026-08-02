@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   // Mark as approved in the waitlist table
   const { error: updateError } = await service
     .from('waitlist')
-    .update({ status: 'approved' })
+    .update({ status: 'approved', approved_at: new Date().toISOString() })
     .eq('id', id)
 
   if (updateError) {

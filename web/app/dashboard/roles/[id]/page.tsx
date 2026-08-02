@@ -38,11 +38,17 @@ export default async function RoleDetailPage({
     .eq('role_id', id)
     .order('created_at', { ascending: false })
 
+  // Rank the queue: Test Mode is_mock rows are pinned to the bottom, then
+  // within each group scored candidates come first by average dimension
+  // score (desc) and unscored ones follow by recency. Mock rows are
+  // excluded from the assessments tally so testers never skew counts.
   const avgOf = (a: any) => {
     const s = a.dimension_scores ?? []
     return s.length > 0 ? s.reduce((sum: number, x: any) => sum + (x.score ?? 0), 0) / s.length : null
   }
-  const assessments = (rawAssessments ?? []).slice().sort((a: any, b: any) => {
+  const sortedAssessments = [...(rawAssessments ?? [])].sort((a: any, b: any) => {
+    const mockDelta = Number(a.is_mock === true) - Number(b.is_mock === true)
+    if (mockDelta !== 0) return mockDelta
     const av = avgOf(a)
     const bv = avgOf(b)
     if (av !== null && bv !== null) return bv - av
@@ -50,6 +56,7 @@ export default async function RoleDetailPage({
     if (bv !== null) return 1
     return Date.parse(b.created_at) - Date.parse(a.created_at)
   })
+  const realAssessmentsCount = sortedAssessments.filter((a: any) => !a.is_mock).length
 
   const dimensions = Array.isArray(role.dimensions) ? role.dimensions : []
   const assessmentLink = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'}/assess/${role.assessment_link_token}`
@@ -125,7 +132,7 @@ export default async function RoleDetailPage({
         </div>
         <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-4">
           <p className="text-xs text-basanite-400 dark:text-earth-500 uppercase tracking-wide mb-1">Assessments</p>
-          <p className="text-sm text-basanite-900 dark:text-earth-100">{assessments?.length ?? 0} total</p>
+          <p className="text-sm text-basanite-900 dark:text-earth-100">{realAssessmentsCount} total</p>
         </div>
         <RoleVoiceTile roleId={role.id} initialVoiceId={role.interviewer_voice_id ?? null} />
       </div>
@@ -133,7 +140,7 @@ export default async function RoleDetailPage({
       {/* Candidate Queue */}
       <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Candidate Queue</h2>
 
-      {(!assessments || assessments.length === 0) ? (
+      {(sortedAssessments.length === 0) ? (
         <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-10 text-center">
           <p className="text-basanite-500 dark:text-earth-400 text-sm">No candidates have taken this assessment yet.</p>
           <p className="text-basanite-400 dark:text-earth-500 text-xs mt-2">Share the assessment link to get started.</p>
@@ -152,7 +159,7 @@ export default async function RoleDetailPage({
             <div className="w-10 pr-3" aria-hidden="true" />
           </div>
           {/* Rows */}
-          {assessments.map((a: any, idx: number) => {
+          {sortedAssessments.map((a: any, idx: number) => {
             const scores = a.dimension_scores ?? []
             const avgScore = scores.length > 0
               ? (scores.reduce((sum: number, s: any) => sum + (s.score ?? 0), 0) / scores.length).toFixed(1)
@@ -173,7 +180,8 @@ export default async function RoleDetailPage({
                 key={a.id}
                 className={
                   'flex items-stretch hover:bg-earth-50 dark:hover:bg-basanite-700 transition-colors ' +
-                  (idx % 2 === 0 ? '' : 'dark:bg-basanite-850')
+                  (idx % 2 === 0 ? '' : 'dark:bg-basanite-850') +
+                  (a.is_mock ? ' opacity-50 grayscale' : '')
                 }
               >
                 <Link
@@ -184,25 +192,34 @@ export default async function RoleDetailPage({
                     <p className="text-sm text-basanite-900 dark:text-earth-100 font-medium">{a.candidate_name ?? 'Unknown'}</p>
                     <p className="text-xs text-basanite-400 dark:text-earth-500">{a.candidate_email}</p>
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 flex items-center gap-2">
                     <span className={`text-xs font-medium ${assessmentStatusColors[a.status] ?? 'text-basanite-400 dark:text-earth-500'}`}>
                       {a.status}
                     </span>
+                    {a.is_mock && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-slate-400 text-slate-500 dark:border-earth-500 dark:text-earth-400">
+                        TEST
+                      </span>
+                    )}
                   </div>
                   <div className="col-span-4 flex gap-1">
-                    {scores.map((s: any) => (
-                      <div
-                        key={s.dimension_key}
-                        className="flex items-center gap-1 bg-earth-100 dark:bg-basanite-800 px-1.5 py-0.5 text-xs"
-                        title={`${s.dimension_key}: ${s.score}/5`}
-                      >
-                        <span className="text-basanite-400 dark:text-earth-500 truncate max-w-[60px]">{s.dimension_key.split('_')[0]}</span>
-                        <span className="font-medium text-basanite-700 dark:text-earth-200">{s.score}</span>
-                      </div>
-                    ))}
+                    {a.is_mock ? (
+                      <span className="text-xs italic text-basanite-400 dark:text-earth-500">TEST — no data</span>
+                    ) : (
+                      scores.map((s: any) => (
+                        <div
+                          key={s.dimension_key}
+                          className="flex items-center gap-1 bg-earth-100 dark:bg-basanite-800 px-1.5 py-0.5 text-xs"
+                          title={`${s.dimension_key}: ${s.score}/5`}
+                        >
+                          <span className="text-basanite-400 dark:text-earth-500 truncate max-w-[60px]">{s.dimension_key.split('_')[0]}</span>
+                          <span className="font-medium text-basanite-700 dark:text-earth-200">{s.score}</span>
+                        </div>
+                      ))
+                    )}
                   </div>
                   <div className="col-span-1">
-                    <span className="text-sm font-display text-gold-600">{avgScore}</span>
+                    <span className="text-sm font-display text-gold-600">{a.is_mock ? '-' : avgScore}</span>
                   </div>
                   <div className="col-span-2 text-xs text-basanite-400 dark:text-earth-500">
                     {new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
