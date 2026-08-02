@@ -112,6 +112,7 @@ export default async function RoleDetailPage({
         status={role.status}
         initialPlan={role.interview_plan ?? null}
         planEditedAt={role.interview_plan_edited_at ?? null}
+        initialDimensions={dimensions}
       />
 
       {/* Role Config Summary */}

@@ -89,10 +89,10 @@ Respond with JSON:
   "dimension_plans": [
     {{
       "dimension": "dimension_key",
-      "focus": "what the interviewer looks for in this dimension, for this role",
-      "probing_strategy": "how it digs beneath surface answers",
-      "evaluation_criteria": "what strong vs weak evidence looks like",
-      "example_questions": ["...", "..."]
+      "focus": "what the interviewer looks for in the candidate on this dimension, for this role (third person)",
+      "probing_strategy": "how it digs beneath the candidate's surface answers (third person)",
+      "evaluation_criteria": "what strong vs weak evidence from the candidate looks like (third person)",
+      "example_questions": ["spoken directly to the candidate, so 'you' is correct here", "..."]
     }}
   ],
   "closing_approach": "1-2 sentences: how the interview wraps up"
