@@ -94,6 +94,10 @@ export default function CompletePage() {
             Thank you. Your responses have been recorded and your feedback report is being generated
             {email ? <>, we'll email it to <span className="text-basanite-700 font-medium">{email}</span> as soon as it's ready.</> : '.'}
           </p>
+          <p className="text-basanite-400 text-xs mt-3">
+            You can also track this application and download your feedback anytime from{' '}
+            <a href="/portal" className="text-gold-600 hover:underline">your candidate portal</a>.
+          </p>
         </div>
 
         {loading ? (

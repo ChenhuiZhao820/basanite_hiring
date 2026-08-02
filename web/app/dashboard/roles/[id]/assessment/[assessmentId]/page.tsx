@@ -55,6 +55,13 @@ export default async function AssessmentReportPage({
 
   const scores = assessment.dimension_scores ?? []
   const content = report?.content ?? {}
+  // cv_extracted is JSONB but may come back as a string on legacy rows.
+  const rawCv = assessment.cv_extracted
+  const cv: any = rawCv && typeof rawCv === 'object'
+    ? rawCv
+    : typeof rawCv === 'string'
+      ? (() => { try { return JSON.parse(rawCv) } catch { return null } })()
+      : null
   // JSONB messages may come back as a string if the row was written with a stringified
   // payload (legacy), parse defensively so transcripts from older rows still render.
   const rawMessages = session?.messages
@@ -131,6 +138,89 @@ export default async function AssessmentReportPage({
             Candidate copy (PDF)
           </a>
         </div>
+      )}
+
+      {/* Candidate CV, rendered from the structured extraction captured at
+          application time. Collapsible so the report still leads with
+          performance. */}
+      {cv && (
+        <section className="mb-10">
+          <details>
+            <summary className="font-display text-lg text-basanite-900 dark:text-earth-100 cursor-pointer hover:text-gold-600 transition-colors">
+              Candidate CV
+            </summary>
+            <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 mt-4 divide-y divide-earth-100 dark:divide-basanite-700">
+              {Array.isArray(cv.experience) && cv.experience.length > 0 && (
+                <div className="px-5 py-4">
+                  <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-3">Experience</p>
+                  <div className="space-y-3">
+                    {cv.experience.map((e: any, i: number) => (
+                      <div key={i}>
+                        <p className="text-sm text-basanite-900 dark:text-earth-100 font-medium">
+                          {e.role ?? '—'}{e.company ? <span className="font-normal text-basanite-500 dark:text-earth-400"> at {e.company}</span> : null}
+                        </p>
+                        {e.dates && <p className="text-xs text-basanite-400 dark:text-earth-500">{e.dates}</p>}
+                        {e.description && <p className="text-sm text-basanite-600 dark:text-earth-300 mt-1 leading-relaxed">{e.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {Array.isArray(cv.education) && cv.education.length > 0 && (
+                <div className="px-5 py-4">
+                  <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-3">Education</p>
+                  <div className="space-y-2">
+                    {cv.education.map((e: any, i: number) => (
+                      <div key={i}>
+                        <p className="text-sm text-basanite-900 dark:text-earth-100">
+                          {e.degree ?? '—'}{e.field ? `, ${e.field}` : ''}
+                          {e.institution && <span className="text-basanite-500 dark:text-earth-400"> — {e.institution}</span>}
+                        </p>
+                        {e.dates && <p className="text-xs text-basanite-400 dark:text-earth-500">{e.dates}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {Array.isArray(cv.skills) && cv.skills.length > 0 && (
+                <div className="px-5 py-4">
+                  <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cv.skills.map((s: string, i: number) => (
+                      <span key={i} className="text-xs bg-earth-100 dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 px-2 py-0.5">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {Array.isArray(cv.projects) && cv.projects.length > 0 && (
+                <div className="px-5 py-4">
+                  <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-3">Projects</p>
+                  <div className="space-y-2">
+                    {cv.projects.map((p: any, i: number) => (
+                      <div key={i}>
+                        <p className="text-sm text-basanite-900 dark:text-earth-100 font-medium">{p.name ?? '—'}</p>
+                        {p.description && <p className="text-sm text-basanite-600 dark:text-earth-300 mt-0.5 leading-relaxed">{p.description}</p>}
+                        {Array.isArray(p.technologies) && p.technologies.length > 0 && (
+                          <p className="text-xs text-basanite-400 dark:text-earth-500 mt-1">{p.technologies.join(', ')}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {Array.isArray(cv.anchor_points) && cv.anchor_points.length > 0 && (
+                <div className="px-5 py-4">
+                  <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-2">Interview Anchor Points</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {cv.anchor_points.map((a: string, i: number) => (
+                      <li key={i} className="text-sm text-basanite-600 dark:text-earth-300">{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </details>
+        </section>
       )}
 
       {/* Headline: next-round routing recommendation. Lives ABOVE the

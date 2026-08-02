@@ -5,6 +5,8 @@ import { CopyButton } from '@/components/CopyButton'
 import { AssessmentRowMenu } from '@/components/AssessmentRowMenu'
 import { RoleMenu } from '@/components/RoleMenu'
 import { RoleVoiceTile } from '@/components/RoleVoiceTile'
+import { InterviewPlanPanel } from '@/components/InterviewPlanPanel'
+import { GoLiveButton } from '@/components/GoLiveButton'
 
 export const metadata = { title: 'Role' }
 
@@ -28,20 +30,32 @@ export default async function RoleDetailPage({
 
   if (!role) redirect('/dashboard')
 
-  // Fetch assessments with scores
-  const { data: assessments } = await service
+  // Fetch assessments with scores, then rank: scored candidates first by
+  // average dimension score (desc), unscored ones after by recency.
+  const { data: rawAssessments } = await service
     .from('assessments')
     .select('*, dimension_scores(*), reports(*)')
     .eq('role_id', id)
     .order('created_at', { ascending: false })
 
-  // Test Mode: pin is_mock rows to the bottom of the queue. The DB order
-  // is created_at desc; Array.prototype.sort is stable, so real and mock
-  // groups each keep their created_at ordering. Mock rows are excluded
-  // from the assessments tally so testers never skew counts.
-  const sortedAssessments = [...(assessments ?? [])].sort(
-    (a: any, b: any) => Number(a.is_mock === true) - Number(b.is_mock === true)
-  )
+  // Rank the queue: Test Mode is_mock rows are pinned to the bottom, then
+  // within each group scored candidates come first by average dimension
+  // score (desc) and unscored ones follow by recency. Mock rows are
+  // excluded from the assessments tally so testers never skew counts.
+  const avgOf = (a: any) => {
+    const s = a.dimension_scores ?? []
+    return s.length > 0 ? s.reduce((sum: number, x: any) => sum + (x.score ?? 0), 0) / s.length : null
+  }
+  const sortedAssessments = [...(rawAssessments ?? [])].sort((a: any, b: any) => {
+    const mockDelta = Number(a.is_mock === true) - Number(b.is_mock === true)
+    if (mockDelta !== 0) return mockDelta
+    const av = avgOf(a)
+    const bv = avgOf(b)
+    if (av !== null && bv !== null) return bv - av
+    if (av !== null) return -1
+    if (bv !== null) return 1
+    return Date.parse(b.created_at) - Date.parse(a.created_at)
+  })
   const realAssessmentsCount = sortedAssessments.filter((a: any) => !a.is_mock).length
 
   const dimensions = Array.isArray(role.dimensions) ? role.dimensions : []
@@ -73,19 +87,32 @@ export default async function RoleDetailPage({
         </div>
       </div>
 
-      {/* Assessment Link */}
+      {/* Draft: go-live call to action */}
+      {role.status === 'draft' && (
+        <GoLiveButton roleId={role.id} hasPlan={Boolean(role.interview_plan)} />
+      )}
+
+      {/* Application Link */}
       {role.status === 'live' && (
         <div className="border border-gold-500/30 bg-gold-500/5 p-5 mb-8">
-          <p className="text-xs text-basanite-600 dark:text-earth-300 font-medium uppercase tracking-wide mb-2">Assessment Link</p>
+          <p className="text-xs text-basanite-600 dark:text-earth-300 font-medium uppercase tracking-wide mb-2">Application Link</p>
           <div className="flex items-center gap-3">
             <code className="flex-1 text-sm text-basanite-800 dark:text-earth-100 bg-white dark:bg-basanite-800 border border-earth-200 dark:border-basanite-700 px-3 py-2 font-mono truncate">
               {assessmentLink}
             </code>
             <CopyButton text={assessmentLink} />
           </div>
-          <p className="text-xs text-basanite-400 dark:text-earth-500 mt-2">Share this link with candidates to start their assessment.</p>
+          <p className="text-xs text-basanite-400 dark:text-earth-500 mt-2">Share this link anywhere you advertise the role — candidates apply and interview from it.</p>
         </div>
       )}
+
+      {/* Interview Plan */}
+      <InterviewPlanPanel
+        roleId={role.id}
+        status={role.status}
+        initialPlan={role.interview_plan ?? null}
+        planEditedAt={role.interview_plan_edited_at ?? null}
+      />
 
       {/* Role Config Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
