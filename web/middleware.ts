@@ -93,6 +93,7 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isDashboard = path.startsWith('/dashboard')
+  const isPortal = path.startsWith('/portal')
   // NOTE: /onboard is intentionally NOT protected — it hosts the candidate
   // sign-up / sign-in form, so a brand-new (unauthenticated) candidate must
   // be able to reach it. Locking it behind auth bounced new candidates to the
@@ -121,11 +122,27 @@ export async function middleware(request: NextRequest) {
 
   // Dashboard is for hirers (and admins). Candidates get bounced even if
   // their app_metadata.role somehow says 'hirer' — the is_candidate flag
-  // wins.
+  // wins. Candidates are sent to their own portal instead of the landing
+  // page so a candidate who clicks "dashboard" still ends up somewhere
+  // useful.
   if (isDashboard && user && !isAdmin && (isCandidate || role !== 'hirer')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
-    url.searchParams.set('error', 'Hirer access only.')
+    if (isCandidate) {
+      url.pathname = '/portal'
+      url.search = ''
+    } else {
+      url.pathname = '/'
+      url.searchParams.set('error', 'Hirer access only.')
+    }
+    return NextResponse.redirect(url)
+  }
+
+  // Candidate portal requires auth. Server routes under /api/portal are
+  // independently auth-gated; this covers the pages.
+  if (isPortal && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('next', path)
     return NextResponse.redirect(url)
   }
 
@@ -148,10 +165,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users from /login to /dashboard
+  // Redirect authenticated users from /login to their home: candidates to
+  // the portal, everyone else to the hirer dashboard. Honour an explicit
+  // same-origin ?next= target (e.g. /portal) when present.
   if (path === '/login' && user && !request.nextUrl.searchParams.has('verified')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    const next = request.nextUrl.searchParams.get('next')
+    const safeTarget = next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\') ? next : null
+    url.pathname = safeTarget ?? (isCandidate ? '/portal' : '/dashboard')
+    url.search = ''
     return NextResponse.redirect(url)
   }
 

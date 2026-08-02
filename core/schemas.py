@@ -146,6 +146,29 @@ class DimensionRecommendation(_LooseModel):
     rationale: dict[str, str] = Field(default_factory=dict)
 
 
+# ───────────────────────── Interview plan ─────────────────────────
+
+
+class InterviewPlanDimension(_LooseModel):
+    dimension: str = ""
+    focus: str = ""
+    probing_strategy: str = ""
+    evaluation_criteria: str = ""
+    example_questions: list[str] = Field(default_factory=list)
+
+    @field_validator("example_questions", mode="before")
+    @classmethod
+    def _coerce_string_lists(cls, v: Any) -> Any:
+        return _coerce_str_list(v)
+
+
+class InterviewPlan(_LooseModel):
+    overview: str = ""
+    opening_approach: str = ""
+    dimension_plans: list[InterviewPlanDimension] = Field(default_factory=list)
+    closing_approach: str = ""
+
+
 # ───────────────────────── Hirer report ───────────────────────────
 
 

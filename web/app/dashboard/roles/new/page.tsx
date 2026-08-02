@@ -99,8 +99,10 @@ export default function NewRolePage() {
     }
   }
 
-  // Step 2: Save dimensions and go live
-  async function handleGoLive() {
+  // Step 2: Save dimensions and generate the interview plan. The role stays
+  // in draft so the hirer can review/edit the plan before going live from
+  // the role page — the plan locks at go-live.
+  async function handleSaveAndPlan() {
     if (dimensions.length < 2) {
       setError('Please select at least 2 dimensions.')
       return
@@ -114,7 +116,7 @@ export default function NewRolePage() {
     setLoading(true)
 
     try {
-      // Update role with dimensions + interview config
+      // Update role with dimensions + interview config (stays in draft)
       await fetch(`/api/roles/${roleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -124,12 +126,11 @@ export default function NewRolePage() {
           interview_duration_minutes: interviewDurationMinutes,
           custom_instructions: customInstructions.trim() || null,
           interviewer_voice_id: voiceId,
-          status: 'live',
         }),
       })
 
-      // Generate prompt
-      await fetch(`/api/roles/${roleId}/generate-prompt`, { method: 'POST' })
+      // Generate the hirer-readable interview plan
+      await fetch(`/api/roles/${roleId}/generate-plan`, { method: 'POST' })
 
       router.push(`/dashboard/roles/${roleId}`)
     } catch (e: any) {
@@ -361,11 +362,11 @@ export default function NewRolePage() {
               Back
             </button>
             <button
-              onClick={handleGoLive}
+              onClick={handleSaveAndPlan}
               disabled={loading || dimensions.length < 2}
               className="flex-1 bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
             >
-              {loading ? 'Going live...' : `Go Live with ${dimensions.length} Dimensions`}
+              {loading ? 'Generating interview plan...' : `Generate Interview Plan (${dimensions.length} Dimensions)`}
             </button>
           </div>
         </div>

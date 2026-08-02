@@ -380,6 +380,68 @@ async def recommend_dimensions(
     return result
 
 
+class UpdatePlanRequest(BaseModel):
+    interview_plan: dict
+
+
+@app.post("/roles/{role_id}/generate-plan")
+async def generate_plan(
+    role_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Generate and store the hirer-readable interview plan for a role."""
+    _verify_internal(authorization)
+    from core.db import get_role as db_get_role, update_role as db_update_role
+    from agents.interview_plan import generate_interview_plan
+
+    role = db_get_role(role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if not role.get("dimensions"):
+        raise HTTPException(status_code=400, detail="No dimensions configured")
+
+    plan = await generate_interview_plan(role)
+    if plan.get("error"):
+        raise HTTPException(status_code=502, detail="Plan generation failed, please retry")
+
+    db_update_role(role_id, interview_plan=plan)
+    return {"status": "generated", "interview_plan": plan}
+
+
+@app.patch("/roles/{role_id}/plan")
+async def update_plan(
+    role_id: str,
+    body: UpdatePlanRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Save hirer edits to the interview plan. Only allowed while the role
+    is still in draft — once live the plan is locked."""
+    _verify_internal(authorization)
+    from datetime import datetime, timezone
+    from core.db import get_role as db_get_role, update_role as db_update_role
+    from core.schemas import InterviewPlan, validate_or_error
+
+    role = db_get_role(role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if role.get("status") != "draft":
+        raise HTTPException(status_code=409, detail="Interview plan is locked once the role is live")
+
+    # Re-validate the hirer-edited plan against the canonical shape so a
+    # tampered payload can't smuggle arbitrary JSON into the roles row.
+    plan = validate_or_error(body.interview_plan, InterviewPlan)
+    if plan.get("error"):
+        raise HTTPException(status_code=422, detail="Invalid interview plan shape")
+
+    if not db_update_role(
+        role_id,
+        interview_plan=plan,
+        interview_plan_edited_at=datetime.now(timezone.utc).isoformat(),
+    ):
+        raise HTTPException(status_code=500, detail="Failed to update plan")
+    return {"status": "updated", "interview_plan": plan}
+
+
 @app.post("/roles/{role_id}/generate-prompt")
 async def generate_prompt(
     role_id: str,
@@ -419,7 +481,17 @@ async def go_live(
     if not role.get("dimensions"):
         raise HTTPException(status_code=400, detail="No dimensions configured")
 
-    db_update_role(role_id, status="live")
+    # Bake the (possibly hirer-edited) interview plan into the stored generic
+    # prompt at the moment the plan locks. Per-assessment prompts are still
+    # assembled fresh at /start with candidate context.
+    from interview import assemble_interview_prompt
+    prompt = assemble_interview_prompt(role, {
+        "name": "[CANDIDATE]",
+        "experience_path": "path_a",
+        "anchor_points": [],
+        "experience": [],
+    })
+    db_update_role(role_id, status="live", interview_agent_prompt=prompt)
     return {
         "status": "live",
         "assessment_link_token": role["assessment_link_token"],
@@ -1532,16 +1604,27 @@ async def download_internal_report_pdf(
     request: Request,
     authorization: str | None = Header(default=None),
     x_accessed_by: str | None = Header(default=None, alias="X-Accessed-By"),
+    x_access_kind: str | None = Header(default=None, alias="X-Access-Kind"),
 ):
     """Hirer-facing (via Next.js auth proxy): download a PDF by assessment_id.
 
     The Next.js proxy already resolved the hirer's auth.users.id and
     forwards it as X-Accessed-By so we can attribute the audit row to a
     person, not just "the pipeline".
+
+    The candidate portal reuses this route (its Next.js proxy verifies the
+    assessment belongs to the signed-in candidate) and sends
+    X-Access-Kind: candidate-self so the audit row is attributed correctly.
+    Portal access is restricted to the candidate report — the hirer report
+    is confidential.
     """
     _verify_internal(authorization)
     from fastapi.responses import Response
     from core.db import log_report_access
+
+    access_kind = x_access_kind if x_access_kind in ("hirer-dashboard", "candidate-self") else "hirer-dashboard"
+    if access_kind == "candidate-self" and report_type != "candidate":
+        raise HTTPException(status_code=404, detail="Report not found")
 
     pdf_bytes, filename = _build_report_pdf(assessment_id, report_type)
     # ENG-42: hirer audit trail. accessed_by may be None if a script
@@ -1550,7 +1633,7 @@ async def download_internal_report_pdf(
     log_report_access(
         assessment_id=assessment_id,
         report_type=report_type,
-        access_kind="hirer-dashboard",
+        access_kind=access_kind,
         accessed_by=x_accessed_by,
         ip_hash=_hash_request_ip(request),
         user_agent=request.headers.get("user-agent"),
