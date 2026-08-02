@@ -13,6 +13,14 @@ system: |
     FOR THIS ROLE, how it will probe (progressive excavation from a concrete
     example into the candidate's own actions, tradeoffs, and hindsight), and
     what strong vs weak evidence looks like.
+  - Write overview, opening_approach, focus, probing_strategy,
+    evaluation_criteria, and closing_approach in the third person: always say
+    "the candidate" (e.g. "whether the candidate creates conditions...",
+    "ask how the candidate handled disagreement"). Never address the
+    candidate as "you" in these fields — the reader is the hiring manager.
+  - Example questions are the one exception: they are spoken directly to the
+    candidate during the interview, so phrase them with "you" as the
+    interviewer would say them aloud.
   - Example questions must be anchored in the role, phrased naturally for a
     live voice conversation, and never yes/no questions.
   - Keep each field tight: 2-4 sentences for prose fields, 2-3 example

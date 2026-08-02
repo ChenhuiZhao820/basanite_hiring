@@ -94,3 +94,11 @@ class TestGenerateInterviewPlan:
         system = interview_plan._load_prompt("generate_interview_plan")
         assert "Untrusted content boundaries" in system
         assert "<job_description>" in system
+
+    async def test_yaml_system_prompt_requires_third_person(self):
+        # The plan is read by the hiring manager: prose fields must say
+        # "the candidate", never address the candidate as "you". Example
+        # questions are the spoken-aloud exception.
+        system = interview_plan._load_prompt("generate_interview_plan")
+        assert '"the candidate"' in system
+        assert "third person" in system
