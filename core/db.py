@@ -141,6 +141,24 @@ def update_role(role_id: str, **fields) -> bool:
         return False
 
 
+def insert_go_live_feedback(role_id: str, user_id: str | None, reason: str, details: str | None) -> bool:
+    """Record why a hirer went live with zero evaluation dimensions."""
+    client = get_client()
+    if not client:
+        return False
+    try:
+        client.table("go_live_feedback").insert({
+            "role_id": role_id,
+            "user_id": user_id,
+            "reason": reason,
+            "details": details,
+        }).execute()
+        return True
+    except Exception as e:
+        print(f"  DB insert_go_live_feedback error: {e}")
+        return False
+
+
 # ─── Assessment helpers ────────────────────────────────────────────────────
 
 def create_assessment(assessment: dict) -> dict | None:

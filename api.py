@@ -385,6 +385,12 @@ async def update_role(
 
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
 
+    # The interview plan is a per-dimension artifact: clearing the last
+    # dimension also clears the stored plan so a stale one can't be baked
+    # into the prompt at go-live.
+    if body.dimensions == []:
+        fields["interview_plan"] = None
+
     # Reject voice IDs that aren't in our curated catalogue OR a cloned
     # voice in the same org as this role. We resolve the role's org_id
     # before validating so the per-org check has the right scope.
@@ -507,19 +513,53 @@ async def generate_prompt(
     return {"status": "generated", "prompt_length": len(prompt)}
 
 
+# Structured reasons a hirer can give for going live with zero dimensions.
+# Keys are shared with the GoLiveButton component; "other" unlocks free text.
+_NO_DIMENSIONS_REASONS = {"general_screen", "dimensions_dont_fit", "just_testing", "other"}
+
+
+class GoLiveRequest(BaseModel):
+    no_dimensions_reason: str | None = Field(default=None, max_length=64)
+    no_dimensions_details: str | None = Field(default=None, max_length=2000)
+
+
 @app.post("/roles/{role_id}/go-live")
 async def go_live(
     role_id: str,
+    body: GoLiveRequest | None = None,
     authorization: str | None = Header(default=None),
 ):
     _verify_internal(authorization)
-    from core.db import get_role as db_get_role, update_role as db_update_role
+    from core.db import (
+        get_role as db_get_role,
+        update_role as db_update_role,
+        insert_go_live_feedback,
+    )
 
     role = db_get_role(role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
-    if not role.get("dimensions"):
-        raise HTTPException(status_code=400, detail="No dimensions configured")
+
+    # Zero dimensions is allowed (the interview becomes a general
+    # conversational screen), but we ask why so the product can learn
+    # what's missing from the dimension set.
+    dims = _coerce_json_field(role.get("dimensions") or [])
+    if not isinstance(dims, list):
+        dims = []
+    if not dims:
+        reason = (body.no_dimensions_reason or "").strip() if body else ""
+        if reason not in _NO_DIMENSIONS_REASONS:
+            raise HTTPException(
+                status_code=400,
+                detail="Please tell us why you're going live without dimensions",
+            )
+        details = (body.no_dimensions_details or "").strip() or None
+        insert_go_live_feedback(
+            role_id,
+            role.get("user_id"),
+            reason,
+            details if reason == "other" else None,
+        )
 
     # Bake the (possibly hirer-edited) interview plan into the stored generic
     # prompt at the moment the plan locks. Per-assessment prompts are still

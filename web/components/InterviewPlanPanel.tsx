@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatDimensionKey } from '@/lib/format'
-import { ALL_DIMENSIONS, MIN_DIMENSIONS } from '@/lib/dimensions'
+import { ALL_DIMENSIONS } from '@/lib/dimensions'
 
 type DimensionPlan = {
   dimension: string
@@ -135,10 +135,6 @@ export function InterviewPlanPanel({ roleId, status, initialPlan, planEditedAt, 
 
   async function handleSaveDimensions() {
     if (!dimDraft) return
-    if (dimDraft.length < MIN_DIMENSIONS) {
-      setError(`Select at least ${MIN_DIMENSIONS} dimensions.`)
-      return
-    }
     setError('')
     setSavingDims(true)
     try {
@@ -153,7 +149,16 @@ export function InterviewPlanPanel({ roleId, status, initialPlan, planEditedAt, 
       setDimDraft(null)
       setDraft(null)
       // The plan is per-dimension, so a dimension change regenerates it.
-      await handleGenerate()
+      // With zero dimensions there is nothing to plan against — the
+      // interview runs as a general conversational screen instead.
+      if (dimDraft.length > 0) {
+        await handleGenerate()
+      } else {
+        setPlan(null)
+        setEdited(false)
+        setOpenDims(new Set())
+        router.refresh()
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -218,13 +223,19 @@ export function InterviewPlanPanel({ roleId, status, initialPlan, planEditedAt, 
               )}
             </div>
             {dimDraft === null ? (
-              <div className="flex flex-wrap gap-1.5">
-                {dims.map(d => (
-                  <span key={d} className="text-xs bg-earth-100 dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 px-2 py-1">
-                    {formatDimensionKey(d)}
-                  </span>
-                ))}
-              </div>
+              dims.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {dims.map(d => (
+                    <span key={d} className="text-xs bg-earth-100 dark:bg-basanite-900 text-basanite-600 dark:text-earth-300 px-2 py-1">
+                      {formatDimensionKey(d)}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  No dimensions selected — the interview will run as a general conversational screen without dimension scores.
+                </p>
+              )
             ) : (
               <div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
@@ -266,10 +277,14 @@ export function InterviewPlanPanel({ roleId, status, initialPlan, planEditedAt, 
                   <button
                     type="button"
                     onClick={handleSaveDimensions}
-                    disabled={savingDims || generating || dimDraft.length < MIN_DIMENSIONS}
+                    disabled={savingDims || generating}
                     className="bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white text-xs font-medium px-4 py-2 transition-colors disabled:opacity-60"
                   >
-                    {savingDims || generating ? 'Saving & regenerating plan…' : `Save ${dimDraft.length} dimensions`}
+                    {savingDims || generating
+                      ? 'Saving & regenerating plan…'
+                      : dimDraft.length === 0
+                        ? 'Save without dimensions'
+                        : `Save ${dimDraft.length} ${dimDraft.length === 1 ? 'dimension' : 'dimensions'}`}
                   </button>
                   <button
                     type="button"
@@ -289,8 +304,12 @@ export function InterviewPlanPanel({ roleId, status, initialPlan, planEditedAt, 
 
           {!view ? (
             <div className="text-center py-6">
-              <p className="text-sm text-basanite-500 dark:text-earth-400 mb-4">No interview plan has been generated for this role yet.</p>
-              {isDraft && (
+              <p className="text-sm text-basanite-500 dark:text-earth-400 mb-4">
+                {dims.length === 0
+                  ? 'The interview plan is built from your selected dimensions — add at least one dimension to generate a plan.'
+                  : 'No interview plan has been generated for this role yet.'}
+              </p>
+              {isDraft && dims.length > 0 && (
                 <button
                   type="button"
                   onClick={handleGenerate}
