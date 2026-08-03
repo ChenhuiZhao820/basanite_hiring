@@ -146,6 +146,16 @@ class DimensionRecommendation(_LooseModel):
     rationale: dict[str, str] = Field(default_factory=dict)
 
 
+class JdMeta(_LooseModel):
+    """Role title + hiring company pulled from a job description, used to
+    autofill the role-creation form. Both default to empty so a JD that
+    doesn't name one (common for the company on internal reqs) degrades
+    to leaving that field untouched rather than inventing a value."""
+
+    title: str = ""
+    company_name: str = ""
+
+
 # ───────────────────────── Interview plan ─────────────────────────
 
 

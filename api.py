@@ -717,6 +717,25 @@ async def _handle_jd_injection_strike(
     raise HTTPException(status_code=403, detail=_JD_INJECTION_BLOCKED_DETAIL)
 
 
+class _JdMetaRequest(BaseModel):
+    job_description: str = Field(min_length=1, max_length=20000)
+
+
+@app.post("/roles/extract-meta")
+async def extract_role_meta(
+    body: _JdMetaRequest,
+    request: Request,
+    authorization: str | None = Header(default=None),
+):
+    """Pull a suggested role title + company name from a pasted/uploaded JD
+    so the role-creation form can autofill empty fields. Best-effort:
+    returns empty strings rather than erroring so the UX never blocks."""
+    _verify_internal(authorization)
+    _rate_limit(request, bucket="jd-extract-meta", max_requests=120, window_seconds=3600)
+    from agents.jd_meta import extract_jd_meta
+    return await extract_jd_meta(body.job_description)
+
+
 @app.post("/roles/jd-upload")
 async def jd_upload(
     request: Request,
