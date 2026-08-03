@@ -340,10 +340,10 @@ async def create_role(
     # always accepted whatever the hirer typed.
     verdict = await validate_jd(body.job_description)
     if is_confirmed_injection(verdict):
-        await _handle_jd_injection_strike(
+        await _handle_injection_strike(
             body.user_id, None, "(pasted job description)", verdict,
         )
-    _log_subpunitive_jd_finding(
+    _log_subpunitive_injection_finding(
         body.user_id, None, "(pasted job description)", verdict,
     )
 
@@ -584,13 +584,13 @@ _JD_NOT_A_JD_DETAIL = (
     "else by mistake?"
 )
 
-_JD_INJECTION_BLOCKED_DETAIL = (
+_INJECTION_BLOCKED_DETAIL = (
     "This document contains content that attempts to manipulate our AI "
     "systems, and has been declined. The incident has been logged for "
     "review — if you believe this is a mistake, contact support@basanite.co.uk."
 )
 
-_JD_SUSPENDED_DETAIL = (
+_SUSPENDED_DETAIL = (
     "Repeated attempts to manipulate our AI systems were detected, and your "
     "account has been suspended pending review. Contact "
     "support@basanite.co.uk to resolve this."
@@ -640,8 +640,9 @@ def _extract_jd_text(data: bytes, filename: str) -> str:
     raise HTTPException(status_code=415, detail=_JD_UNSUPPORTED_DETAIL)
 
 
-def _log_subpunitive_jd_finding(
-    user_id: str, org_id: str | None, filename: str, verdict: dict
+def _log_subpunitive_injection_finding(
+    user_id: str, org_id: str | None, filename: str, verdict: dict,
+    *, kind: str = _JD_STRIKE_KIND,
 ) -> None:
     """Audit-log 'suspicious'-grade findings (or regex hits the classifier
     judged benign) that were allowed through. Non-punitive, best-effort."""
@@ -649,7 +650,7 @@ def _log_subpunitive_jd_finding(
         return
     from core.db import log_security_event
     log_security_event(
-        user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+        user_id=user_id, org_id=org_id, kind=kind,
         severity="info",
         detail={
             "filename": (filename or "")[:200],
@@ -660,11 +661,17 @@ def _log_subpunitive_jd_finding(
     )
 
 
-async def _handle_jd_injection_strike(
-    user_id: str, org_id: str | None, filename: str, verdict: dict
+async def _handle_injection_strike(
+    user_id: str, org_id: str | None, filename: str, verdict: dict,
+    *, kind: str = _JD_STRIKE_KIND, label: str = "JD",
 ) -> None:
     """Record a corroborated injection attempt and escalate per the tiered
-    policy. Always raises (403) — the upload never proceeds."""
+    policy. Always raises (403) — the upload never proceeds.
+
+    Shared by the hirer JD path and the candidate CV path; `kind` keys the
+    strike counter (per source, so JD and CV strikes don't cross-count)
+    and `label` only shapes the ops-alert wording.
+    """
     from core.db import (
         count_recent_security_events,
         log_security_event,
@@ -680,12 +687,12 @@ async def _handle_jd_injection_strike(
         "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
     }
     log_security_event(
-        user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+        user_id=user_id, org_id=org_id, kind=kind,
         severity="strike", detail=detail,
     )
 
     strikes = count_recent_security_events(
-        user_id, _JD_STRIKE_KIND, severity="strike", days=_JD_STRIKE_WINDOW_DAYS,
+        user_id, kind, severity="strike", days=_JD_STRIKE_WINDOW_DAYS,
     )
     # count_recent... returns 0 on DB failure; treat the strike just
     # logged as the floor so a read hiccup can't skip straight past the
@@ -694,27 +701,27 @@ async def _handle_jd_injection_strike(
 
     if strikes >= _JD_STRIKES_TO_SUSPEND:
         suspended = set_user_suspended(
-            user_id, True, reason="Repeated JD prompt-injection attempts",
+            user_id, True, reason=f"Repeated {label} prompt-injection attempts",
         )
         if suspended:
             log_security_event(
-                user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
+                user_id=user_id, org_id=org_id, kind=kind,
                 severity="suspension",
                 detail={"strikes": strikes, "window_days": _JD_STRIKE_WINDOW_DAYS},
             )
         send_ops_alert(
-            "Account auto-suspended: repeated JD injection attempts",
+            f"Account auto-suspended: repeated {label} injection attempts",
             f"user_id: {user_id}\nstrikes in window: {strikes}\n"
             f"evidence: {detail['evidence']}\nReview: /dashboard/admin/security",
         )
-        raise HTTPException(status_code=403, detail=_JD_SUSPENDED_DETAIL)
+        raise HTTPException(status_code=403, detail=_SUSPENDED_DETAIL)
 
     send_ops_alert(
-        "JD injection attempt blocked (strike 1)",
+        f"{label} injection attempt blocked (strike 1)",
         f"user_id: {user_id}\nfilename: {detail['filename']}\n"
         f"evidence: {detail['evidence']}\nReview: /dashboard/admin/security",
     )
-    raise HTTPException(status_code=403, detail=_JD_INJECTION_BLOCKED_DETAIL)
+    raise HTTPException(status_code=403, detail=_INJECTION_BLOCKED_DETAIL)
 
 
 class _JdMetaRequest(BaseModel):
@@ -804,14 +811,14 @@ async def jd_upload(
     verdict = await validate_jd(text)
 
     if is_confirmed_injection(verdict):
-        await _handle_jd_injection_strike(
+        await _handle_injection_strike(
             user_id, org_id, file.filename or "", verdict,
         )
 
     # Sub-punitive findings ('suspicious' grade, or regex hits the
     # classifier judged benign) pass through — downstream prompt assembly
     # sanitises markers anyway — but leave an audit trail.
-    _log_subpunitive_jd_finding(user_id, org_id, file.filename or "", verdict)
+    _log_subpunitive_injection_finding(user_id, org_id, file.filename or "", verdict)
 
     if is_confirmed_not_jd(verdict):
         raise HTTPException(status_code=422, detail=_JD_NOT_A_JD_DETAIL)
@@ -857,11 +864,89 @@ class StartAssessmentRequest(BaseModel):
     cv_text: str = Field(min_length=1, max_length=80000)
 
 
+# ─── CV intake validation (candidate) ──────────────────────────────────────
+# Candidate CV text gets the same hybrid safety gate as hirer JD uploads
+# (agents/cv_validate): deterministic regex + CV-likeness/gibberish scoring
+# corroborating a Haiku classifier. Confirmed injection attempts follow the
+# same tiered strike policy as JD uploads, counted under a separate kind so
+# JD and CV strikes never cross-count. Enforced both at /cv-upload (fast UX
+# feedback on the parsed PDF) and at /start (the authoritative gate — the
+# cv_text body field is client-controlled and can bypass the upload path).
+
+_CV_STRIKE_KIND = "cv_injection_attempt"
+_CV_HARMFUL_KIND = "cv_harmful_content"
+
+_CV_NOT_A_CV_DETAIL = (
+    "This doesn't look like a CV — please check you've uploaded the right "
+    "document."
+)
+
+_CV_HARMFUL_BLOCKED_DETAIL = (
+    "This document contains content we can't accept, and has been declined. "
+    "The incident has been logged for review — if you believe this is a "
+    "mistake, contact support@basanite.co.uk."
+)
+
+
+async def _enforce_cv_verdict(
+    user_id: str | None, filename: str, verdict: dict
+) -> None:
+    """Apply a CV validation verdict: strike on confirmed injection, block
+    harmful content, bounce confirmed non-CVs/gibberish, and audit-log
+    sub-punitive findings that pass through. Raises on any rejection."""
+    from agents.cv_validate import (
+        is_confirmed_harmful,
+        is_confirmed_injection,
+        is_confirmed_not_cv,
+    )
+
+    if is_confirmed_injection(verdict):
+        if user_id:
+            await _handle_injection_strike(
+                user_id, None, filename, verdict,
+                kind=_CV_STRIKE_KIND, label="CV",
+            )
+        # No attributable account (shouldn't happen behind the Next.js
+        # proxy, which requires a candidate session) — still refuse.
+        raise HTTPException(status_code=403, detail=_INJECTION_BLOCKED_DETAIL)
+
+    if is_confirmed_harmful(verdict):
+        from core.db import log_security_event
+        from core.email import send_ops_alert
+        if user_id:
+            log_security_event(
+                user_id=user_id, kind=_CV_HARMFUL_KIND, severity="strike",
+                detail={
+                    "filename": (filename or "")[:200],
+                    "evidence": [e[:300] for e in (verdict.get("harmful_evidence") or [])[:10]],
+                },
+            )
+        send_ops_alert(
+            "Harmful CV content blocked",
+            f"user_id: {user_id}\nfilename: {(filename or '')[:200]}\n"
+            f"evidence: {[e[:300] for e in (verdict.get('harmful_evidence') or [])[:10]]}\n"
+            "Review: /dashboard/admin/security",
+        )
+        raise HTTPException(status_code=403, detail=_CV_HARMFUL_BLOCKED_DETAIL)
+
+    # Sub-punitive findings ('suspicious' grade, or regex hits the
+    # classifier judged benign) pass through — downstream prompt assembly
+    # sanitises markers anyway — but leave an audit trail.
+    if user_id:
+        _log_subpunitive_injection_finding(
+            user_id, None, filename, verdict, kind=_CV_STRIKE_KIND,
+        )
+
+    if is_confirmed_not_cv(verdict):
+        raise HTTPException(status_code=422, detail=_CV_NOT_A_CV_DETAIL)
+
+
 @app.post("/assess/{token}/cv-upload")
 async def cv_upload(
     token: str,
     request: Request,
     file: UploadFile = File(...),
+    user_id: str | None = Form(default=None),
 ):
     """
     Extract text from an uploaded CV (PDF for now). The extracted text is
@@ -914,6 +999,13 @@ async def cv_upload(
             status_code=422,
             detail="That PDF didn't contain enough readable text (it may be a scan). Paste the CV text instead.",
         )
+
+    # Content gate: is this actually a CV, and is it clean? Fast feedback
+    # here; /start re-validates as the authoritative enforcement point.
+    from agents.cv_validate import validate_cv
+    verdict = await validate_cv(text)
+    await _enforce_cv_verdict(user_id, file.filename or "", verdict)
+
     return {"cv_text": text, "char_count": len(text)}
 
 
@@ -943,11 +1035,19 @@ async def start_assessment(
         get_active_assessment_for_candidate,
     )
     from agents.cv_extract import extract_cv
+    from agents.cv_validate import validate_cv
     from interview import assemble_interview_prompt
 
     role = get_role_by_token(token)
     if not role or role["status"] != "live":
         raise HTTPException(status_code=404, detail="Assessment not found or not active")
+
+    # Authoritative CV content gate. cv_text arrives in the request body,
+    # so a hostile client can skip /cv-upload entirely — validation must
+    # happen here, BEFORE any assessment state is minted, or a rejected
+    # payload would leave an orphaned assessment row behind.
+    verdict = await validate_cv(body.cv_text)
+    await _enforce_cv_verdict(body.candidate_user_id, "(cv text)", verdict)
 
     # ENG-24: refuse to start a second interview if this candidate already
     # has an in_progress or completed assessment for this role. The partial

@@ -203,6 +203,33 @@ class JdValidation(_LooseModel):
         return _coerce_str_list(v)
 
 
+# ───────────────────────── CV upload validation ───────────────────
+
+
+class CvValidation(_LooseModel):
+    """Classifier verdict on candidate-supplied "CV" text.
+
+    Produced by agents.cv_validate. Defaults are deliberately permissive
+    (accept, no injection, no harmful content) so a partially-malformed
+    LLM response degrades to letting a legitimate candidate through
+    rather than blocking them.
+    """
+
+    document_type: Literal["cv_or_resume", "job_description", "gibberish", "other"] = "cv_or_resume"
+    document_type_hint: str = ""
+    is_cv: bool = True
+    confidence: Literal["high", "low"] = "low"
+    injection_risk: Literal["none", "suspicious", "clear_attempt"] = "none"
+    injection_evidence: list[str] = Field(default_factory=list)
+    harmful_content: Literal["none", "present"] = "none"
+    harmful_evidence: list[str] = Field(default_factory=list)
+
+    @field_validator("injection_evidence", "harmful_evidence", mode="before")
+    @classmethod
+    def _coerce_evidence(cls, v: Any) -> Any:
+        return _coerce_str_list(v)
+
+
 # ───────────────────────── Hirer report ───────────────────────────
 
 

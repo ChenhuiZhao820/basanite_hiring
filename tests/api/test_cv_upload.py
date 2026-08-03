@@ -12,9 +12,11 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture
 def cv_client(monkeypatch):
-    """TestClient with the role lookup and PDF extractor stubbed so we
-    exercise only the upload gate, not Supabase or pypdf."""
+    """TestClient with the role lookup, PDF extractor, and content
+    classifier stubbed so we exercise only the upload gate, not Supabase,
+    pypdf, or the LLM."""
     import api
+    from agents import cv_validate as cv_mod
     from core import db as core_db
     from core import pdf as core_pdf
 
@@ -25,6 +27,17 @@ def cv_client(monkeypatch):
     # Return comfortably more than the 80-char minimum so a passing gate
     # reaches a 200, isolating the content-type behaviour under test.
     monkeypatch.setattr(core_pdf, "extract_pdf_text", lambda data, **k: "x" * 500)
+
+    # The content gate is covered by test_cv_upload_validation.py; stub it
+    # to a clean verdict here (the "x"*500 stand-in text would otherwise
+    # trip the gibberish prefilter).
+    async def _clean(text):
+        return {
+            "document_type": "cv_or_resume", "is_cv": True,
+            "confidence": "high", "injection_risk": "none",
+            "harmful_content": "none", "regex_markers": [], "cv_likeness": 0.9,
+        }
+    monkeypatch.setattr(cv_mod, "validate_cv", _clean)
     return TestClient(api.app)
 
 
