@@ -20,6 +20,10 @@ export async function POST(
   }
 
   const form = await request.formData()
+  // Attribute the upload to the verified candidate session so the backend
+  // can key injection strikes to the right account. Server-set — any
+  // user_id the client tried to smuggle into the form is overwritten.
+  form.set('user_id', check.user.id)
   const res = await fetch(`${PIPELINE_URL}/assess/${token}/cv-upload`, {
     method: 'POST',
     body: form,

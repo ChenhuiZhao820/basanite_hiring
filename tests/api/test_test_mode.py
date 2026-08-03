@@ -44,6 +44,7 @@ def start_stubs(monkeypatch):
     """Stub every collaborator /start touches; capture the insert dict."""
     from core import db as core_db
     from agents import cv_extract as cv_agent
+    from agents import cv_validate as cv_val
     import interview
 
     created: list[dict] = []
@@ -61,6 +62,17 @@ def start_stubs(monkeypatch):
         return {"name": "Test Er", "experience_path": "path_a"}
 
     monkeypatch.setattr(cv_agent, "extract_cv", fake_extract_cv)
+
+    # The CV content gate is covered by test_cv_upload_validation.py; the
+    # "x"*100 stand-in cv_text would otherwise trip the gibberish prefilter.
+    async def fake_validate_cv(text):
+        return {
+            "document_type": "cv_or_resume", "is_cv": True,
+            "confidence": "high", "injection_risk": "none",
+            "harmful_content": "none", "regex_markers": [], "cv_likeness": 0.9,
+        }
+
+    monkeypatch.setattr(cv_val, "validate_cv", fake_validate_cv)
     monkeypatch.setattr(interview, "assemble_interview_prompt", lambda *a, **k: "REAL PROMPT")
     return created
 
