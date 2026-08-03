@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { allow, getIP } from '@/lib/rate-limit'
+import { sendAdminNotification } from '@/lib/admin-notify'
 
 export async function POST(request: Request) {
   // The endpoint does an unauthenticated, RLS-bypassing service-role insert,
@@ -82,6 +83,14 @@ export async function POST(request: Request) {
       { status: 500 },
     )
   }
+
+  // Alert admins so pending requests don't sit unnoticed. Awaited (serverless
+  // runtimes may kill fire-and-forget work) but never fails the signup.
+  await sendAdminNotification('New waitlist request', [
+    `${name}${company ? ` (${company})` : ''} just joined the waitlist.`,
+    `Persona: ${persona ?? 'not given'}`,
+    'Review: https://basanite.co.uk/dashboard/admin/waitlist',
+  ])
 
   return NextResponse.json({ ok: true })
 }

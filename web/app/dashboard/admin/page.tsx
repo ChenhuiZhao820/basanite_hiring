@@ -61,6 +61,10 @@ export default function AdminPage() {
   const [issues, setIssues] = useState<IssueReport[]>([])
   const [resolvingIssue, setResolvingIssue] = useState<string | null>(null)
 
+  // Security events logged since this admin last opened the security page
+  // (drives the red-dot badge on the Security card).
+  const [newSecurityEvents, setNewSecurityEvents] = useState(0)
+
   useEffect(() => {
     // Greet the admin by first name. Prefer explicit profile names; fall
     // back to the email local-part so the greeting never reads bare.
@@ -78,6 +82,10 @@ export default function AdminPage() {
       .then(r => r.json())
       .then(data => setIssues(data.reports ?? []))
       .catch(() => {/* non-fatal: the waitlist is the primary admin surface */})
+    fetch('/api/admin/notifications')
+      .then(r => r.json())
+      .then(data => setNewSecurityEvents(data.new_security_events ?? 0))
+      .catch(() => {/* non-fatal: badge only */})
   }, [])
 
   async function setIssueStatus(id: string, status: 'new' | 'resolved') {
@@ -171,7 +179,12 @@ export default function AdminPage() {
           href="/dashboard/admin/waitlist"
           className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Waitlist</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2 flex items-center gap-1.5">
+            Waitlist
+            {!loading && pending.length > 0 && (
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" aria-label="Pending waitlist requests" />
+            )}
+          </p>
           <p className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100">{loading ? '\u2014' : pending.length}</p>
           <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">
             pending {pending.length === 1 ? 'request' : 'requests'}
@@ -198,10 +211,17 @@ export default function AdminPage() {
           href="/dashboard/admin/security"
           className="group border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 hover:border-[#1d4ed8] transition-colors"
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2">Security</p>
-          <p className="font-display text-3xl font-bold text-[#0b1f3d] dark:text-earth-100">&rarr;</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-earth-500 mb-2 flex items-center gap-1.5">
+            Security
+            {newSecurityEvents > 0 && (
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" aria-label="New security events" />
+            )}
+          </p>
+          <p className={`font-display text-3xl font-bold ${newSecurityEvents > 0 ? 'text-red-600 dark:text-red-400' : 'text-[#0b1f3d] dark:text-earth-100'}`}>
+            {newSecurityEvents > 0 ? newSecurityEvents : '\u2192'}
+          </p>
           <p className="text-xs text-slate-500 dark:text-earth-400 mt-1">
-            injection attempts &amp; suspensions
+            {newSecurityEvents > 0 ? `new ${newSecurityEvents === 1 ? 'event' : 'events'} · ` : ''}injection attempts &amp; suspensions
             <span className="text-[#1d4ed8] dark:text-[#3b82f6] font-medium ml-1 group-hover:underline">Review &rarr;</span>
           </p>
         </Link>

@@ -648,6 +648,7 @@ def _log_subpunitive_jd_finding(
     if verdict.get("injection_risk") != "suspicious" and not verdict.get("regex_markers"):
         return
     from core.db import log_security_event
+    from core.email import send_ops_alert
     log_security_event(
         user_id=user_id, org_id=org_id, kind=_JD_STRIKE_KIND,
         severity="info",
@@ -657,6 +658,15 @@ def _log_subpunitive_jd_finding(
             "regex_markers": [m[:200] for m in (verdict.get("regex_markers") or [])[:10]],
             "action": "allowed",
         },
+    )
+    # Every security_events row should reach the admin inbox — strikes and
+    # suspensions already alert in _handle_jd_injection_strike; this covers
+    # the sub-punitive findings that were allowed through.
+    send_ops_alert(
+        "Suspicious JD upload allowed through (sub-punitive)",
+        f"user_id: {user_id}\nfilename: {(filename or '')[:200]}\n"
+        f"injection_risk: {verdict.get('injection_risk')}\n"
+        f"Review: /dashboard/admin/security",
     )
 
 
