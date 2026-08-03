@@ -1,9 +1,7 @@
 import { createServiceClient, getAuthUserId } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { formatDimensionKey } from '@/lib/format'
-import { ScoreSpider } from '@/components/ScoreSpider'
-import { TIER_META, resolveRecommendation } from '@/lib/recommendation'
+import { AssessmentReportTabs } from '@/components/AssessmentReportTabs'
 
 export const metadata = { title: 'Assessment report' }
 
@@ -38,13 +36,16 @@ export default async function AssessmentReportPage({
 
   if (!assessment) redirect(`/dashboard/roles/${id}`)
 
-  // Fetch hirer report
-  const { data: report } = await service
+  // Fetch both report variants (hirer view + candidate copy). The
+  // candidate copy is now viewable on-page, not just downloadable.
+  const { data: reportRows } = await service
     .from('reports')
-    .select('*')
+    .select('report_type, content')
     .eq('assessment_id', assessmentId)
-    .eq('report_type', 'hirer')
-    .single()
+    .in('report_type', ['hirer', 'candidate'])
+
+  const hirerContent = reportRows?.find(r => r.report_type === 'hirer')?.content ?? {}
+  const candidateContent = reportRows?.find(r => r.report_type === 'candidate')?.content ?? null
 
   // Fetch interview transcript
   const { data: session } = await service
@@ -54,15 +55,23 @@ export default async function AssessmentReportPage({
     .single()
 
   const scores = assessment.dimension_scores ?? []
-  const content = report?.content ?? {}
-  // JSONB messages may come back as a string if the row was written with a stringified
-  // payload (legacy), parse defensively so transcripts from older rows still render.
+
+  // JSONB messages may come back as a string if the row was written with a
+  // stringified payload (legacy); parse defensively so older transcripts render.
   const rawMessages = session?.messages
   const messages: any[] = Array.isArray(rawMessages)
     ? rawMessages
     : typeof rawMessages === 'string'
       ? (() => { try { return JSON.parse(rawMessages) } catch { return [] } })()
       : []
+
+  // cv_extracted is JSONB; tolerate a double-encoded string from legacy rows.
+  const rawCv = assessment.cv_extracted
+  const cv = rawCv == null
+    ? null
+    : typeof rawCv === 'string'
+      ? (() => { try { return JSON.parse(rawCv) } catch { return null } })()
+      : rawCv
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -106,241 +115,20 @@ export default async function AssessmentReportPage({
         </div>
       )}
 
-      {assessment.status === 'completed' && (
-        <div className="flex flex-wrap gap-2 mb-8">
-          <a
-            href={`/api/roles/${id}/assessment/${assessmentId}/report/hirer/pdf`}
-            className="inline-flex items-center gap-2 bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white text-xs font-medium px-4 py-2 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Download hirer report (PDF)
-          </a>
-          <a
-            href={`/api/roles/${id}/assessment/${assessmentId}/report/candidate/pdf`}
-            className="inline-flex items-center gap-2 border border-earth-300 dark:border-basanite-700 hover:border-basanite-500 text-basanite-700 dark:text-earth-200 text-xs font-medium px-4 py-2 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Candidate copy (PDF)
-          </a>
-        </div>
-      )}
-
-      {/* Headline: next-round routing recommendation. Lives ABOVE the
-          dimension detail so the hirer sees the top-level conclusion
-          before the supporting evidence. Falls back to a composite-score
-          derivation for legacy reports without an explicit tier. */}
-      {assessment.status === 'completed' && (scores.length > 0 || content.composite_score != null) && (() => {
-        const tier = resolveRecommendation(content)
-        const meta = TIER_META[tier]
-        const composite = typeof content.composite_score === 'number'
-          ? content.composite_score
-          : null
-        const rationale = (content.recommendation_rationale as string | undefined)?.trim()
-          || (content.comprehensive_assessment?.one_sentence_summary as string | undefined)?.trim()
-          || ''
-        return (
-          <section className={`mb-10 border ${meta.border} ${meta.bg} px-6 py-5`}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="flex-1">
-                <p className={`text-xs font-medium uppercase tracking-wide ${meta.accent} mb-2`}>
-                  Routing recommendation, next round
-                </p>
-                <h2 className={`font-display text-xl ${meta.text} leading-tight`}>
-                  {meta.label}
-                </h2>
-                <p className={`text-sm ${meta.text} opacity-80 mt-2 leading-relaxed`}>
-                  {rationale || meta.blurb}
-                </p>
-              </div>
-              {composite !== null && (
-                <div className="sm:text-right">
-                  <p className={`text-xs font-medium uppercase tracking-wide ${meta.accent}`}>Composite</p>
-                  <p className={`font-display text-3xl ${meta.text}`}>{composite.toFixed(1)}<span className="text-base opacity-60">/5</span></p>
-                </div>
-              )}
-            </div>
-            <p className={`text-xs ${meta.accent} opacity-70 mt-3`}>
-              Routing call only. The hire/no-hire decision sits with the human interviewer.
-            </p>
-          </section>
-        )
-      })()}
-
-      {/* Dimension profile chart. Renders only when there are at least
-          three scored dimensions; otherwise ScoreSpider shows a stub. */}
-      {scores.length >= 3 && (
-        <section className="mb-10">
-          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Dimension Profile</h2>
-          <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-6">
-            <ScoreSpider scores={scores.map((s: any) => ({ dimension_key: s.dimension_key, score: s.score }))} />
-            <p className="text-xs text-basanite-400 dark:text-earth-500 text-center mt-3">
-              Each axis is a dimension; further from the centre means higher score (1, 5).
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Scoring Summary */}
-      {scores.length > 0 && (
-        <section className="mb-10">
-          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Dimension Scores, Reasoning &amp; Evidence</h2>
-          <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-earth-100">
-            {scores.map((s: any) => (
-              <div key={s.dimension_key} className="px-5 py-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-basanite-900 dark:text-earth-100">
-                    {formatDimensionKey(s.dimension_key)}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <div
-                        key={n}
-                        className={`w-6 h-6 flex items-center justify-center text-xs font-medium ${
-                          n <= (s.score ?? 0)
-                            ? 'bg-gold-500 text-white'
-                            : 'bg-earth-100 dark:bg-basanite-800 text-basanite-300'
-                        }`}
-                      >
-                        {n}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {s.quotation_basis && (
-                  <p className="text-xs text-basanite-500 dark:text-earth-400 italic border-l-2 border-gold-500/30 pl-3 mt-2">
-                    &ldquo;{s.quotation_basis}&rdquo;
-                  </p>
-                )}
-                {s.notes && (
-                  <p className="text-xs text-basanite-400 dark:text-earth-500 mt-1">{s.notes}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Report Content */}
-      {content.top_excerpts && (
-        <section className="mb-10">
-          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Key Interview Excerpts</h2>
-          <div className="space-y-4">
-            {content.top_excerpts.map((e: any, i: number) => (
-              <div key={i} className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
-                <p className="text-sm text-basanite-800 dark:text-earth-100 mb-2">{e.excerpt}</p>
-                <p className="text-xs text-basanite-400 dark:text-earth-500">{e.why_selected}</p>
-                {e.dimension && (
-                  <span className="text-xs bg-earth-100 dark:bg-basanite-800 text-basanite-500 dark:text-earth-400 px-2 py-0.5 mt-2 inline-block">
-                    {formatDimensionKey(e.dimension)}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Capability Map */}
-      {content.capability_map && (
-        <section className="mb-10">
-          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Technical Capability Map</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {content.capability_map.demonstrated_depth?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
-                <p className="text-xs text-green-600 font-medium uppercase tracking-wide mb-2">Demonstrated Depth</p>
-                <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
-                  {content.capability_map.demonstrated_depth.map((d: string, i: number) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {content.capability_map.surface_fluency?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
-                <p className="text-xs text-yellow-600 font-medium uppercase tracking-wide mb-2">Surface Fluency</p>
-                <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
-                  {content.capability_map.surface_fluency.map((d: string, i: number) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {content.capability_map.blind_spots?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
-                <p className="text-xs text-red-500 font-medium uppercase tracking-wide mb-2">Suspected Blind Spots</p>
-                <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
-                  {content.capability_map.blind_spots.map((d: string, i: number) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {content.capability_map.requires_expert_verification?.length > 0 && (
-              <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5">
-                <p className="text-xs text-basanite-500 dark:text-earth-400 font-medium uppercase tracking-wide mb-2">Requires Human Verification</p>
-                <ul className="text-sm text-basanite-700 dark:text-earth-200 space-y-1">
-                  {content.capability_map.requires_expert_verification.map((d: string, i: number) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Comprehensive Assessment */}
-      {content.comprehensive_assessment && (
-        <section className="mb-10">
-          <h2 className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4">Comprehensive Assessment</h2>
-          <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-medium uppercase tracking-wide text-basanite-400 dark:text-earth-500">Cheating Risk:</span>
-              <span className={`text-xs font-medium px-2 py-0.5 ${
-                content.comprehensive_assessment.cheating_risk === 'low' ? 'bg-green-100 text-green-700' :
-                content.comprehensive_assessment.cheating_risk === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-red-100 text-red-700'
-              }`}>
-                {content.comprehensive_assessment.cheating_risk}
-              </span>
-            </div>
-            {content.comprehensive_assessment.one_sentence_summary && (
-              <p className="text-sm text-basanite-700 dark:text-earth-200 font-display italic">
-                &ldquo;{content.comprehensive_assessment.one_sentence_summary}&rdquo;
-              </p>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Transcript */}
-      {messages.length > 0 && (
-        <section className="mb-10">
-          <details>
-            <summary className="font-display text-lg text-basanite-900 dark:text-earth-100 mb-4 cursor-pointer hover:text-gold-600 transition-colors">
-              Full Interview Transcript ({messages.length} messages)
-            </summary>
-            <div className="border border-earth-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 divide-y divide-earth-100 mt-4">
-              {messages.map((m: any, i: number) => (
-                <div key={i} className={`px-5 py-4 ${m.role === 'assistant' ? 'bg-earth-50 dark:bg-basanite-900' : ''}`}>
-                  <p className="text-xs text-basanite-400 dark:text-earth-500 font-medium uppercase tracking-wide mb-1">
-                    {m.role === 'assistant' ? 'Interviewer' : 'Candidate'}
-                  </p>
-                  <p className="text-sm text-basanite-700 dark:text-earth-200 whitespace-pre-wrap leading-relaxed">{m.content}</p>
-                </div>
-              ))}
-            </div>
-          </details>
-        </section>
-      )}
+      <AssessmentReportTabs
+        roleId={id}
+        assessmentId={assessmentId}
+        status={assessment.status}
+        scores={scores}
+        hirerContent={hirerContent}
+        candidateContent={candidateContent}
+        messages={messages}
+        cv={cv}
+        startedAt={assessment.started_at ?? null}
+        completedAt={assessment.completed_at ?? null}
+        hirerPdfHref={`/api/roles/${id}/assessment/${assessmentId}/report/hirer/pdf`}
+        candidatePdfHref={`/api/roles/${id}/assessment/${assessmentId}/report/candidate/pdf`}
+      />
     </div>
   )
 }
