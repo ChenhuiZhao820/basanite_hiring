@@ -1561,3 +1561,160 @@ def list_report_accesses_for_assessment(assessment_id: str) -> list[dict]:
     except Exception as e:
         print(f"  DB list_report_accesses error: {e}")
         return []
+
+
+# ─── Copilot helpers ───────────────────────────────────────────────────────
+
+def create_copilot_session(assessment_id: str, interviewer_user_id: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = client.table("copilot_sessions").insert({
+            "assessment_id": assessment_id,
+            "interviewer_user_id": interviewer_user_id,
+            "status": "briefing",
+            "transcript": [],
+        }).execute()
+        return result.data[0] if result.data else None
+    except Exception as e:
+        print(f"  DB create_copilot_session error: {e}")
+        return None
+
+
+def get_copilot_session(session_id: str) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("copilot_sessions")
+            .select("*")
+            .eq("id", session_id)
+            .single()
+            .execute()
+        )
+        return result.data
+    except Exception:
+        return None
+
+
+def get_copilot_session_by_bot_id(bot_id: str) -> dict | None:
+    """Resolve a session from a meeting-bot id (Recall webhook ingestion)."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("copilot_sessions")
+            .select("*")
+            .eq("bot->>id", bot_id)
+            .limit(1)
+            .execute()
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def update_copilot_session(session_id: str, **fields) -> bool:
+    client = get_client()
+    if not client:
+        return False
+    try:
+        fields.setdefault("updated_at", datetime.now(timezone.utc).isoformat())
+        client.table("copilot_sessions").update(fields).eq("id", session_id).execute()
+        return True
+    except Exception as e:
+        print(f"  DB update_copilot_session error: {e}")
+        return False
+
+
+def append_copilot_transcript(session_id: str, segments: list[dict]) -> list[dict] | None:
+    """Append committed STT segments to the session transcript.
+
+    Read-modify-write: the tick/transcript endpoints are serialised per
+    session by the single interviewer client, so lost updates aren't a
+    practical concern at MVP scale. Returns the full transcript, or None
+    on failure.
+    """
+    client = get_client()
+    if not client:
+        return None
+    try:
+        session = get_copilot_session(session_id)
+        if not session:
+            return None
+        transcript = list(session.get("transcript") or [])
+        transcript.extend(segments)
+        update_copilot_session(session_id, transcript=transcript)
+        return transcript
+    except Exception as e:
+        print(f"  DB append_copilot_transcript error: {e}")
+        return None
+
+
+def log_copilot_probe_event(
+    session_id: str,
+    action: str,
+    *,
+    dimension_key: str | None = None,
+    technique: str | None = None,
+    probe_text: str | None = None,
+    reason: str | None = None,
+) -> dict | None:
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = client.table("copilot_probe_events").insert({
+            "session_id": session_id,
+            "action": action,
+            "dimension_key": dimension_key,
+            "technique": technique,
+            "probe_text": probe_text,
+            "reason": reason,
+        }).execute()
+        return result.data[0] if result.data else None
+    except Exception as e:
+        print(f"  DB log_copilot_probe_event error: {e}")
+        return None
+
+
+def save_copilot_dimension_scores(
+    assessment_id: str,
+    scores: list[dict],
+    signed_off_by: str,
+) -> bool:
+    """Persist human-signed copilot scores.
+
+    Each entry: {dimension, score, proposed_score, quotation_basis, notes,
+    override_reason}. `score` is the human-confirmed score of record.
+    """
+    client = get_client()
+    if not client:
+        return False
+    try:
+        now = datetime.now(timezone.utc).isoformat()
+        rows = [
+            {
+                "assessment_id": assessment_id,
+                "dimension_key": s["dimension"],
+                "score": s.get("score"),
+                "proposed_score": s.get("proposed_score"),
+                "quotation_basis": s.get("quotation_basis"),
+                "notes": s.get("notes"),
+                "override_reason": s.get("override_reason"),
+                "signed_off_by": signed_off_by,
+                "signed_off_at": now,
+            }
+            for s in scores
+        ]
+        client.table("dimension_scores").upsert(
+            rows, on_conflict="assessment_id,dimension_key"
+        ).execute()
+        return True
+    except Exception as e:
+        print(f"  DB save_copilot_dimension_scores error: {e}")
+        return False

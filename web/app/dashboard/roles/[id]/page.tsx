@@ -102,7 +102,15 @@ export default async function RoleDetailPage({
             </code>
             <CopyButton text={assessmentLink} />
           </div>
-          <p className="text-xs text-basanite-400 dark:text-earth-500 mt-2">Share this link anywhere you advertise the role — candidates apply and interview from it.</p>
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <p className="text-xs text-basanite-400 dark:text-earth-500">Share this link anywhere you advertise the role — candidates apply and interview from it.</p>
+            <Link
+              href={`/dashboard/roles/${role.id}/copilot/new`}
+              className="shrink-0 border border-gold-500/60 text-gold-600 hover:bg-gold-500/10 text-xs font-medium px-4 py-2 transition-colors"
+            >
+              Run Copilot interview
+            </Link>
+          </div>
         </div>
       )}
 
@@ -200,6 +208,11 @@ export default async function RoleDetailPage({
                     {a.is_mock && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-slate-400 text-slate-500 dark:border-earth-500 dark:text-earth-400">
                         TEST
+                      </span>
+                    )}
+                    {a.source === 'copilot' && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-gold-500/60 text-gold-600">
+                        COPILOT
                       </span>
                     )}
                   </div>

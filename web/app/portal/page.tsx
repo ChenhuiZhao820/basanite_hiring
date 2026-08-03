@@ -6,14 +6,16 @@ export const metadata = { title: 'My applications' }
 
 type StepState = 'done' | 'active' | 'todo'
 
-// Map an assessment row to the candidate-facing progress steps.
-function progressSteps(status: string, hasReport: boolean): Array<{ label: string; state: StepState }> {
+// Map an assessment row to the candidate-facing progress steps. Copilot
+// assessments were live conversations with a human interviewer, so the
+// middle step reads "Interview" rather than "AI interview".
+function progressSteps(status: string, hasReport: boolean, source: string): Array<{ label: string; state: StepState }> {
   const interviewDone = status === 'completed'
   const interviewActive = status === 'in_progress'
   return [
     { label: 'Applied', state: 'done' },
     {
-      label: 'AI interview',
+      label: source === 'copilot' ? 'Interview' : 'AI interview',
       state: interviewDone ? 'done' : interviewActive ? 'active' : status === 'abandoned' ? 'todo' : 'active',
     },
     { label: 'Feedback ready', state: hasReport ? 'done' : 'todo' },
@@ -34,9 +36,23 @@ export default async function PortalPage() {
   const email = await getAuthUserEmail()
 
   const service = createServiceClient()
+
+  // Claim copilot assessments created by an interviewer before this
+  // candidate had an account: match on the (verified, auth-provided) email
+  // and link them to this user. Idempotent — already-claimed rows have
+  // candidate_user_id set and fall out of the filter.
+  if (email) {
+    await service
+      .from('assessments')
+      .update({ candidate_user_id: userId })
+      .eq('source', 'copilot')
+      .is('candidate_user_id', null)
+      .ilike('candidate_email', email)
+  }
+
   const { data: assessments } = await service
     .from('assessments')
-    .select('id, status, created_at, completed_at, candidate_name, roles(title, company_name, status), reports(report_type)')
+    .select('id, status, created_at, completed_at, candidate_name, source, roles(title, company_name, status), reports(report_type)')
     .eq('candidate_user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -80,7 +96,7 @@ export default async function PortalPage() {
           <div className="space-y-5">
             {applications.map((a: any) => {
               const label = statusLabel(a.status, a.hasReport)
-              const steps = progressSteps(a.status, a.hasReport)
+              const steps = progressSteps(a.status, a.hasReport, a.source ?? 'autonomous')
               return (
                 <div key={a.id} className="bg-white border border-earth-200 p-6">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">

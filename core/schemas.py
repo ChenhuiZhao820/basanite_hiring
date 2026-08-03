@@ -300,6 +300,75 @@ class CandidateReport(_LooseModel):
     overall_impression: str = ""
 
 
+# ───────────────────────── Copilot ────────────────────────────────
+
+
+class CopilotBriefDimension(_LooseModel):
+    dimension: str = ""
+    cv_anchored_angles: list[str] = Field(default_factory=list)
+    claims_to_verify: list[str] = Field(default_factory=list)
+
+    @field_validator("cv_anchored_angles", "claims_to_verify", mode="before")
+    @classmethod
+    def _coerce_string_lists(cls, v: Any) -> Any:
+        return _coerce_str_list(v)
+
+
+class CopilotBrief(_LooseModel):
+    """Candidate-specific brief layer on top of the locked interview plan."""
+
+    candidate_summary: str = ""
+    dimension_briefs: list[CopilotBriefDimension] = Field(default_factory=list)
+
+
+class CopilotProbe(_LooseModel):
+    dimension: str = ""
+    technique: str = ""
+    text: str = ""
+    reason: str = ""
+
+
+class CopilotLiveOutput(_LooseModel):
+    """One live tick: saturation map, at most one probe, quiet flags, pacing."""
+
+    # dimension_key -> "none" | "partial" | "saturated" (validated leniently:
+    # unknown values degrade to "none" rather than detonating the tick).
+    saturation: dict[str, str] = Field(default_factory=dict)
+    probe: CopilotProbe | None = None
+    authenticity_flags: list[str] = Field(default_factory=list)
+    pacing: str = ""
+
+    @field_validator("authenticity_flags", mode="before")
+    @classmethod
+    def _coerce_string_lists(cls, v: Any) -> Any:
+        return _coerce_str_list(v)
+
+    @field_validator("saturation", mode="before")
+    @classmethod
+    def _clean_saturation(cls, v: Any) -> Any:
+        if not isinstance(v, dict):
+            return {}
+        out: dict[str, str] = {}
+        for k, val in v.items():
+            s = str(val or "").strip().lower()
+            out[str(k)] = s if s in ("none", "partial", "saturated") else "none"
+        return out
+
+
+class CopilotProposedScore(_LooseModel):
+    dimension: str = ""
+    score: int | None = None
+    quotation_basis: str = ""
+    notes: str = ""
+
+
+class CopilotProposedReview(_LooseModel):
+    """Wrap-up output pending human sign-off."""
+
+    proposed_scores: list[CopilotProposedScore] = Field(default_factory=list)
+    synthesis: str = ""
+
+
 # ───────────────────────── Director directive ─────────────────────
 
 
