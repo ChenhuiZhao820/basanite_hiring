@@ -210,10 +210,6 @@ export default function NewRolePage() {
   // in draft so the hirer can review/edit the plan before going live from
   // the role page — the plan locks at go-live.
   async function handleSaveAndPlan() {
-    if (dimensions.length < 2) {
-      setError('Please select at least 2 dimensions.')
-      return
-    }
     if (!Number.isFinite(interviewDurationMinutes) || interviewDurationMinutes < 1 || interviewDurationMinutes > MAX_MINUTES) {
       setError(`Target length must be a number between 1 and ${MAX_MINUTES} minutes.`)
       return
@@ -236,8 +232,12 @@ export default function NewRolePage() {
         }),
       })
 
-      // Generate the hirer-readable interview plan
-      await fetch(`/api/roles/${roleId}/generate-plan`, { method: 'POST' })
+      // Generate the hirer-readable interview plan. The plan is built
+      // per-dimension, so with none selected there's nothing to generate —
+      // the interview runs as a general conversational screen.
+      if (dimensions.length > 0) {
+        await fetch(`/api/roles/${roleId}/generate-plan`, { method: 'POST' })
+      }
 
       router.push(`/dashboard/roles/${roleId}`)
     } catch (e: any) {
@@ -516,6 +516,11 @@ export default function NewRolePage() {
                 <p className="text-xs text-basanite-500 dark:text-earth-400 mt-1">{d.description}</p>
               </button>
             ))}
+            {dimensions.length === 0 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                No dimensions selected — the interview will run as a general conversational screen without dimension scores. You can still add dimensions before going live.
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3">
@@ -527,10 +532,14 @@ export default function NewRolePage() {
             </button>
             <button
               onClick={handleSaveAndPlan}
-              disabled={loading || dimensions.length < 2}
+              disabled={loading}
               className="flex-1 bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
             >
-              {loading ? 'Generating interview plan...' : `Generate Interview Plan (${dimensions.length} Dimensions)`}
+              {loading
+                ? dimensions.length > 0 ? 'Generating interview plan...' : 'Saving...'
+                : dimensions.length === 0
+                  ? 'Continue Without Dimensions'
+                  : `Generate Interview Plan (${dimensions.length} ${dimensions.length === 1 ? 'Dimension' : 'Dimensions'})`}
             </button>
           </div>
         </div>

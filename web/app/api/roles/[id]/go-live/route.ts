@@ -5,7 +5,7 @@ const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
 const PIPELINE_SECRET = process.env.PIPELINE_API_SECRET ?? ''
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
@@ -22,9 +22,15 @@ export async function POST(
     .single()
   if (!role) return NextResponse.json({ error: 'Role not found' }, { status: 404 })
 
+  // Forward the optional zero-dimensions feedback payload as-is.
+  const body = await request.json().catch(() => ({}))
   const res = await fetch(`${PIPELINE_URL}/roles/${id}/go-live`, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${PIPELINE_SECRET}` },
+    headers: {
+      'Authorization': `Bearer ${PIPELINE_SECRET}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body ?? {}),
   })
   const data = await res.json()
   return NextResponse.json(data, { status: res.status })

@@ -89,7 +89,7 @@ export default async function RoleDetailPage({
 
       {/* Draft: go-live call to action */}
       {role.status === 'draft' && (
-        <GoLiveButton roleId={role.id} hasPlan={Boolean(role.interview_plan)} />
+        <GoLiveButton roleId={role.id} hasPlan={Boolean(role.interview_plan)} dimensionsCount={dimensions.length} />
       )}
 
       {/* Application Link */}

@@ -10,5 +10,3 @@ export const ALL_DIMENSIONS = [
   { key: 'capacity_for_change', name: 'Capacity to Be Changed by Experience', description: 'Learning from experience, not just accumulating it.' },
   { key: 'technical_depth', name: 'Technical Judgment Depth', description: 'Understanding boundaries of technical decisions.' },
 ] as const
-
-export const MIN_DIMENSIONS = 2
