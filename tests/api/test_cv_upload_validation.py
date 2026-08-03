@@ -88,7 +88,13 @@ def cv_client(monkeypatch):
         lambda subject, body: alerts.append((subject, body)) or True,
     )
 
+    # SEC-01: cv-upload/start now require the internal pipeline secret,
+    # same as every other Next.js-proxied endpoint. _PIPELINE_SECRET is
+    # read once at import time, so it must be patched on the module
+    # directly rather than via monkeypatch.setenv.
+    monkeypatch.setattr(api, "_PIPELINE_SECRET", "test-pipeline-secret")
     client = TestClient(api.app)
+    client.headers.update({"Authorization": "Bearer test-pipeline-secret"})
     client.logged = logged
     client.suspensions = suspensions
     client.alerts = alerts

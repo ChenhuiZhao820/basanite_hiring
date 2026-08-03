@@ -987,12 +987,21 @@ async def cv_upload(
     request: Request,
     file: UploadFile = File(...),
     user_id: str | None = Form(default=None),
+    authorization: str | None = Header(default=None),
 ):
     """
     Extract text from an uploaded CV (PDF for now). The extracted text is
     returned to the client, which then POSTs it to /assess/{token}/start
     alongside the other assessment bootstrap fields.
     """
+    # SEC-01: this endpoint feeds `user_id` straight into the injection
+    # strike ladder (_enforce_cv_verdict -> set_user_suspended), so it must
+    # only be reachable through the Next.js proxy, which overwrites user_id
+    # with the verified candidate session before forwarding here. Without
+    # this, anyone who knows a victim's user_id and a live assessment token
+    # could call this endpoint directly (FastAPI is publicly reachable, see
+    # PIPELINE_PUBLIC_URL) and force strikes onto an account they don't own.
+    _verify_internal(authorization)
     # ENG-34: cap CV-upload attempts per IP. PDF parsing is expensive;
     # without this an attacker armed with a leaked token could exhaust
     # the worker pool by feeding malformed PDFs in a tight loop.
@@ -1054,7 +1063,14 @@ async def start_assessment(
     token: str,
     body: StartAssessmentRequest,
     request: Request,
+    authorization: str | None = Header(default=None),
 ):
+    # SEC-01: same reasoning as cv-upload above — candidate_user_id feeds
+    # the injection strike ladder, so this endpoint must only be reachable
+    # through the Next.js proxy (which rejects any candidate_user_id that
+    # doesn't match the verified session) rather than trusting a client-
+    # supplied field directly.
+    _verify_internal(authorization)
     # ENG-34: cap assessment-start attempts per IP. Each /start mints
     # state, charges Haiku for CV extraction, and (once ENG-24 lands in
     # prod) creates a unique-index entry.

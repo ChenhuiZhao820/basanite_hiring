@@ -38,7 +38,14 @@ def cv_client(monkeypatch):
             "harmful_content": "none", "regex_markers": [], "cv_likeness": 0.9,
         }
     monkeypatch.setattr(cv_mod, "validate_cv", _clean)
-    return TestClient(api.app)
+    # SEC-01: /assess/{token}/cv-upload now requires the internal pipeline
+    # secret, same as every other Next.js-proxied endpoint. _PIPELINE_SECRET
+    # is read once at import time, so it must be patched on the module
+    # directly rather than via monkeypatch.setenv.
+    monkeypatch.setattr(api, "_PIPELINE_SECRET", "test-pipeline-secret")
+    c = TestClient(api.app)
+    c.headers.update({"Authorization": "Bearer test-pipeline-secret"})
+    return c
 
 
 _PDF_MAGIC = b"%PDF-1.7\n"

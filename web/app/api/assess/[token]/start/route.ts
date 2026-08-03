@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { allow } from '@/lib/rate-limit'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
+const PIPELINE_SECRET = process.env.PIPELINE_API_SECRET ?? ''
 
 export async function POST(
   request: NextRequest,
@@ -49,7 +50,10 @@ export async function POST(
 
   const res = await fetch(`${PIPELINE_URL}/assess/${token}/start`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${PIPELINE_SECRET}`,
+    },
     body: JSON.stringify(body),
   })
 
