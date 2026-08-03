@@ -1655,6 +1655,27 @@ def append_copilot_transcript(session_id: str, segments: list[dict]) -> list[dic
         return None
 
 
+def list_copilot_probe_events(session_id: str) -> list[dict]:
+    """All probe lifecycle events for a session, oldest first. Feeds the
+    deterministic plan-adherence rollup at wrap-up."""
+    client = get_client()
+    if not client:
+        return []
+    try:
+        result = (
+            client.table("copilot_probe_events")
+            .select("dimension_key, action, technique, created_at")
+            .eq("session_id", session_id)
+            .order("created_at", desc=False)
+            .limit(2000)
+            .execute()
+        )
+        return result.data or []
+    except Exception as e:
+        print(f"  DB list_copilot_probe_events error: {e}")
+        return []
+
+
 def log_copilot_probe_event(
     session_id: str,
     action: str,

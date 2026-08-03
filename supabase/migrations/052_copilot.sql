@@ -81,7 +81,13 @@ CREATE POLICY "copilot_probe_events_interviewer_select" ON copilot_probe_events 
 
 CREATE INDEX idx_copilot_probe_events_session_id ON copilot_probe_events(session_id);
 
--- 4. Human sign-off on dimension scores. For copilot assessments `score` is
+-- 4. Plan adherence: deterministic overview computed at wrap-up (coverage
+-- from the final saturation map, probe uptake counts, near-verbatim
+-- planned-angle usage). Kept as a separate ALTER so the statement is safe
+-- to re-run against a database where the table already exists.
+ALTER TABLE copilot_sessions ADD COLUMN IF NOT EXISTS plan_adherence JSONB;
+
+-- 5. Human sign-off on dimension scores. For copilot assessments `score` is
 -- the human-confirmed score of record; `proposed_score` preserves what the
 -- engine suggested, and overrides carry a mandatory reason.
 ALTER TABLE dimension_scores
