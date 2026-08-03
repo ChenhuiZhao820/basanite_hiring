@@ -6,22 +6,12 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
 import { VoicePicker } from '@/components/VoicePicker'
+import { ALL_DIMENSIONS } from '@/lib/dimensions'
 
 // Target length is a hint for the AI, it decides when to end based on signal.
 const DEFAULT_TARGET_MINUTES = 20
 const MIN_MINUTES = 5
 const MAX_MINUTES = 60
-
-const ALL_DIMENSIONS = [
-  { key: 'judgment_under_ambiguity', name: 'Judgment Under Ambiguity', description: 'The capacity to act decisively on incomplete information.' },
-  { key: 'tacit_knowledge', name: 'Tacit Knowledge Extraction', description: 'Surfacing knowledge that lives in experience, not text.' },
-  { key: 'intuition_under_scarcity', name: 'Intuition Under Data Scarcity', description: 'Sound judgment when data is insufficient.' },
-  { key: 'psychological_safety', name: 'Psychological Safety & Collective Learning', description: 'Creating conditions where teams correct errors.' },
-  { key: 'creative_reframing', name: 'Creative Problem Reframing', description: 'Recognising when the team is solving the wrong problem.' },
-  { key: 'ethical_reasoning', name: 'Ethical Reasoning', description: 'Navigating real tradeoffs with integrity.' },
-  { key: 'capacity_for_change', name: 'Capacity to Be Changed by Experience', description: 'Learning from experience, not just accumulating it.' },
-  { key: 'technical_depth', name: 'Technical Judgment Depth', description: 'Understanding boundaries of technical decisions.' },
-]
 
 export default function NewRolePage() {
   useDocumentTitle('New role')
@@ -171,8 +161,10 @@ export default function NewRolePage() {
     }
   }
 
-  // Step 2: Save dimensions and go live
-  async function handleGoLive() {
+  // Step 2: Save dimensions and generate the interview plan. The role stays
+  // in draft so the hirer can review/edit the plan before going live from
+  // the role page — the plan locks at go-live.
+  async function handleSaveAndPlan() {
     if (dimensions.length < 2) {
       setError('Please select at least 2 dimensions.')
       return
@@ -186,7 +178,7 @@ export default function NewRolePage() {
     setLoading(true)
 
     try {
-      // Update role with dimensions + interview config
+      // Update role with dimensions + interview config (stays in draft)
       await fetch(`/api/roles/${roleId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -196,12 +188,11 @@ export default function NewRolePage() {
           interview_duration_minutes: interviewDurationMinutes,
           custom_instructions: customInstructions.trim() || null,
           interviewer_voice_id: voiceId,
-          status: 'live',
         }),
       })
 
-      // Generate prompt
-      await fetch(`/api/roles/${roleId}/generate-prompt`, { method: 'POST' })
+      // Generate the hirer-readable interview plan
+      await fetch(`/api/roles/${roleId}/generate-plan`, { method: 'POST' })
 
       router.push(`/dashboard/roles/${roleId}`)
     } catch (e: any) {
@@ -484,11 +475,11 @@ export default function NewRolePage() {
               Back
             </button>
             <button
-              onClick={handleGoLive}
+              onClick={handleSaveAndPlan}
               disabled={loading || dimensions.length < 2}
               className="flex-1 bg-basanite-900 hover:bg-gold-600 dark:bg-gold-600 dark:hover:bg-gold-500 text-white font-medium py-3 text-sm transition-colors disabled:opacity-60"
             >
-              {loading ? 'Going live...' : `Go Live with ${dimensions.length} Dimensions`}
+              {loading ? 'Generating interview plan...' : `Generate Interview Plan (${dimensions.length} Dimensions)`}
             </button>
           </div>
         </div>
