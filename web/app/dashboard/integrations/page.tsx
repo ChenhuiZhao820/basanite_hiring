@@ -51,6 +51,37 @@ function prettyProvider(slug: string | null): string {
   return slug.replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+// Turn a failed API response into a human-readable message. Our routes
+// return either a FastAPI { detail } envelope or the proxy layer's own
+// { error }; older/edge responses may be a bare string or HTML. Never
+// surface the raw JSON envelope to the user (the old code did
+// `res.text()` directly, which printed `{"detail":"..."}` in the banner).
+async function readErrorMessage(res: Response, fallback: string): Promise<string> {
+  let raw = ''
+  try {
+    raw = await res.text()
+  } catch {
+    return fallback
+  }
+  let detail = ''
+  try {
+    const parsed = JSON.parse(raw)
+    detail = parsed?.detail ?? parsed?.error ?? ''
+  } catch {
+    // Not JSON — only trust a short plain-text body, never an HTML page.
+    if (raw && raw.length < 300 && !raw.trimStart().startsWith('<')) detail = raw
+  }
+  detail = (detail || '').trim()
+
+  // The most common cause in practice is the ATS integration not being
+  // configured for this deployment; give that a clear, non-technical line
+  // instead of Merge's internal wording.
+  if (/link-token request failed|not configured/i.test(detail)) {
+    return 'ATS integration isn\u2019t available yet. Please contact support@basanite.co.uk to enable it for your account.'
+  }
+  return detail || fallback
+}
+
 export default function IntegrationsPage() {
   useDocumentTitle('Integrations')
 
@@ -142,7 +173,7 @@ export default function IntegrationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await readErrorMessage(res, 'Failed to start connection flow'))
       const data = await res.json()
       if (!data.link_token) throw new Error('No link_token returned')
       setLinkToken(data.link_token)
@@ -163,7 +194,7 @@ export default function IntegrationsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ public_token: publicToken }),
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await readErrorMessage(res, 'Connection failed at exchange step'))
       await refresh()
       setLinkToken(null)
     } catch (e) {
@@ -192,7 +223,7 @@ export default function IntegrationsPage() {
       const res = await fetch(`/api/integrations/merge/connections/${encodeURIComponent(id)}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await readErrorMessage(res, 'Disconnect failed'))
       await refresh()
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Disconnect failed'
@@ -217,7 +248,7 @@ export default function IntegrationsPage() {
           auto_invite: autoInvite,
         }),
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await readErrorMessage(res, 'Failed to save mapping'))
       await refreshJobs()
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to save mapping'
@@ -234,7 +265,7 @@ export default function IntegrationsPage() {
       const res = await fetch(`/api/integrations/merge/job-mappings/${encodeURIComponent(mappingId)}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!res.ok) throw new Error(await readErrorMessage(res, 'Failed to remove mapping'))
       await refreshJobs()
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to remove mapping'

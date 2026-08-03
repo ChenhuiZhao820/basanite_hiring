@@ -115,6 +115,7 @@ export default function NewRolePage() {
       return
     }
     setError('')
+    setJdUploadError('')
     setLoading(true)
 
     try {
@@ -130,8 +131,11 @@ export default function NewRolePage() {
       if (!res.ok) {
         // Surface the real reason (e.g. the injection-gate 403 on pasted
         // text) — FastAPI errors are { detail }, the proxy's own { error }.
+        // These are about the JD content, so they render inline next to
+        // the JD section rather than in the top-of-page banner.
         const data = await res.json().catch(() => ({} as any))
-        throw new Error(data.detail ?? data.error ?? 'Failed to create role')
+        setJdUploadError(data.detail ?? data.error ?? 'Failed to create role')
+        return
       }
       const role = await res.json()
       setRoleId(role.id)
