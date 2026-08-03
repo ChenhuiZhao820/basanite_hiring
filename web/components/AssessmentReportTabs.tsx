@@ -116,7 +116,7 @@ export function AssessmentReportTabs(props: AssessmentReportTabsProps) {
       <div
         role="tablist"
         aria-label="Assessment views"
-        className="flex items-stretch gap-1 border-b border-earth-200 dark:border-basanite-700 mb-6 overflow-x-auto"
+        className="flex flex-wrap items-stretch gap-1 border-b border-earth-200 dark:border-basanite-700 mb-6"
       >
         {TABS.map((label, i) => (
           <button
