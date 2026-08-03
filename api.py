@@ -3544,3 +3544,749 @@ async def post_signup(body: _PostSignupRequest, authorization: str | None = Head
     if personal_org_id:
         db.set_active_org_id(body.user_id, personal_org_id)
     return {"ok": True, "joined_org_id": personal_org_id, "auto_joined": False}
+
+
+# ─── Copilot: human-led interviews assisted by the engine ──────────────────
+# All endpoints are internal (_verify_internal): the Next.js proxy layer
+# authenticates the interviewer and verifies session/role ownership before
+# forwarding, mirroring the /roles/* and /assess/*/director patterns.
+
+_COPILOT_MAX_SEGMENT_CHARS = 4000
+_COPILOT_MAX_SEGMENTS_PER_POST = 20
+_COPILOT_MAX_TRANSCRIPT_SEGMENTS = 2000
+
+
+def _load_copilot_session_or_404(session_id: str) -> dict:
+    from core.db import get_copilot_session
+    session = get_copilot_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Copilot session not found")
+    return session
+
+
+def _copilot_role_for_session(session: dict) -> tuple[dict, dict]:
+    """Resolve (role, assessment) for a copilot session, normalising JSONB."""
+    from core.db import get_assessment, get_role
+    assessment = get_assessment(session["assessment_id"])
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    role = get_role(assessment["role_id"])
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    role["dimensions"] = _coerce_json_field(role.get("dimensions", [])) or []
+    if not isinstance(role["dimensions"], list):
+        role["dimensions"] = []
+    role["interview_plan"] = _coerce_json_field(role.get("interview_plan")) or {}
+    assessment["cv_extracted"] = _coerce_json_field(assessment.get("cv_extracted")) or {}
+    return role, assessment
+
+
+class CreateCopilotSessionRequest(BaseModel):
+    role_id: str = Field(min_length=1, max_length=64)
+    interviewer_user_id: str = Field(min_length=1, max_length=64)
+    candidate_name: str = Field(min_length=1, max_length=200)
+    candidate_email: str = Field(min_length=3, max_length=320)
+    cv_text: str | None = Field(default=None, max_length=60000)
+
+
+@app.post("/copilot/sessions")
+async def create_copilot_session_endpoint(
+    body: CreateCopilotSessionRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Create an ad-hoc copilot assessment + session for a live role.
+
+    The role must be live: go-live is when the hiring manager approved and
+    locked the interview plan, which is the rubric every copilot artefact
+    (brief, tick, wrap-up scores) is calibrated against.
+    """
+    _verify_internal(authorization)
+    from core.db import get_role, create_assessment, create_copilot_session, update_assessment
+
+    role = get_role(body.role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if role.get("status") != "live":
+        raise HTTPException(
+            status_code=409,
+            detail="Role must be live (interview plan approved) before running a Copilot interview",
+        )
+
+    email = body.candidate_email.strip().lower()
+    if "@" not in email or " " in email:
+        raise HTTPException(status_code=400, detail="Invalid candidate email")
+
+    assessment = create_assessment({
+        "role_id": body.role_id,
+        "candidate_name": body.candidate_name.strip(),
+        "candidate_email": email,
+        "source": "copilot",
+        "status": "pending",
+    })
+    if not assessment:
+        raise HTTPException(status_code=500, detail="Failed to create assessment")
+
+    # Optional CV: extract in-line (Haiku, a few seconds) so the brief step
+    # has structured data to anchor on.
+    if body.cv_text and body.cv_text.strip():
+        from agents.cv_extract import extract_cv
+        cv_extracted = await extract_cv(body.cv_text, role.get("job_description", ""))
+        if not cv_extracted.get("error"):
+            update_assessment(assessment["id"], cv_extracted=cv_extracted, status="cv_uploaded")
+
+    session = create_copilot_session(assessment["id"], body.interviewer_user_id)
+    if not session:
+        raise HTTPException(status_code=500, detail="Failed to create copilot session")
+
+    return {"session_id": session["id"], "assessment_id": assessment["id"]}
+
+
+@app.get("/copilot/sessions/{session_id}")
+async def get_copilot_session_endpoint(
+    session_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Session + assessment + role context for the copilot pages."""
+    _verify_internal(authorization)
+    session = _load_copilot_session_or_404(session_id)
+    role, assessment = _copilot_role_for_session(session)
+    return {
+        "session": session,
+        "assessment": {
+            "id": assessment["id"],
+            "candidate_name": assessment.get("candidate_name"),
+            "candidate_email": assessment.get("candidate_email"),
+            "status": assessment.get("status"),
+            "cv_extracted": assessment.get("cv_extracted") or {},
+        },
+        "role": {
+            "id": role["id"],
+            "title": role.get("title"),
+            "company_name": role.get("company_name"),
+            "dimensions": role.get("dimensions") or [],
+            "interview_plan": role.get("interview_plan") or {},
+            "interview_duration_minutes": role.get("interview_duration_minutes", 30),
+        },
+    }
+
+
+@app.post("/copilot/sessions/{session_id}/brief")
+async def generate_copilot_brief_endpoint(
+    session_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Generate (or return the existing) candidate-specific brief layer."""
+    _verify_internal(authorization)
+    from core.db import update_copilot_session
+    from agents.copilot_brief import generate_copilot_brief
+
+    session = _load_copilot_session_or_404(session_id)
+    existing = _coerce_json_field(session.get("brief_pack"))
+    if isinstance(existing, dict) and existing and not existing.get("error"):
+        return {"brief_pack": existing, "cached": True}
+
+    role, assessment = _copilot_role_for_session(session)
+    brief = await generate_copilot_brief(role, assessment.get("cv_extracted") or {})
+    if brief.get("error"):
+        raise HTTPException(status_code=502, detail="Brief generation failed, please retry")
+
+    update_copilot_session(session_id, brief_pack=brief)
+    return {"brief_pack": brief, "cached": False}
+
+
+class CopilotConsentRequest(BaseModel):
+    confirmed_by: str = Field(min_length=1, max_length=64)
+    statement: str = Field(min_length=1, max_length=1000)
+
+
+@app.post("/copilot/sessions/{session_id}/consent")
+async def copilot_consent_endpoint(
+    session_id: str,
+    body: CopilotConsentRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Record explicit two-party consent and unlock the live phase."""
+    _verify_internal(authorization)
+    from core.db import update_copilot_session, update_assessment
+
+    session = _load_copilot_session_or_404(session_id)
+    if session.get("status") not in ("briefing", "live"):
+        raise HTTPException(status_code=409, detail="Session is past the consent phase")
+
+    now = datetime.now(timezone.utc).isoformat()
+    update_copilot_session(
+        session_id,
+        consent={
+            "confirmed_by": body.confirmed_by,
+            "confirmed_at": now,
+            "statement": body.statement.strip(),
+        },
+        status="live",
+        started_at=session.get("started_at") or now,
+    )
+    update_assessment(session["assessment_id"], status="in_progress", started_at=now)
+    return {"ok": True, "started_at": now}
+
+
+class CopilotTranscriptRequest(BaseModel):
+    segments: list[dict] = Field(default_factory=list)
+
+
+@app.post("/copilot/sessions/{session_id}/transcript")
+async def copilot_transcript_endpoint(
+    session_id: str,
+    body: CopilotTranscriptRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Append committed STT segments to the session transcript."""
+    _verify_internal(authorization)
+    from core.db import append_copilot_transcript
+
+    session = _load_copilot_session_or_404(session_id)
+    if session.get("status") != "live":
+        raise HTTPException(status_code=409, detail="Session is not live")
+    if len(session.get("transcript") or []) >= _COPILOT_MAX_TRANSCRIPT_SEGMENTS:
+        raise HTTPException(status_code=413, detail="Transcript segment limit reached")
+
+    now = datetime.now(timezone.utc).isoformat()
+    cleaned: list[dict] = []
+    for seg in body.segments[:_COPILOT_MAX_SEGMENTS_PER_POST]:
+        text = str(seg.get("text") or "")[:_COPILOT_MAX_SEGMENT_CHARS].strip()
+        if not text:
+            continue
+        entry: dict = {"text": text, "at": now}
+        elapsed = seg.get("elapsed_seconds")
+        if isinstance(elapsed, (int, float)) and 0 <= elapsed < 86400:
+            entry["elapsed_seconds"] = int(elapsed)
+        speaker = str(seg.get("speaker") or "").strip()
+        if speaker:
+            entry["speaker"] = speaker[:120]
+        cleaned.append(entry)
+
+    if not cleaned:
+        return {"ok": True, "appended": 0}
+    transcript = append_copilot_transcript(session_id, cleaned)
+    if transcript is None:
+        raise HTTPException(status_code=500, detail="Failed to store transcript")
+    return {"ok": True, "appended": len(cleaned), "total_segments": len(transcript)}
+
+
+class CopilotTickRequest(BaseModel):
+    elapsed_seconds: int = Field(ge=0, le=86400)
+
+
+@app.post("/copilot/sessions/{session_id}/tick")
+async def copilot_tick_endpoint(
+    session_id: str,
+    body: CopilotTickRequest,
+    authorization: str | None = Header(default=None),
+):
+    """One live analysis pass; refreshes the interviewer's panel."""
+    _verify_internal(authorization)
+    from core.db import update_copilot_session, log_copilot_probe_event
+    from agents.copilot_live import copilot_tick
+
+    session = _load_copilot_session_or_404(session_id)
+    if session.get("status") != "live":
+        raise HTTPException(status_code=409, detail="Session is not live")
+
+    role, _assessment = _copilot_role_for_session(session)
+    session["brief_pack"] = _coerce_json_field(session.get("brief_pack"))
+    session["live_state"] = _coerce_json_field(session.get("live_state"))
+    result = await copilot_tick(role, session, body.elapsed_seconds)
+    if result.get("error"):
+        # Skip the tick, keep the previous panel; the client just doesn't
+        # refresh this round. Mid-interview is no place for error banners.
+        return {"skip": True, "reason": result["error"]}
+
+    update_copilot_session(session_id, live_state=result)
+    probe = result.get("probe")
+    if isinstance(probe, dict) and probe.get("text"):
+        log_copilot_probe_event(
+            session_id,
+            "suggested",
+            dimension_key=probe.get("dimension"),
+            technique=probe.get("technique"),
+            probe_text=probe.get("text"),
+            reason=probe.get("reason"),
+        )
+    return result
+
+
+class CopilotProbeEventRequest(BaseModel):
+    action: str = Field(pattern="^(asked|adapted|dismissed)$")
+    dimension_key: str | None = Field(default=None, max_length=80)
+    technique: str | None = Field(default=None, max_length=120)
+    probe_text: str | None = Field(default=None, max_length=1000)
+    reason: str | None = Field(default=None, max_length=500)
+
+
+@app.post("/copilot/sessions/{session_id}/probe-event")
+async def copilot_probe_event_endpoint(
+    session_id: str,
+    body: CopilotProbeEventRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Log the interviewer's response to a probe suggestion — the uptake-rate
+    success metric ('suggested' events are logged by the tick itself)."""
+    _verify_internal(authorization)
+    from core.db import log_copilot_probe_event
+
+    _load_copilot_session_or_404(session_id)
+    log_copilot_probe_event(
+        session_id,
+        body.action,
+        dimension_key=body.dimension_key,
+        technique=body.technique,
+        probe_text=body.probe_text,
+        reason=body.reason,
+    )
+    return {"ok": True}
+
+
+@app.post("/copilot/sessions/{session_id}/wrapup")
+async def copilot_wrapup_endpoint(
+    session_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """End the live phase and run the full Sonnet pass: proposed scores with
+    verbatim citations + synthesis draft, pending human review."""
+    _verify_internal(authorization)
+    from core.db import update_copilot_session
+    from agents.copilot_score import generate_proposed_review
+
+    session = _load_copilot_session_or_404(session_id)
+    if session.get("status") == "review" and session.get("proposed_review"):
+        return {"proposed_review": _coerce_json_field(session["proposed_review"]), "cached": True}
+    if session.get("status") not in ("live", "wrapup"):
+        raise HTTPException(status_code=409, detail="Session is not ready for wrap-up")
+
+    now = datetime.now(timezone.utc).isoformat()
+    update_copilot_session(session_id, status="wrapup", ended_at=session.get("ended_at") or now)
+
+    # If a meeting bot is still on the call, send it home before scoring.
+    bot = _coerce_json_field(session.get("bot")) or {}
+    if bot.get("id") and bot.get("status") != "left":
+        await _copilot_leave_bot(session_id, bot["id"])
+
+    role, assessment = _copilot_role_for_session(session)
+    review = await generate_proposed_review(role, session, assessment.get("cv_extracted") or {})
+    if review.get("error"):
+        # Leave status at wrapup so the client can retry.
+        raise HTTPException(status_code=502, detail="Score proposal failed, please retry")
+
+    update_copilot_session(session_id, proposed_review=review, status="review")
+    return {"proposed_review": review, "cached": False}
+
+
+class CopilotReviewScore(BaseModel):
+    dimension: str = Field(min_length=1, max_length=80)
+    score: int = Field(ge=1, le=5)
+    override_reason: str | None = Field(default=None, max_length=1000)
+
+
+class CopilotReviewRequest(BaseModel):
+    signed_off_by: str = Field(min_length=1, max_length=64)
+    synthesis: str = Field(min_length=1, max_length=5000)
+    scores: list[CopilotReviewScore]
+
+
+@app.post("/copilot/sessions/{session_id}/review")
+async def copilot_review_endpoint(
+    session_id: str,
+    body: CopilotReviewRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Persist the human-signed scores of record and generate both reports.
+
+    Overrides (confirmed score != proposed score) require a reason. The
+    hirer report is assembled from the confirmed scores + synthesis; the
+    candidate report goes through the existing generator and email flow.
+    """
+    _verify_internal(authorization)
+    from core.db import (
+        update_copilot_session,
+        update_assessment,
+        save_copilot_dimension_scores,
+        save_report,
+    )
+    from core.schemas import derive_recommendation
+
+    session = _load_copilot_session_or_404(session_id)
+    if session.get("status") == "submitted":
+        raise HTTPException(status_code=409, detail="Session already submitted")
+    if session.get("status") != "review":
+        raise HTTPException(status_code=409, detail="Session is not in review")
+
+    proposed = _coerce_json_field(session.get("proposed_review")) or {}
+    proposed_by_dim = {
+        r.get("dimension"): r
+        for r in (proposed.get("proposed_scores") or [])
+        if isinstance(r, dict)
+    }
+
+    role, assessment = _copilot_role_for_session(session)
+    selected = set(role.get("dimensions") or [])
+
+    rows: list[dict] = []
+    for s in body.scores:
+        if s.dimension not in selected:
+            raise HTTPException(status_code=400, detail=f"Unknown dimension: {s.dimension}")
+        prop = proposed_by_dim.get(s.dimension) or {}
+        proposed_score = prop.get("score")
+        if proposed_score is not None and s.score != proposed_score and not (s.override_reason or "").strip():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Override of {s.dimension} requires a reason",
+            )
+        rows.append({
+            "dimension": s.dimension,
+            "score": s.score,
+            "proposed_score": proposed_score,
+            "quotation_basis": prop.get("quotation_basis"),
+            "notes": prop.get("notes"),
+            "override_reason": (s.override_reason or "").strip() or None,
+        })
+    missing = selected - {r["dimension"] for r in rows}
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Missing scores for: {', '.join(sorted(missing))}")
+
+    if not save_copilot_dimension_scores(assessment["id"], rows, body.signed_off_by):
+        raise HTTPException(status_code=500, detail="Failed to save scores")
+
+    synthesis = body.synthesis.strip()
+    composite = round(sum(r["score"] for r in rows) / len(rows), 2) if rows else None
+    hirer_content = {
+        "source": "copilot",
+        "headline_summary": synthesis.split(". ")[0][:300] if synthesis else "",
+        "recommendation": derive_recommendation(composite),
+        "recommendation_rationale": "Scores confirmed by the interviewer at sign-off.",
+        "synthesis": synthesis,
+        "scoring_summary": [
+            {
+                "dimension": r["dimension"],
+                "score": r["score"],
+                "quotation_basis": r.get("quotation_basis") or "",
+                "notes": r.get("notes") or "",
+                "verified": bool((proposed_by_dim.get(r["dimension"]) or {}).get("verified")),
+            }
+            for r in rows
+        ],
+        "composite_score": composite,
+    }
+    save_report(assessment["id"], "hirer", hirer_content)
+
+    now = datetime.now(timezone.utc).isoformat()
+    update_assessment(assessment["id"], status="completed", completed_at=now)
+    update_copilot_session(session_id, status="submitted")
+
+    # Candidate report + email in the background — the interviewer shouldn't
+    # wait on Sonnet + Resend to see the confirmation screen.
+    asyncio.create_task(
+        _copilot_candidate_report(assessment["id"], role, assessment.get("cv_extracted") or {},
+                                  _coerce_json_field(session.get("transcript")) or [])
+    )
+    return {"ok": True, "composite_score": composite}
+
+
+async def _copilot_candidate_report(
+    assessment_id: str, role: dict, cv_extracted: dict, transcript_segments: list[dict]
+):
+    """Generate + store the candidate report and send the report email.
+
+    The copilot transcript has no speaker attribution, so all segments are
+    passed as candidate turns; the report prompt already treats transcript
+    content as untrusted data, and candidate-facing feedback tolerates the
+    interviewer's questions being in-frame.
+    """
+    from core.db import save_report, get_assessment
+    from core.email import send_report_email
+    from agents.report import generate_candidate_report
+
+    messages = [
+        {"role": "user", "content": str(seg.get("text") or "")}
+        for seg in transcript_segments
+        if isinstance(seg, dict) and str(seg.get("text") or "").strip()
+    ]
+    if not messages:
+        print(f"  [copilot] no transcript for candidate report {assessment_id}")
+        return
+    try:
+        report = await generate_candidate_report(messages, role, cv_extracted)
+        save_report(assessment_id, "candidate", report)
+        assessment = get_assessment(assessment_id)
+        to = (assessment or {}).get("candidate_email") or ""
+        name = (assessment or {}).get("candidate_name") or ""
+        if to and not report.get("error"):
+            sent = send_report_email(
+                to=to,
+                candidate_name=name,
+                role_title=role.get("title", "the role"),
+                report=report,
+            )
+            print(f"  [copilot] candidate report email {'sent' if sent else 'skipped'} for {assessment_id}")
+    except Exception as e:
+        print(f"  [copilot] candidate report failed: {type(e).__name__}: {e}")
+
+
+# ─── Copilot bot-join (Google Meet only, via Recall.ai) ────────────────────
+# The disclosed-participant design from the product doc: a bot joins the
+# Meet call, Recall streams diarized transcript utterances to our webhook,
+# and the live panel needs no microphone at all.
+
+_RECALL_REGIONS = ("us-east-1", "us-west-2", "eu-central-1", "ap-northeast-1")
+# Meet codes are xxx-xxxx-xxx; tolerate the occasional variant length but
+# never another host — bot-join is Google Meet only in this iteration.
+_MEET_URL_RE = __import__("re").compile(
+    r"^https://meet\.google\.com/[a-z0-9]{3,4}-[a-z0-9]{3,4}-[a-z0-9]{3,4}(?:\?.*)?$"
+)
+
+
+def _recall_base() -> str:
+    region = os.getenv("RECALL_REGION", "us-east-1")
+    if region not in _RECALL_REGIONS:
+        region = "us-east-1"
+    return f"https://{region}.recall.ai/api/v1"
+
+
+def _recall_headers() -> dict:
+    key = os.getenv("RECALL_API_KEY", "")
+    if not key:
+        raise HTTPException(status_code=500, detail="RECALL_API_KEY not configured")
+    return {"Authorization": key, "Content-Type": "application/json"}
+
+
+class CopilotBotRequest(BaseModel):
+    meeting_url: str = Field(min_length=1, max_length=500)
+
+
+@app.post("/copilot/sessions/{session_id}/bot")
+async def copilot_create_bot(
+    session_id: str,
+    body: CopilotBotRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Send a disclosed Basanite bot into the interviewer's Google Meet call.
+
+    Recall.ai handles the Meet integration and streams diarized transcript
+    utterances to /copilot/bot-webhook — better speaker attribution than the
+    browser-mic path can offer.
+    """
+    _verify_internal(authorization)
+    import httpx
+    from core.db import update_copilot_session
+
+    session = _load_copilot_session_or_404(session_id)
+    if session.get("status") != "live":
+        raise HTTPException(status_code=409, detail="Record consent before inviting the bot")
+    existing_bot = _coerce_json_field(session.get("bot")) or {}
+    if existing_bot.get("id"):
+        return {"bot_id": existing_bot["id"], "cached": True}
+
+    meeting_url = body.meeting_url.strip()
+    if not _MEET_URL_RE.match(meeting_url):
+        raise HTTPException(
+            status_code=400,
+            detail="Bot-join currently supports Google Meet links only (https://meet.google.com/xxx-xxxx-xxx)",
+        )
+
+    public_url = (os.getenv("PIPELINE_PUBLIC_URL", "") or "").rstrip("/")
+    if not public_url.startswith("https://"):
+        raise HTTPException(status_code=500, detail="PIPELINE_PUBLIC_URL not configured")
+
+    payload = {
+        "meeting_url": meeting_url,
+        "bot_name": "Basanite Copilot (transcribing)",
+        "recording_config": {
+            "transcript": {
+                "provider": {
+                    "recallai_streaming": {
+                        "mode": "prioritize_low_latency",
+                        "language_code": "en",
+                    }
+                },
+                "diarization": {"use_separate_streams_when_available": True},
+            },
+            "realtime_endpoints": [
+                {
+                    "type": "webhook",
+                    "url": f"{public_url}/copilot/bot-webhook",
+                    "events": ["transcript.data"],
+                }
+            ],
+        },
+    }
+    async with httpx.AsyncClient(timeout=30.0) as http:
+        resp = await http.post(f"{_recall_base()}/bot/", headers=_recall_headers(), json=payload)
+    if resp.status_code not in (200, 201):
+        # 507 = Recall capacity; surface a retryable message without echoing
+        # the vendor body into logs or the client.
+        print(f"  [copilot] recall create bot failed: HTTP {resp.status_code}")
+        detail = (
+            "Meeting bots are at capacity, retry in ~30 seconds"
+            if resp.status_code == 507
+            else "Failed to send the bot to the call"
+        )
+        raise HTTPException(status_code=502, detail=detail)
+
+    bot_id = (resp.json() or {}).get("id")
+    if not bot_id:
+        raise HTTPException(status_code=502, detail="Failed to send the bot to the call")
+
+    update_copilot_session(
+        session_id,
+        bot={"id": bot_id, "meeting_url": meeting_url, "status": "joining"},
+    )
+    return {"bot_id": bot_id, "cached": False}
+
+
+@app.post("/copilot/sessions/{session_id}/bot/stop")
+async def copilot_stop_bot(
+    session_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """Ask the bot to leave the call. Best-effort; wrap-up also calls this."""
+    _verify_internal(authorization)
+    session = _load_copilot_session_or_404(session_id)
+    bot = _coerce_json_field(session.get("bot")) or {}
+    if not bot.get("id"):
+        return {"ok": True, "no_bot": True}
+    await _copilot_leave_bot(session_id, bot["id"])
+    return {"ok": True}
+
+
+async def _copilot_leave_bot(session_id: str, bot_id: str):
+    """POST leave_call to Recall and stamp the bot status. Never raises —
+    a bot that lingers a few extra seconds is not worth failing wrap-up over."""
+    import httpx
+    from core.db import update_copilot_session
+
+    import re as _re
+    if not _re.fullmatch(r"[A-Za-z0-9_-]{1,64}", str(bot_id)):
+        return
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as http:
+            await http.post(
+                f"{_recall_base()}/bot/{bot_id}/leave_call/",
+                headers=_recall_headers(),
+            )
+    except Exception as e:
+        print(f"  [copilot] recall leave_call failed: {type(e).__name__}")
+    try:
+        session = _load_copilot_session_or_404(session_id)
+        bot = _coerce_json_field(session.get("bot")) or {}
+        bot["status"] = "left"
+        update_copilot_session(session_id, bot=bot)
+    except Exception:
+        pass
+
+
+def _verify_recall_signature(headers, body_bytes: bytes) -> bool:
+    """Svix-style verification of a Recall webhook using the workspace
+    verification secret (whsec_...). Fails closed when unconfigured."""
+    import base64
+
+    secret = os.getenv("RECALL_WEBHOOK_SECRET", "")
+    if not secret:
+        return False
+    svix_id = headers.get("svix-id", "")
+    svix_timestamp = headers.get("svix-timestamp", "")
+    svix_signature = headers.get("svix-signature", "")
+    if not (svix_id and svix_timestamp and svix_signature):
+        return False
+    try:
+        ts = int(svix_timestamp)
+        now = int(datetime.now(timezone.utc).timestamp())
+        if abs(now - ts) > 300:
+            return False
+        key = base64.b64decode(secret.removeprefix("whsec_"))
+        signed = f"{svix_id}.{svix_timestamp}.".encode("utf-8") + body_bytes
+        expected = base64.b64encode(hmac.new(key, signed, hashlib.sha256).digest()).decode()
+    except Exception:
+        return False
+    for candidate in svix_signature.split(" "):
+        _, _, sig = candidate.partition(",")
+        if sig and hmac.compare_digest(sig, expected):
+            return True
+    return False
+
+
+@app.post("/copilot/bot-webhook")
+async def copilot_bot_webhook(request: Request):
+    """Recall real-time transcript ingestion (public endpoint, signed).
+
+    Each transcript.data event is one diarized utterance; we append it as a
+    speaker-labelled transcript segment on the bot's session. Return 2xx
+    fast — Recall retries slow responses.
+    """
+    _rate_limit(request, bucket="copilot-bot-webhook", max_requests=1200, window_seconds=60)
+    body_bytes = await request.body()
+    if not _verify_recall_signature(request.headers, body_bytes):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    try:
+        payload = json.loads(body_bytes)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    if payload.get("event") != "transcript.data":
+        return {"ok": True, "ignored": True}
+
+    data = (payload.get("data") or {})
+    bot_id = ((data.get("bot") or {}).get("id")) or ""
+    inner = (data.get("data") or {})
+    words = inner.get("words") or []
+    text = " ".join(
+        str(w.get("text") or "").strip() for w in words if isinstance(w, dict)
+    ).strip()
+    if not bot_id or not text:
+        return {"ok": True, "empty": True}
+
+    from core.db import get_copilot_session_by_bot_id, append_copilot_transcript
+
+    session = get_copilot_session_by_bot_id(bot_id)
+    if not session or session.get("status") != "live":
+        return {"ok": True, "no_session": True}
+    if len(session.get("transcript") or []) >= _COPILOT_MAX_TRANSCRIPT_SEGMENTS:
+        return {"ok": True, "truncated": True}
+
+    participant = inner.get("participant") or {}
+    speaker = str(participant.get("name") or "").strip()[:120]
+    segment: dict = {
+        "text": text[:_COPILOT_MAX_SEGMENT_CHARS],
+        "at": datetime.now(timezone.utc).isoformat(),
+    }
+    if speaker:
+        segment["speaker"] = speaker
+    first = words[0] if words and isinstance(words[0], dict) else {}
+    rel = ((first.get("start_timestamp") or {}).get("relative"))
+    if isinstance(rel, (int, float)) and 0 <= rel < 86400:
+        segment["elapsed_seconds"] = int(rel)
+
+    append_copilot_transcript(session["id"], [segment])
+    return {"ok": True}
+
+
+@app.get("/copilot/scribe-token")
+async def copilot_scribe_token(authorization: str | None = Header(default=None)):
+    """Mint an ElevenLabs single-use realtime-scribe token for the browser.
+
+    The API key never reaches the client; the token expires in 15 minutes
+    and is consumed on use — the live page re-fetches when reconnecting.
+    """
+    _verify_internal(authorization)
+    import httpx
+
+    async with httpx.AsyncClient(timeout=15.0) as http:
+        resp = await http.post(
+            f"{_EL_API}/single-use-token/realtime_scribe",
+            headers=_el_headers(),
+        )
+    if resp.status_code != 200:
+        print(f"  [copilot] scribe token mint failed: HTTP {resp.status_code}")
+        raise HTTPException(status_code=502, detail="Failed to mint transcription token")
+    token = (resp.json() or {}).get("token")
+    if not token:
+        raise HTTPException(status_code=502, detail="Failed to mint transcription token")
+    return {"token": token}
+
