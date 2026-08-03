@@ -51,6 +51,11 @@ export default function NewRolePage() {
   // beside the control that caused it.
   const [jdUploadError, setJdUploadError] = useState('')
   const jdFileInputRef = useRef<HTMLInputElement>(null)
+  // Autofill of title/company from the JD. Tracks in-flight state (for a
+  // subtle hint) and the last JD we extracted from, so we don't re-call
+  // the LLM for JD text we've already processed.
+  const [metaAutofilling, setMetaAutofilling] = useState(false)
+  const lastMetaJdRef = useRef<string>('')
 
   const JD_UNSUPPORTED_MESSAGE =
     'We can accept PDF, Word (.docx), .txt or .md files. That file looks like something else — you can also paste the job description below.'
@@ -92,13 +97,53 @@ export default function NewRolePage() {
       // (auth / rate-limit) as { error } — read both so the real reason
       // isn't masked by a generic fallback.
       if (!res.ok) throw new Error(data.detail ?? data.error ?? 'We couldn\u2019t read that file.')
-      setJobDescription(data.jd_text ?? '')
+      const jdText = data.jd_text ?? ''
+      setJobDescription(jdText)
       setJdTruncated(Boolean(data.truncated))
+      // Autofill title/company from the freshly parsed JD (empty fields only).
+      void autofillMeta(jdText)
     } catch (e: any) {
       setJdUploadError(e.message ?? 'Failed to read that file.')
       setJdFileName(null)
     } finally {
       setJdUploading(false)
+    }
+  }
+
+  // Extract a suggested title + company from the JD and fill EMPTY fields
+  // only — never overwrite what the hirer has typed. Runs after the JD is
+  // entered (textarea blur) or a file is parsed. Silent by design: any
+  // failure just leaves the fields as they are.
+  async function autofillMeta(jd: string) {
+    const text = jd.trim()
+    if (!text) return
+    // Nothing to do if both fields are already filled.
+    if (title.trim() && companyName.trim()) return
+    // Skip if we've already extracted from this exact JD text.
+    if (lastMetaJdRef.current === text) return
+    lastMetaJdRef.current = text
+
+    setMetaAutofilling(true)
+    try {
+      const res = await fetch('/api/roles/extract-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_description: text }),
+      })
+      if (!res.ok) return
+      const data = await res.json().catch(() => ({} as any))
+      // Fill only-if-empty, and use the functional updater so we respect
+      // any value the hirer typed while the request was in flight.
+      if (typeof data.title === 'string' && data.title.trim()) {
+        setTitle(prev => (prev.trim() ? prev : data.title.trim()))
+      }
+      if (typeof data.company_name === 'string' && data.company_name.trim()) {
+        setCompanyName(prev => (prev.trim() ? prev : data.company_name.trim()))
+      }
+    } catch {
+      // Autofill is a nicety; ignore errors.
+    } finally {
+      setMetaAutofilling(false)
     }
   }
 
@@ -240,7 +285,12 @@ export default function NewRolePage() {
 
           <div className="space-y-5">
             <div>
-              <label className="block text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">Role Title</label>
+              <label className="flex items-center gap-2 text-xs font-medium text-basanite-600 dark:text-earth-300 mb-1.5 uppercase tracking-wide">
+                Role Title
+                {metaAutofilling && (
+                  <span className="normal-case tracking-normal text-basanite-400 dark:text-earth-500">detecting from JD&hellip;</span>
+                )}
+              </label>
               <input
                 type="text"
                 value={title}
@@ -317,6 +367,7 @@ export default function NewRolePage() {
               <textarea
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
+                onBlur={e => void autofillMeta(e.target.value)}
                 rows={12}
                 className="w-full border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-3 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors resize-y"
                 placeholder="Or paste the full job description here..."
