@@ -84,6 +84,13 @@ def copilot_client(monkeypatch, sample_role, sample_assessment, copilot_session)
     monkeypatch.setattr(core_db, "save_copilot_dimension_scores", fake_save_scores)
     monkeypatch.setattr(core_db, "save_report", fake_save_report)
     monkeypatch.setattr(core_db, "log_copilot_probe_event", fake_probe_event)
+    monkeypatch.setattr(
+        core_db, "list_copilot_probe_events",
+        lambda sid: [
+            {"action": "suggested", "dimension_key": "technical_depth"},
+            {"action": "asked", "dimension_key": "technical_depth"},
+        ],
+    )
 
     client = TestClient(api.app)
     client.captured = captured
@@ -307,8 +314,30 @@ class TestWrapup:
 
         monkeypatch.setattr(score_mod, "generate_proposed_review", fake_review)
         copilot_session["status"] = "live"
+        copilot_session["live_state"] = {"saturation": {"technical_depth": "saturated"}}
         r = copilot_client.post(f"/copilot/sessions/{_SESSION_ID}/wrapup", headers=_AUTH)
         assert r.status_code == 200, r.text
         assert r.json()["cached"] is False
         assert copilot_client.captured["session_updates"]["status"] == "review"
         assert copilot_client.captured["session_updates"]["proposed_review"]["synthesis"]
+        # Plan adherence: deterministic rollup persisted and returned.
+        adherence = r.json()["plan_adherence"]
+        assert adherence["coverage"]["technical_depth"] == "covered"
+        assert adherence["coverage"]["judgment_under_ambiguity"] == "skipped"
+        assert adherence["probe_uptake"]["suggested"] == 1
+        assert adherence["probe_uptake"]["asked"] == 1
+        assert copilot_client.captured["session_updates"]["plan_adherence"] == adherence
+
+    def test_adherence_survives_scoring_failure(self, copilot_client, copilot_session, monkeypatch):
+        # The deterministic rollup is computed and stored BEFORE the Sonnet
+        # pass, so a scoring failure never loses it.
+        import agents.copilot_score as score_mod
+
+        async def fake_review(role, session, cv):
+            return {"error": "schema_validation_failed"}
+
+        monkeypatch.setattr(score_mod, "generate_proposed_review", fake_review)
+        copilot_session["status"] = "live"
+        r = copilot_client.post(f"/copilot/sessions/{_SESSION_ID}/wrapup", headers=_AUTH)
+        assert r.status_code == 502
+        assert copilot_client.captured["session_updates"]["plan_adherence"]["summary"]

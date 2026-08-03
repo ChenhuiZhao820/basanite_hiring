@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatDimensionKey } from '@/lib/format'
+import { PlanAdherence, type PlanAdherenceData } from './PlanAdherence'
 
 type Props = {
   roleId: string
@@ -28,6 +29,7 @@ export function CopilotReviewForm({ roleId, sessionId }: Props) {
   const [scores, setScores] = useState<Record<string, number>>({})
   const [reasons, setReasons] = useState<Record<string, string>>({})
   const [synthesis, setSynthesis] = useState('')
+  const [adherence, setAdherence] = useState<PlanAdherenceData | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -44,14 +46,17 @@ export function CopilotReviewForm({ roleId, sessionId }: Props) {
           return
         }
         let review = data.session?.proposed_review
+        let adherenceData = data.session?.plan_adherence ?? null
         if (!review || review.error) {
           // Landed here with the wrap-up pass still pending (or failed) — run it.
           const wrapRes = await fetch(`/api/copilot/sessions/${sessionId}/wrapup`, { method: 'POST' })
           const wrapData = await wrapRes.json().catch(() => ({} as any))
           if (!wrapRes.ok) throw new Error(wrapData.detail ?? wrapData.error ?? 'Scoring failed — retry')
           review = wrapData.proposed_review
+          adherenceData = wrapData.plan_adherence ?? adherenceData
         }
         if (cancelled) return
+        setAdherence(adherenceData)
         const rows: ProposedScore[] = review?.proposed_scores ?? []
         setProposed(rows)
         setScores(Object.fromEntries(rows.map((r) => [r.dimension, r.score ?? 3])))
@@ -108,6 +113,7 @@ export function CopilotReviewForm({ roleId, sessionId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-3xl">
+      <PlanAdherence adherence={adherence} />
       <div className="space-y-4 mb-8">
         {proposed.map((row) => {
           const chosen = scores[row.dimension]

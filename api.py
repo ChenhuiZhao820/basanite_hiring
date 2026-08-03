@@ -3871,12 +3871,17 @@ async def copilot_wrapup_endpoint(
     """End the live phase and run the full Sonnet pass: proposed scores with
     verbatim citations + synthesis draft, pending human review."""
     _verify_internal(authorization)
-    from core.db import update_copilot_session
+    from core.db import update_copilot_session, list_copilot_probe_events
+    from core.adherence import compute_plan_adherence
     from agents.copilot_score import generate_proposed_review
 
     session = _load_copilot_session_or_404(session_id)
     if session.get("status") == "review" and session.get("proposed_review"):
-        return {"proposed_review": _coerce_json_field(session["proposed_review"]), "cached": True}
+        return {
+            "proposed_review": _coerce_json_field(session["proposed_review"]),
+            "plan_adherence": _coerce_json_field(session.get("plan_adherence")),
+            "cached": True,
+        }
     if session.get("status") not in ("live", "wrapup"):
         raise HTTPException(status_code=409, detail="Session is not ready for wrap-up")
 
@@ -3889,13 +3894,27 @@ async def copilot_wrapup_endpoint(
         await _copilot_leave_bot(session_id, bot["id"])
 
     role, assessment = _copilot_role_for_session(session)
+
+    # Plan adherence is deterministic (no LLM): coverage from the final
+    # saturation map, probe uptake counts, near-verbatim planned-angle
+    # matching. Computed before the Sonnet pass so a scoring failure never
+    # loses it.
+    adherence = compute_plan_adherence(
+        role.get("interview_plan") or {},
+        role.get("dimensions") or [],
+        _coerce_json_field(session.get("live_state")),
+        list_copilot_probe_events(session_id),
+        _coerce_json_field(session.get("transcript")) or [],
+    )
+    update_copilot_session(session_id, plan_adherence=adherence)
+
     review = await generate_proposed_review(role, session, assessment.get("cv_extracted") or {})
     if review.get("error"):
         # Leave status at wrapup so the client can retry.
         raise HTTPException(status_code=502, detail="Score proposal failed, please retry")
 
     update_copilot_session(session_id, proposed_review=review, status="review")
-    return {"proposed_review": review, "cached": False}
+    return {"proposed_review": review, "plan_adherence": adherence, "cached": False}
 
 
 class CopilotReviewScore(BaseModel):
@@ -3975,8 +3994,10 @@ async def copilot_review_endpoint(
 
     synthesis = body.synthesis.strip()
     composite = round(sum(r["score"] for r in rows) / len(rows), 2) if rows else None
+    plan_adherence = _coerce_json_field(session.get("plan_adherence"))
     hirer_content = {
         "source": "copilot",
+        "plan_adherence": plan_adherence,
         "headline_summary": synthesis.split(". ")[0][:300] if synthesis else "",
         "recommendation": derive_recommendation(composite),
         "recommendation_rationale": "Scores confirmed by the interviewer at sign-off.",
