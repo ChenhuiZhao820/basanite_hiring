@@ -10,7 +10,7 @@ import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'About',
-  description: 'Basanite was founded in 2026 by three final-year computer scientists from the University of Manchester, building the technical interview we wish had filtered us.',
+  description: 'Basanite was founded in 2026 by two final-year computer scientists from the University of Manchester, building the technical interview we wish had filtered us.',
   path: '/about',
 })
 
@@ -43,19 +43,6 @@ const TEAM = [
     ],
     blurb: 'Owns commercial, fundraising, customer discovery and positioning. Has lived the candidate side of the broken hiring funnel first-hand.',
   },
-  // Temporarily hidden from frontend
-  // {
-  //   name: 'Andrew Robertson',
-  //   role: 'CTO',
-  //   img: '/team/drew.png',
-  //   linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
-  //   bullets: [
-  //     'SWE Intern at The Trade Desk, Rothschild & Co, Cisco',
-  //     'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
-  //     'Final-year Computer Science, University of Manchester',
-  //   ],
-  //   blurb: 'Owns the agent architecture, the Next.js + FastAPI + Supabase stack, and the production engineering of the interview itself.',
-  // },
   {
     name: 'Lynn Zhao',
     role: 'CPO',
@@ -188,7 +175,7 @@ export default async function AboutPage() {
           <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">The team</p>
           <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-10">Built by people who felt the problem</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            {TEAM.filter(m => m.name !== 'Andrew Robertson').map(m => (
+            {TEAM.map(m => (
               <div key={m.name} className="card-hover border border-earth-300/60 bg-white p-7 flex flex-col">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="relative w-14 h-14 rounded-full overflow-hidden bg-earth-200 shrink-0">

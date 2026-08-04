@@ -31,7 +31,7 @@ export default function Page() {
       description={DESCRIPTION}
       datePublished={DATE_PUBLISHED}
       slug={SLUG}
-      author="Andrew Robertson"
+      author="Lynn Zhao"
     >
       <p>
         The right way to think about designing a coding interview in 2026 is to start from the cheating equilibrium and work backwards. Every coding interview question sits somewhere on a spectrum from “an LLM can answer this perfectly with no human help” to “an LLM cannot meaningfully help with this at all.” Where your question sits on that spectrum is the single most important design decision. Almost everything else — proctoring, time limits, language choice — is downstream of it.

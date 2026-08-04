@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-const PROMPT_TEXT = `Hi, my name is Drew. I'm one of the founders here, and I'll be conducting your interview today. Before we get started, let me give you a quick sense of how this is going to feel.
+const PROMPT_TEXT = `Hi, I'm one of the founders here, and I'll be conducting your interview today. Before we get started, let me give you a quick sense of how this is going to feel.
 
 We're not looking for someone who has every answer ready. What we're really after is how you actually think — what you do when the path isn't obvious, when there's missing information, when the stakes are real. So when I ask about a project, I'll often dig into the small decisions: why you chose this over that, what surprised you, what you'd change with hindsight.
 
@@ -156,7 +156,7 @@ export function VoiceCloneRecorder() {
           type="text"
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="Drew"
+          placeholder="Aditya"
           maxLength={80}
           className="w-full max-w-sm border border-earth-300 dark:border-basanite-700 bg-white dark:bg-basanite-800 placeholder-basanite-400 dark:placeholder-earth-500 px-4 py-2.5 text-sm text-basanite-900 dark:text-earth-100 outline-none focus:border-gold-500 transition-colors"
         />

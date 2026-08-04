@@ -86,7 +86,6 @@ export function organizationJsonLd(): Record<string, unknown> {
     foundingDate: '2026',
     founders: [
       { '@type': 'Person', name: 'Aditya Shah', jobTitle: 'CEO', sameAs: 'https://www.linkedin.com/in/adityashah100/' },
-      { '@type': 'Person', name: 'Andrew Robertson', jobTitle: 'CTO', sameAs: 'https://www.linkedin.com/in/andrewrobertsonamr/' },
       { '@type': 'Person', name: 'Lynn Zhao', jobTitle: 'CPO', sameAs: 'https://www.linkedin.com/in/lynn-zhao-59a198292/' },
     ],
     address: {

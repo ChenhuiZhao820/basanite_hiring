@@ -45,7 +45,7 @@ export default function PrivacyPage() {
 
         <Section title="Who we are">
           <p>
-            Basanite (the &ldquo;Platform&rdquo;) is currently operated as an unincorporated UK venture by its three founders &mdash; <strong>Aditya Shah</strong>, <strong>Andrew Robertson</strong>, and <strong>Lynn Zhao</strong> &mdash; based in the United Kingdom.
+            Basanite (the &ldquo;Platform&rdquo;) is currently operated as an unincorporated UK venture by its two founders &mdash; <strong>Aditya Shah</strong> and <strong>Lynn Zhao</strong> &mdash; based in the United Kingdom.
             For privacy queries: <a href="mailto:privacy@basanite.co.uk" className="text-gold-600 underline">privacy@basanite.co.uk</a>.
           </p>
           <p className="mt-3">

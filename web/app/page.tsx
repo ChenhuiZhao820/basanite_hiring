@@ -922,19 +922,6 @@ const TEAM: TeamMember[] = [
     img: '/team/aditya.png',
     linkedin: 'https://www.linkedin.com/in/adityashah100/',
   },
-  // Temporarily hidden — restore this entry to bring Drew back into the team grid.
-  // {
-  //   name: 'Drew Robertson',
-  //   role: 'CTO',
-  //   bullets: [
-  //     'SWE Intern at The Trade Desk, Rothschild and Co, Cisco',
-  //     'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
-  //     'Computer Science, University of Manchester',
-  //   ],
-  //   img: '/team/drew.png',
-  //   linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
-  //   x: 'https://x.com/NeoDrewX',
-  // },
   {
     name: 'Lynn Zhao',
     role: 'Co-founder',
