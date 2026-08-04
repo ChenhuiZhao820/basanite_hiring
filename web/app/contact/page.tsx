@@ -146,19 +146,9 @@ export default async function ContactPage() {
         {/* Office / location */}
         <section className="mb-16">
           <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-3">Where we are</h2>
-          <ul className="space-y-2 max-w-2xl">
-            {[
-              'We work in Manchester.',
-              'We are regular attendees at events like Venture Cafe and Silicon Mingle.',
-              'We work out of the NatWest Hub accelerator.',
-              'We are always happy to meet in person.',
-            ].map(b => (
-              <li key={b} className="flex items-start gap-2.5 text-base text-basanite-600 leading-relaxed">
-                <span className="text-gold-500 shrink-0 mt-1.5 text-xs font-bold">&#9670;</span>
-                {b}
-              </li>
-            ))}
-          </ul>
+          <p className="text-basanite-600 text-base leading-relaxed max-w-2xl">
+            We&apos;re based in Manchester, working out of the NatWest Hub accelerator, and you&apos;ll regularly find us at events like Venture Cafe and Silicon Mingle. Always happy to meet in person.
+          </p>
         </section>
 
         {/* Data rights */}
