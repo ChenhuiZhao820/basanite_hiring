@@ -776,7 +776,7 @@ function DemoVideo() {
             Watch the demo
           </p>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-basanite-900 leading-[1.15]">
-            Four and a half minutes inside Basanite.
+            Two minutes inside Basanite.
           </h2>
         </div>
         <div className="relative aspect-video bg-basanite-950 ring-1 ring-basanite-200/40 shadow-[0_30px_80px_-20px_rgba(15,15,14,0.35)] overflow-hidden">
@@ -915,7 +915,7 @@ const TEAM: TeamMember[] = [
     name: 'Aditya Shah',
     role: 'Co-founder',
     bullets: [
-      'Data Analyst and Technology Modeller at Virgin Media O2 (13 month placement)',
+      'Data Analyst and Technology Modeller at Virgin Media O2',
       'Serial entrepreneur, previously funded startup in edtech',
       'Computer Science, University of Manchester',
     ],
@@ -939,9 +939,9 @@ const TEAM: TeamMember[] = [
     name: 'Lynn Zhao',
     role: 'Co-founder',
     bullets: [
-      'BSc Artificial Intelligence, University of Manchester',
       'AI Safety Fellowship at BlueDot Impact, OpenAI, Cambridge',
       'UniHack 2025 Digital CleanUp 1st place',
+      'BSc Artificial Intelligence, University of Manchester',
     ],
     img: '/team/lynn.png',
     linkedin: 'https://www.linkedin.com/in/lynn-zhao-59a198292/',
