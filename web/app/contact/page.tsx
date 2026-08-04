@@ -26,7 +26,6 @@ const CONTACTS = [
 
 const FOUNDERS = [
   { name: 'Aditya Shah', role: 'CEO', linkedin: 'https://www.linkedin.com/in/adityashah100/' },
-  { name: 'Andrew Robertson', role: 'CTO', linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/' },
   { name: 'Lynn Zhao', role: 'CPO', linkedin: 'https://www.linkedin.com/in/lynn-zhao-59a198292/' },
 ]
 
