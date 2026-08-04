@@ -84,16 +84,6 @@ const MATRIX: { q: string; basanite: Cell; cells: Cell[] }[] = [
       { answer: 'Yes', note: 'Human-led', tone: 'good' },
     ],
   },
-  {
-    q: 'Cost & scheduling',
-    basanite: { answer: 'From £249 / role', note: 'Candidates interview any time — no scheduling.', tone: 'good' },
-    cells: [
-      { answer: 'Subscription', tone: 'mid' }, /* VERIFY */
-      { answer: 'Subscription / enterprise', tone: 'mid' }, /* VERIFY */
-      { answer: 'Enterprise', tone: 'mid' }, /* VERIFY */
-      { answer: 'Per-interview', note: 'Requires scheduling', tone: 'mid' }, /* VERIFY */
-    ],
-  },
 ]
 
 function toneClass(tone: Tone): string {
@@ -233,9 +223,6 @@ export default function ComparePage() {
               </tbody>
             </table>
           </div>
-          <p className="text-basanite-400 text-xs mt-3 italic">
-            Competitor details are being finalised against public sources.
-          </p>
         </section>
 
         {/* Block 3 — honest-fit note */}
