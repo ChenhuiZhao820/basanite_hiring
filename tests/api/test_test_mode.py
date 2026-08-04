@@ -35,8 +35,15 @@ def _role(role_id: str) -> dict:
 
 
 @pytest.fixture
-def client():
-    return TestClient(api.app)
+def client(monkeypatch):
+    # SEC-01: /assess/{token}/start now requires the internal pipeline
+    # secret, same as every other Next.js-proxied endpoint. _PIPELINE_SECRET
+    # is read once at import time, so it must be patched on the module
+    # directly rather than via monkeypatch.setenv.
+    monkeypatch.setattr(api, "_PIPELINE_SECRET", "test-pipeline-secret")
+    c = TestClient(api.app)
+    c.headers.update({"Authorization": "Bearer test-pipeline-secret"})
+    return c
 
 
 @pytest.fixture

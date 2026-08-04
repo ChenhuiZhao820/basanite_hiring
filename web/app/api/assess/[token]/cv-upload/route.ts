@@ -3,6 +3,7 @@ import { assertCandidateSession } from '@/lib/assess-auth'
 import { allow } from '@/lib/rate-limit'
 
 const PIPELINE_URL = process.env.PIPELINE_URL ?? 'http://localhost:8000'
+const PIPELINE_SECRET = process.env.PIPELINE_API_SECRET ?? ''
 
 export async function POST(
   request: NextRequest,
@@ -26,6 +27,7 @@ export async function POST(
   form.set('user_id', check.user.id)
   const res = await fetch(`${PIPELINE_URL}/assess/${token}/cv-upload`, {
     method: 'POST',
+    headers: { 'Authorization': `Bearer ${PIPELINE_SECRET}` },
     body: form,
   })
 
