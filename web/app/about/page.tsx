@@ -70,15 +70,6 @@ const TEAM = [
   },
 ]
 
-const TIMELINE = [
-  { date: 'Early 2026', headline: 'Problem identified', body: 'The three of us were applying for graduate engineering roles and watching technical screens collapse: leaked question banks, take-homes that could be done by Cursor in ten minutes, and a hiring funnel that no longer measured anything real.' },
-  { date: 'April 2026', headline: 'MVP shipped', body: 'End-to-end working product: hirer dashboard, candidate portal, live 10–20 minute AI voice interview, dual reports grounded in candidate quotes. Built in week one.' },
-  { date: 'May 2026', headline: '50 trial users', body: 'University of Manchester CS students, Manchester technology recruiters, and early hirers running mock interviews. Surveyed feedback drove iteration two.' },
-  { date: 'May 2026', headline: 'Stripe VC accelerator', body: 'Accepted into the Stripe internal accelerator alongside ongoing applications to YC and VFA26.' },
-  { date: 'May 2026', headline: 'First paid pilot', body: 'Verbal commitment from a seven-figure-revenue technology recruitment firm in Manchester. First contract worth ~£40k ARR.' },
-  { date: '2026 →', headline: 'Iteration three', body: 'The AI Collaboration Workbench: a sandboxed VS Code environment where candidates ship a real ticket alongside the AI agent of their choice. The dimension no other interview measures.' },
-]
-
 const VALUES = [
   {
     title: 'Depth over breadth',
@@ -190,23 +181,6 @@ export default async function AboutPage() {
               </div>
             ))}
           </div>
-        </Reveal>
-
-        {/* Timeline */}
-        <Reveal as="section" className="mb-20">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">Story so far</p>
-          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-2">Six weeks. Three iterations. Live product.</h2>
-          <p className="text-basanite-500 text-sm mb-8">From a shared frustration to a paid pilot.</p>
-          <ol className="border-l-2 border-gold-500/40 pl-6 space-y-7">
-            {TIMELINE.map(t => (
-              <li key={t.headline} className="relative">
-                <span className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-gold-500 ring-4 ring-earth-50" aria-hidden="true" />
-                <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.2em] mb-1">{t.date}</p>
-                <h3 className="font-display text-lg text-basanite-900 mb-1.5">{t.headline}</h3>
-                <p className="text-basanite-600 text-sm leading-relaxed max-w-2xl">{t.body}</p>
-              </li>
-            ))}
-          </ol>
         </Reveal>
 
         {/* Team */}
