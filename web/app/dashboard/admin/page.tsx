@@ -271,8 +271,8 @@ export default function AdminPage() {
       })()}
 
       {/* Direct-invite form. The single highest-friction admin task
-          was Drew having to curl the waitlist API to invite someone
-          new; this collapses it to one form. */}
+          used to be curling the waitlist API to invite someone new;
+          this collapses it to one form. */}
       <section className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 mb-10">
         <h2 className="text-sm font-semibold text-[#0b1f3d] dark:text-earth-100 mb-1">Invite a hirer</h2>
         <p className="text-xs text-slate-500 dark:text-earth-400 mb-4">Sends a Supabase invite email immediately. If the email is already registered, sends a fresh magic link instead.</p>

@@ -26,7 +26,6 @@ const CONTACTS = [
 
 const FOUNDERS = [
   { name: 'Aditya Shah', role: 'CEO', linkedin: 'https://www.linkedin.com/in/adityashah100/' },
-  { name: 'Andrew Robertson', role: 'CTO', linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/' },
   { name: 'Lynn Zhao', role: 'CPO', linkedin: 'https://www.linkedin.com/in/lynn-zhao-59a198292/' },
 ]
 
@@ -148,7 +147,7 @@ export default async function ContactPage() {
         <section className="mb-16">
           <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-3">Where we are</h2>
           <p className="text-basanite-600 text-base leading-relaxed max-w-2xl">
-            Manchester, United Kingdom. We work out of Frontier Fridays and the Masood Entrepreneurship Centre. Happy to meet in person if you&apos;re in the city.
+            We&apos;re based in Manchester, working out of the NatWest Hub accelerator, and you&apos;ll regularly find us at events like Venture Cafe and Silicon Mingle. Always happy to meet in person.
           </p>
         </section>
 

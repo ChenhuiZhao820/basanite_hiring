@@ -14,8 +14,8 @@ import { safeNext } from '@/lib/validate'
  * invited / recovered / magic-linked user lands on `/` with the access
  * and refresh tokens in `window.location.hash` instead of on
  * `/auth/callback`. Without this handler the tokens sit unused, the
- * user reads "looks logged-out", and onboarding silently fails (Drew
- * hit this on 2026-06-09 when sending a magic link to a new hirer).
+ * user reads "looks logged-out", and onboarding silently fails (hit
+ * this on 2026-06-09 when sending a magic link to a new hirer).
  *
  * Mount this once on the landing page; it's cheap when the fragment is
  * empty and a no-op for normal visitors.

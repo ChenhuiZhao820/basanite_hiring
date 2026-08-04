@@ -31,7 +31,7 @@ export default function Page() {
       description={DESCRIPTION}
       datePublished={DATE_PUBLISHED}
       slug={SLUG}
-      author="Andrew Robertson"
+      author="Lynn Zhao"
     >
       <p>
         We have spent the past nine months reverse-engineering the tools candidates are using to defeat technical interview platforms, partly so we understood what we needed to defend against and partly because the public conversation about these tools is dominated by either alarmism or marketing copy from the vendors themselves. This piece is the technical write-up, kept as concrete as we can make it without producing a how-to guide for would-be cheaters.

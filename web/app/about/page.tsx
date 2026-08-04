@@ -10,7 +10,7 @@ import { REGISTER_INTEREST_URL } from '@/lib/links'
 
 export const metadata: Metadata = buildMetadata({
   title: 'About',
-  description: 'Basanite was founded in 2026 by three final-year computer scientists from the University of Manchester, building the technical interview we wish had filtered us.',
+  description: 'Basanite was founded in 2026 by two final-year computer scientists from the University of Manchester, building the technical interview we wish had filtered us.',
   path: '/about',
 })
 
@@ -43,19 +43,6 @@ const TEAM = [
     ],
     blurb: 'Owns commercial, fundraising, customer discovery and positioning. Has lived the candidate side of the broken hiring funnel first-hand.',
   },
-  // Temporarily hidden from frontend
-  // {
-  //   name: 'Andrew Robertson',
-  //   role: 'CTO',
-  //   img: '/team/drew.png',
-  //   linkedin: 'https://www.linkedin.com/in/andrewrobertsonamr/',
-  //   bullets: [
-  //     'SWE Intern at The Trade Desk, Rothschild & Co, Cisco',
-  //     'ICHack26 1st place, Bloomberg Bpuzzled 1st place',
-  //     'Final-year Computer Science, University of Manchester',
-  //   ],
-  //   blurb: 'Owns the agent architecture, the Next.js + FastAPI + Supabase stack, and the production engineering of the interview itself.',
-  // },
   {
     name: 'Lynn Zhao',
     role: 'CPO',
@@ -68,15 +55,6 @@ const TEAM = [
     ],
     blurb: 'Owns product, primary research with hiring managers and occupational psychometricians, and the prompt architecture behind the interview agent.',
   },
-]
-
-const TIMELINE = [
-  { date: 'Early 2026', headline: 'Problem identified', body: 'The three of us were applying for graduate engineering roles and watching technical screens collapse: leaked question banks, take-homes that could be done by Cursor in ten minutes, and a hiring funnel that no longer measured anything real.' },
-  { date: 'April 2026', headline: 'MVP shipped', body: 'End-to-end working product: hirer dashboard, candidate portal, live 10–20 minute AI voice interview, dual reports grounded in candidate quotes. Built in week one.' },
-  { date: 'May 2026', headline: '50 trial users', body: 'University of Manchester CS students, Manchester technology recruiters, and early hirers running mock interviews. Surveyed feedback drove iteration two.' },
-  { date: 'May 2026', headline: 'Stripe VC accelerator', body: 'Accepted into the Stripe internal accelerator alongside ongoing applications to YC and VFA26.' },
-  { date: 'May 2026', headline: 'First paid pilot', body: 'Verbal commitment from a seven-figure-revenue technology recruitment firm in Manchester. First contract worth ~£40k ARR.' },
-  { date: '2026 →', headline: 'Iteration three', body: 'The AI Collaboration Workbench: a sandboxed VS Code environment where candidates ship a real ticket alongside the AI agent of their choice. The dimension no other interview measures.' },
 ]
 
 const VALUES = [
@@ -192,29 +170,12 @@ export default async function AboutPage() {
           </div>
         </Reveal>
 
-        {/* Timeline */}
-        <Reveal as="section" className="mb-20">
-          <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">Story so far</p>
-          <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-2">Six weeks. Three iterations. Live product.</h2>
-          <p className="text-basanite-500 text-sm mb-8">From a shared frustration to a paid pilot.</p>
-          <ol className="border-l-2 border-gold-500/40 pl-6 space-y-7">
-            {TIMELINE.map(t => (
-              <li key={t.headline} className="relative">
-                <span className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-gold-500 ring-4 ring-earth-50" aria-hidden="true" />
-                <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.2em] mb-1">{t.date}</p>
-                <h3 className="font-display text-lg text-basanite-900 mb-1.5">{t.headline}</h3>
-                <p className="text-basanite-600 text-sm leading-relaxed max-w-2xl">{t.body}</p>
-              </li>
-            ))}
-          </ol>
-        </Reveal>
-
         {/* Team */}
         <Reveal as="section" className="mb-20" id="team">
           <p className="text-gold-700 text-[11px] font-semibold uppercase tracking-[0.22em] mb-3">The team</p>
           <h2 className="font-display text-2xl sm:text-3xl text-basanite-900 mb-10">Built by people who felt the problem</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            {TEAM.filter(m => m.name !== 'Andrew Robertson').map(m => (
+            {TEAM.map(m => (
               <div key={m.name} className="card-hover border border-earth-300/60 bg-white p-7 flex flex-col">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="relative w-14 h-14 rounded-full overflow-hidden bg-earth-200 shrink-0">

@@ -36,7 +36,7 @@ export default function TermsPage() {
 
         <Section title="Who you are contracting with">
           <p>
-            Basanite is currently operated as an unincorporated UK venture by its three founders &mdash; <strong>Aditya Shah</strong>, <strong>Andrew Robertson</strong>, and <strong>Lynn Zhao</strong> &mdash; based in the United Kingdom. References to &ldquo;Basanite&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo; or &ldquo;our&rdquo; in these terms mean those three individuals acting jointly. Until a UK company is incorporated, obligations and liabilities under these terms are owed jointly and severally by the named founders. Once an entity is incorporated we will novate this contract to the new entity and update this page.
+            Basanite is currently operated as an unincorporated UK venture by its two founders &mdash; <strong>Aditya Shah</strong> and <strong>Lynn Zhao</strong> &mdash; based in the United Kingdom. References to &ldquo;Basanite&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo; or &ldquo;our&rdquo; in these terms mean those two individuals acting jointly. Until a UK company is incorporated, obligations and liabilities under these terms are owed jointly and severally by the named founders. Once an entity is incorporated we will novate this contract to the new entity and update this page.
           </p>
         </Section>
 

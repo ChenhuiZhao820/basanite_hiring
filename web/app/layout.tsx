@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   description: SITE_DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
-  authors: [{ name: 'Aditya Shah' }, { name: 'Andrew Robertson' }, { name: 'Lynn Zhao' }],
+  authors: [{ name: 'Aditya Shah' }, { name: 'Lynn Zhao' }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
   keywords: [
