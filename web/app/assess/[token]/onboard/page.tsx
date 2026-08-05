@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { LogoMark } from '@/components/Logo'
@@ -29,6 +29,22 @@ export default function OnboardPage() {
   // when the browser anon key isn't configured locally. Gated by a
   // gitignored env flag; never set this in production. Do not commit the flag.
   const TEST_BYPASS = process.env.NEXT_PUBLIC_ALLOW_TEST_CANDIDATE === '1'
+
+  // Already signed in (returning candidate, or an invited one arriving from
+  // their portal): skip the auth step and go straight to the CV upload,
+  // seeding name/email from the session so handleCVSubmit has them.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (cancelled || !user) return
+      setName(prev => prev || user.user_metadata?.full_name || '')
+      setEmail(prev => prev || user.email || '')
+      setStep(prev => (prev === 'auth' ? 'cv' : prev))
+    })()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function isPdf(file: File) {
     return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')

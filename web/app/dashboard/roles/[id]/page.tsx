@@ -7,6 +7,7 @@ import { RoleMenu } from '@/components/RoleMenu'
 import { RoleVoiceTile } from '@/components/RoleVoiceTile'
 import { InterviewPlanPanel } from '@/components/InterviewPlanPanel'
 import { GoLiveButton } from '@/components/GoLiveButton'
+import { InviteCandidatePanel } from '@/components/InviteCandidatePanel'
 
 export const metadata = { title: 'Role' }
 
@@ -114,6 +115,9 @@ export default async function RoleDetailPage({
         </div>
       )}
 
+      {/* Invite candidate by email */}
+      {role.status === 'live' && <InviteCandidatePanel roleId={role.id} />}
+
       {/* Interview Plan */}
       <InterviewPlanPanel
         roleId={role.id}
@@ -213,6 +217,11 @@ export default async function RoleDetailPage({
                     {a.source === 'copilot' && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-gold-500/60 text-gold-600">
                         COPILOT
+                      </span>
+                    )}
+                    {a.source === 'hirer_invite' && a.status === 'pending' && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 border border-gold-500/60 text-gold-600">
+                        INVITED
                       </span>
                     )}
                   </div>

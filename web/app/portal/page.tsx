@@ -12,21 +12,23 @@ type StepState = 'done' | 'active' | 'todo'
 function progressSteps(status: string, hasReport: boolean, source: string): Array<{ label: string; state: StepState }> {
   const interviewDone = status === 'completed'
   const interviewActive = status === 'in_progress'
+  const invitePending = status === 'pending' && source === 'hirer_invite'
   return [
-    { label: 'Applied', state: 'done' },
+    { label: source === 'hirer_invite' ? 'Invited' : 'Applied', state: 'done' },
     {
       label: source === 'copilot' ? 'Interview' : 'AI interview',
-      state: interviewDone ? 'done' : interviewActive ? 'active' : status === 'abandoned' ? 'todo' : 'active',
+      state: interviewDone ? 'done' : interviewActive ? 'active' : status === 'abandoned' || invitePending ? 'todo' : 'active',
     },
     { label: 'Feedback ready', state: hasReport ? 'done' : 'todo' },
   ]
 }
 
-function statusLabel(status: string, hasReport: boolean): { text: string; tone: string } {
+function statusLabel(status: string, hasReport: boolean, source: string): { text: string; tone: string } {
   if (status === 'completed' && hasReport) return { text: 'Feedback ready', tone: 'bg-green-100 text-green-700' }
   if (status === 'completed') return { text: 'Interview completed — feedback generating', tone: 'bg-green-100 text-green-700' }
   if (status === 'in_progress') return { text: 'Interview in progress', tone: 'bg-yellow-100 text-yellow-700' }
   if (status === 'abandoned') return { text: 'Interview not finished', tone: 'bg-red-50 text-red-500' }
+  if (status === 'pending' && source === 'hirer_invite') return { text: 'Invitation received — interview pending', tone: 'bg-gold-500/15 text-gold-600' }
   return { text: 'CV uploaded — interview pending', tone: 'bg-earth-200 text-basanite-600' }
 }
 
@@ -52,7 +54,7 @@ export default async function PortalPage() {
 
   const { data: assessments } = await service
     .from('assessments')
-    .select('id, status, created_at, completed_at, candidate_name, source, roles(title, company_name, status), reports(report_type)')
+    .select('id, status, created_at, completed_at, candidate_name, source, roles(title, company_name, status, assessment_link_token), reports(report_type)')
     .eq('candidate_user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -95,8 +97,13 @@ export default async function PortalPage() {
         ) : (
           <div className="space-y-5">
             {applications.map((a: any) => {
-              const label = statusLabel(a.status, a.hasReport)
+              const label = statusLabel(a.status, a.hasReport, a.source ?? 'autonomous')
               const steps = progressSteps(a.status, a.hasReport, a.source ?? 'autonomous')
+              const canStart =
+                a.status === 'pending' &&
+                a.source === 'hirer_invite' &&
+                a.role?.status === 'live' &&
+                a.role?.assessment_link_token
               return (
                 <div key={a.id} className="bg-white border border-earth-200 p-6">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
@@ -106,7 +113,7 @@ export default async function PortalPage() {
                         <p className="text-sm text-basanite-500 mt-0.5">{a.role.company_name}</p>
                       )}
                       <p className="text-xs text-basanite-400 mt-1">
-                        Applied {new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {a.source === 'hirer_invite' ? 'Invited' : 'Applied'} {new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
                     <span className={`shrink-0 text-xs px-3 py-1 font-medium ${label.tone}`}>{label.text}</span>
@@ -142,6 +149,25 @@ export default async function PortalPage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Invited but not yet started — start from the portal */}
+                  {canStart && (
+                    <a
+                      href={`/assess/${a.role.assessment_link_token}`}
+                      className="inline-flex items-center gap-2 bg-basanite-900 hover:bg-gold-600 text-white text-xs font-medium px-4 py-2 transition-colors"
+                    >
+                      Start interview
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </a>
+                  )}
+                  {a.status === 'pending' && a.source === 'hirer_invite' && !canStart && (
+                    <p className="text-xs text-basanite-400">
+                      This role isn&apos;t accepting interviews right now — check back later or contact the hiring team.
+                    </p>
+                  )}
 
                   {/* Feedback download — one PDF per interview */}
                   {a.hasReport && (

@@ -190,6 +190,83 @@ def get_active_assessment_for_candidate(role_id: str, candidate_user_id: str) ->
         return None
 
 
+def get_pending_invited_assessment(role_id: str, candidate_user_id: str) -> dict | None:
+    """Return this candidate's claimed-but-not-started invited assessment for
+    the role, if any. /start uses this to UPDATE the invited row in place
+    rather than inserting a duplicate — the hirer queue should show one row
+    per candidate progressing pending → cv_uploaded → … → completed."""
+    client = get_client()
+    if not client:
+        return None
+    try:
+        result = (
+            client.table("assessments")
+            .select("*")
+            .eq("role_id", role_id)
+            .eq("candidate_user_id", candidate_user_id)
+            .eq("status", "pending")
+            .in_("source", ["hirer_invite", "ats"])
+            .limit(1)
+            .execute()
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+    except Exception:
+        return None
+
+
+def get_pending_invite_by_role_and_email(role_id: str, candidate_email: str) -> dict | None:
+    """Duplicate-send guard for hirer invites: an existing pending invite for
+    the same role + email is re-sent (same token) rather than duplicated.
+
+    The email comparison happens in Python (lowercased equality) rather than
+    via `ilike`, whose `_`/`%` wildcards would mis-match addresses like
+    john_doe@example.com."""
+    client = get_client()
+    if not client:
+        return None
+    want = (candidate_email or "").strip().lower()
+    try:
+        result = (
+            client.table("assessments")
+            .select("*")
+            .eq("role_id", role_id)
+            .eq("source", "hirer_invite")
+            .eq("status", "pending")
+            .execute()
+        )
+        for row in result.data or []:
+            if (row.get("candidate_email") or "").strip().lower() == want:
+                return row
+        return None
+    except Exception:
+        return None
+
+
+def get_assessments_for_candidate_email(role_id: str, candidate_email: str) -> list[dict]:
+    """All assessments on a role for a candidate email (case-insensitive,
+    matched in Python — see get_pending_invite_by_role_and_email). Used by
+    the invite endpoint to 409 when the candidate already has an interview
+    in flight or completed."""
+    client = get_client()
+    if not client:
+        return []
+    want = (candidate_email or "").strip().lower()
+    try:
+        result = (
+            client.table("assessments")
+            .select("id, status, candidate_email")
+            .eq("role_id", role_id)
+            .execute()
+        )
+        return [
+            row for row in result.data or []
+            if (row.get("candidate_email") or "").strip().lower() == want
+        ]
+    except Exception:
+        return []
+
+
 def get_assessments_for_role(role_id: str) -> list[dict]:
     client = get_client()
     if not client:

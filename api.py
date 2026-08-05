@@ -549,6 +549,102 @@ async def get_candidates(
     return {"candidates": assessments}
 
 
+class InviteCandidateRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    candidate_name: str = Field(min_length=1, max_length=200)
+    candidate_email: str = Field(min_length=3, max_length=320)
+
+
+@app.post("/roles/{role_id}/invite")
+async def invite_candidate(
+    role_id: str,
+    body: InviteCandidateRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Hirer-initiated candidate invite. Mints a pending assessment with a
+    unique invite_token (same plumbing as ATS auto-invites) and emails the
+    candidate their personal /assess/invite/{token} link.
+
+    The Next.js layer verifies the session user owns the role before
+    proxying here; the user_id ownership re-check below is defence in depth
+    against a leaked pipeline secret being used to spray invites from
+    someone else's role.
+    """
+    _verify_internal(authorization)
+    from core.db import (
+        get_role as db_get_role,
+        create_assessment,
+        get_pending_invite_by_role_and_email,
+        get_assessments_for_candidate_email,
+    )
+    from core.email import _EMAIL_RE, send_invite_email
+
+    role = db_get_role(role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if role.get("user_id") != body.user_id:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if role["status"] != "live":
+        raise HTTPException(status_code=409, detail="Role must be live before inviting candidates")
+
+    email = body.candidate_email.strip()
+    if not _EMAIL_RE.match(email):
+        raise HTTPException(status_code=400, detail="Invalid email address")
+
+    # A candidate who already interviewed (or is mid-interview) shouldn't
+    # get a fresh invite — ENG-24's one-active-per-candidate rule holds
+    # for the invite path too.
+    existing = get_assessments_for_candidate_email(role_id, email)
+    if any(a.get("status") in ("in_progress", "completed") for a in existing):
+        raise HTTPException(
+            status_code=409,
+            detail="This candidate already has an interview in progress or completed for this role.",
+        )
+
+    # Duplicate-send guard: re-send the existing pending invite (same
+    # token) instead of minting a second row for the same email.
+    assessment = get_pending_invite_by_role_and_email(role_id, email)
+    created = False
+    if not assessment:
+        invite_token = secrets.token_urlsafe(32)
+        invite_expires_at = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+        assessment = create_assessment({
+            "role_id": role_id,
+            "candidate_name": body.candidate_name.strip(),
+            "candidate_email": email,
+            "status": "pending",
+            "source": "hirer_invite",
+            "invite_token": invite_token,
+            "invite_expires_at": invite_expires_at,
+            "is_mock": _is_test_mode_role(role_id),
+        })
+        if not assessment:
+            raise HTTPException(status_code=500, detail="Failed to create invite")
+        created = True
+
+    invite_url = _build_invite_url(assessment["invite_token"])
+    invite_sent = send_invite_email(
+        to=email,
+        candidate_name=assessment.get("candidate_name") or body.candidate_name,
+        role_title=role.get("title") or "interview",
+        company_name=role.get("company_name"),
+        invite_url=invite_url,
+        duration_minutes=role.get("interview_duration_minutes") or 30,
+    )
+
+    # The invite URL goes back to the caller: the Next layer has already
+    # verified the caller owns this role, and hirers legitimately share
+    # the link through their own channels (LinkedIn DM etc.) when email
+    # delivery isn't enough.
+    return {
+        "assessment_id": assessment["id"],
+        "invite_url": invite_url,
+        "invite_sent": invite_sent,
+        "created": created,
+        "candidate_email": email,
+    }
+
+
 # ─── JD file upload (hirer) ────────────────────────────────────────────────
 # Hirers can upload the job description as a file (PDF / .docx / .txt / .md)
 # instead of pasting it. The endpoint extracts text, then runs the hybrid
@@ -921,7 +1017,9 @@ async def start_assessment(
         create_assessment,
         update_assessment,
         create_interview_session,
+        get_interview_session,
         get_active_assessment_for_candidate,
+        get_pending_invited_assessment,
     )
     from agents.cv_extract import extract_cv
     from interview import assemble_interview_prompt
@@ -943,19 +1041,38 @@ async def start_assessment(
                 detail="An assessment already exists for this candidate on this role.",
             )
 
-    # Create assessment. `is_mock` is stamped here, once, from the role
-    # the link resolved to (designated test role + env gate) — every
-    # downstream consumer reads this stored flag, never client input.
-    assessment = create_assessment({
-        "role_id": role["id"],
-        "candidate_user_id": body.candidate_user_id,
-        "candidate_name": body.candidate_name,
-        "candidate_email": body.candidate_email,
-        "status": "cv_uploaded",
-        "is_mock": _is_test_mode_role(role["id"]),
-    })
-    if not assessment:
-        raise HTTPException(status_code=500, detail="Failed to create assessment")
+    # Invited candidates (hirer email invite / ATS sync) already have a
+    # claimed pending row for this role — update it in place so the hirer
+    # queue shows ONE row per candidate progressing pending → cv_uploaded
+    # → … → completed, not an orphaned "invited" row plus a real one.
+    invited = (
+        get_pending_invited_assessment(role["id"], body.candidate_user_id)
+        if body.candidate_user_id else None
+    )
+    if invited:
+        ok = update_assessment(
+            invited["id"],
+            candidate_name=body.candidate_name,
+            candidate_email=body.candidate_email,
+            status="cv_uploaded",
+        )
+        if not ok:
+            raise HTTPException(status_code=500, detail="Failed to start assessment")
+        assessment = invited
+    else:
+        # Create assessment. `is_mock` is stamped here, once, from the role
+        # the link resolved to (designated test role + env gate) — every
+        # downstream consumer reads this stored flag, never client input.
+        assessment = create_assessment({
+            "role_id": role["id"],
+            "candidate_user_id": body.candidate_user_id,
+            "candidate_name": body.candidate_name,
+            "candidate_email": body.candidate_email,
+            "status": "cv_uploaded",
+            "is_mock": _is_test_mode_role(role["id"]),
+        })
+        if not assessment:
+            raise HTTPException(status_code=500, detail="Failed to create assessment")
 
     # Extract CV
     cv_extracted = await extract_cv(body.cv_text, role["job_description"])
@@ -965,8 +1082,10 @@ async def start_assessment(
         experience_path=cv_extracted.get("experience_path", "path_a"),
     )
 
-    # Create interview session
-    create_interview_session(assessment["id"])
+    # Create interview session. The ATS invite path pre-creates a session
+    # shell at webhook time; don't insert a second row for it.
+    if not (invited and get_interview_session(assessment["id"])):
+        create_interview_session(assessment["id"])
 
     # Assemble the role+candidate-specific interview prompt. We pass the
     # signup-typed name as the canonical identity since CV extraction
@@ -2699,6 +2818,68 @@ async def get_invite_info(invite_token: str, request: Request):
         "interview_duration_minutes": role.get("interview_duration_minutes") or 15,
         "cv_prefilled": bool(cv),
         "experience_path": assessment.get("experience_path"),
+    }
+
+
+class ClaimInviteRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=64)
+    email: str = Field(min_length=3, max_length=320)
+
+
+@app.post("/assess/invite/{invite_token}/claim")
+async def claim_invite(
+    invite_token: str,
+    body: ClaimInviteRequest,
+    authorization: str | None = Header(default=None),
+):
+    """Bind an invited assessment to the signed-in candidate's auth user.
+
+    Called by the Next.js claim route AFTER it has verified the Supabase
+    session — user_id and email here are the authenticated values, never
+    client-supplied. The invited email must match the signed-in email
+    (same rule as /accept-invite for org invitations) so a forwarded
+    invite link can't be hijacked by whoever holds it.
+
+    The claim is only a bind: it never consumes or rotates the token, so
+    a wrong-account attempt doesn't burn the invite. Idempotent for the
+    rightful owner (re-clicking the email link after claiming is a 200).
+    """
+    _verify_internal(authorization)
+    from core.db import get_assessment_by_invite_token, get_role, update_assessment
+
+    assessment = get_assessment_by_invite_token(invite_token)
+    if not assessment:
+        # Covers "never existed" and "expired" alike.
+        raise HTTPException(status_code=404, detail="Invite not found")
+    role = get_role(assessment["role_id"])
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    if role["status"] != "live":
+        raise HTTPException(status_code=410, detail="This assessment is no longer accepting candidates")
+
+    invited_email = (assessment.get("candidate_email") or "").strip().lower()
+    signed_in_email = (body.email or "").strip().lower()
+    if invited_email and signed_in_email != invited_email:
+        raise HTTPException(
+            status_code=403,
+            detail="This invite was sent to a different email address. Sign in with the account that received it.",
+        )
+
+    current_owner = assessment.get("candidate_user_id")
+    if current_owner and current_owner != body.user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="This invite has already been claimed by another account.",
+        )
+
+    if not current_owner:
+        if not update_assessment(assessment["id"], candidate_user_id=body.user_id):
+            raise HTTPException(status_code=500, detail="Failed to claim invite")
+
+    return {
+        "assessment_id": assessment["id"],
+        "role_token": role.get("assessment_link_token"),
+        "status": assessment.get("status"),
     }
 
 
