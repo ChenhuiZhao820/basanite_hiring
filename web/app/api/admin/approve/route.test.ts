@@ -66,6 +66,9 @@ describe('POST /api/admin/approve', () => {
     const { POST } = await import('./route')
     const res = await POST(makeRequest({ id: 'wl-1', email: 'p@x.co' }) as any)
     expect(res.status).toBe(200)
+    expect(inviteUserByEmailMock).toHaveBeenCalledWith('p@x.co', expect.objectContaining({
+      data: { persona: 'hirer' },
+    }))
     expect(updateUserByIdMock).toHaveBeenCalledWith('u-1', expect.objectContaining({
       app_metadata: expect.objectContaining({ role: 'hirer' }),
     }))
@@ -76,6 +79,11 @@ describe('POST /api/admin/approve', () => {
     const { POST } = await import('./route')
     const res = await POST(makeRequest({ id: 'wl-1', email: 'p@x.co' }) as any)
     expect(res.status).toBe(200)
+    // persona rides along in user_metadata so the invite email template can
+    // render candidate copy via {{ .Data.persona }}.
+    expect(inviteUserByEmailMock).toHaveBeenCalledWith('p@x.co', expect.objectContaining({
+      data: { persona: 'candidate' },
+    }))
     expect(updateUserByIdMock).toHaveBeenCalledWith('u-1', expect.objectContaining({
       app_metadata: expect.objectContaining({ role: 'candidate', is_candidate: true }),
     }))

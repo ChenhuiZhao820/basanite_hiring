@@ -9,7 +9,11 @@
     Basanite "Invite user" email template.
     Paste into: Supabase Dashboard -> Authentication -> Email Templates -> Invite user
     Suggested subject line: You're in — set up your Basanite account
-    Variables used: {{ .ConfirmationURL }}
+    Variables used: {{ .ConfirmationURL }}, {{ .Data.persona }}
+    Supabase allows a single invite template, so candidate vs hirer copy is
+    branched inline on {{ .Data.persona }} — set from the waitlist persona by
+    /api/admin/approve via inviteUserByEmail's `data` option. Entries without
+    a persona (direct admin invites, pre-049 rows) fall through to hirer copy.
     Table-based layout + inline styles for email-client compatibility
     (Gmail strips <style> in some contexts, SVG and webfonts are unreliable).
   -->
@@ -17,7 +21,7 @@
 <body style="margin:0; padding:0; background-color:#f5f3f1;">
   <!-- Preheader: shows next to the subject line in inboxes, hidden in the body -->
   <div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
-    Your early access is ready. Set a password to start assessing candidates.
+    {{ if eq .Data.persona "candidate" }}Your early access is ready. Set a password to follow your applications and interview feedback.{{ else }}Your early access is ready. Set a password to start assessing candidates.{{ end }}
   </div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f3f1;">
@@ -58,7 +62,7 @@
                 Your request for early access to Basanite has been approved.
               </p>
               <p style="margin:0 0 32px 0; font-family:Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#d4cdc0;">
-                Set a password to finish creating your account, then start running structured, evidence-based technical assessments.
+                {{ if eq .Data.persona "candidate" }}Set a password to finish creating your account, then follow your applications, interviews and feedback from your candidate portal.{{ else }}Set a password to finish creating your account, then start running structured, evidence-based technical assessments.{{ end }}
               </p>
 
               <!-- Bulletproof button -->

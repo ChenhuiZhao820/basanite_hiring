@@ -23,9 +23,13 @@ export async function POST(request: NextRequest) {
 
   // Invite the user, Supabase sends them a magic link. After email confirmation
   // the callback routes them to /set-password so they can pick one.
+  // `data` lands in user_metadata and is exposed to the invite email template
+  // as {{ .Data.persona }}, so one Supabase template can render candidate vs
+  // hirer copy (see supabase/templates/invite.html).
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'
   const { data: invite, error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${baseUrl}/auth/callback?next=/set-password`,
+    data: { persona: entry.persona ?? 'hirer' },
   })
   if (inviteError && inviteError.message !== 'User already registered') {
     console.error('Invite error:', inviteError)
