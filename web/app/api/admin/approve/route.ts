@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   const service = createServiceClient()
 
   // Verify the waitlist entry exists and the email matches, prevents inviting arbitrary addresses
-  const { data: entry } = await service.from('waitlist').select('email').eq('id', id).single()
+  const { data: entry } = await service.from('waitlist').select('email, persona').eq('id', id).single()
   if (!entry || entry.email !== email) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
@@ -35,10 +35,22 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Tag the invited user as a hirer so middleware lets them into /dashboard.
+  // Tag the invited user based on their waitlist persona. Candidates get
+  // role 'candidate' + is_candidate so middleware routes them to /portal
+  // (mirrors /api/auth/tag-candidate — is_candidate MUST live in
+  // app_metadata, see ENG-57). Everyone else is a hirer so middleware lets
+  // them into /dashboard.
+  // Never downgrade an existing hirer to candidate (same rule as
+  // tag-candidate) — a hirer who also registered interest as a candidate
+  // keeps their dashboard access.
+  const isCandidate = entry.persona === 'candidate'
+  const targetRole = isCandidate ? 'candidate' : 'hirer'
   const invitedUser = invite?.user
-  if (invitedUser && invitedUser.app_metadata?.role !== 'hirer') {
-    const newApp = { ...(invitedUser.app_metadata || {}), role: 'hirer' }
+  const wouldDowngradeHirer = isCandidate && invitedUser?.app_metadata?.role === 'hirer'
+  if (invitedUser && !wouldDowngradeHirer && invitedUser.app_metadata?.role !== targetRole) {
+    const newApp = isCandidate
+      ? { ...(invitedUser.app_metadata || {}), role: 'candidate', is_candidate: true }
+      : { ...(invitedUser.app_metadata || {}), role: 'hirer' }
     const { error: tagError } = await service.auth.admin.updateUserById(invitedUser.id, {
       app_metadata: newApp,
     })
