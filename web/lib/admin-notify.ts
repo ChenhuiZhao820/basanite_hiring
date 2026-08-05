@@ -1,14 +1,23 @@
 // Admin notification emails, sent via the Resend REST API (no SDK — a
-// single fetch keeps the web bundle dependency-free). Mirrors the Python
-// side's core/email.py send_ops_alert: ADMIN_NOTIFY_TO (comma-separated)
-// controls recipients, falling back to OPS_ALERT_TO, then the founder
-// mailbox, so both halves of the stack alert the same people.
+// single fetch keeps the web bundle dependency-free).
+//
+// Recipient resolution, in order:
+//   1. ADMIN_NOTIFY_TO (comma-separated) — explicit override
+//   2. OPS_ALERT_TO — shared with the Python side's core/email.py
+//   3. Every account with app_metadata.is_admin — so admins receive
+//      notifications with zero extra configuration
 //
 // Best-effort by design: a notification failure must never fail the
 // user-facing request that triggered it. Callers should await this (so
-// serverless runtimes don't kill the send mid-flight) but ignore the result.
+// serverless runtimes don't kill the send mid-flight) but ignore the
+// result. Misconfiguration is logged at error level so a silent inbox is
+// diagnosable from server logs.
 
-const FALLBACK_TO = 'andrew.robertson@basanite.co.uk'
+import { createServiceClient } from '@/lib/supabase/server'
+
+// Resend's sandbox sender only delivers to the address that owns the
+// Resend account — every other recipient silently fails.
+const SANDBOX_SENDER = 'onboarding@resend.dev'
 
 function escapeHtml(s: string): string {
   return s
@@ -18,17 +27,63 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
-export async function sendAdminNotification(subject: string, lines: string[]): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY
-  const sender = process.env.RESEND_FROM ?? 'Basanite <onboarding@resend.dev>'
-  const to = (process.env.ADMIN_NOTIFY_TO ?? process.env.OPS_ALERT_TO ?? FALLBACK_TO)
+function envRecipients(): string[] {
+  return (process.env.ADMIN_NOTIFY_TO || process.env.OPS_ALERT_TO || '')
     .split(',')
     .map(s => s.trim())
     .filter(Boolean)
+}
 
-  if (!apiKey || to.length === 0) {
-    console.log('[admin-notify] skipped (RESEND_API_KEY or recipients missing)')
+async function adminAccountRecipients(): Promise<string[]> {
+  // One page of 1000 is far beyond the current account count — same
+  // assumption as the admin security route; revisit if that changes.
+  const service = createServiceClient()
+  const { data, error } = await service.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  if (error) {
+    console.error(`[admin-notify] admin lookup failed: ${error.message}`)
+    return []
+  }
+  return (data?.users ?? [])
+    .filter(u => u.app_metadata?.is_admin === true && u.email)
+    .map(u => u.email as string)
+}
+
+export async function sendAdminNotification(subject: string, lines: string[]): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY
+  const sender = process.env.RESEND_FROM || 'Basanite <onboarding@resend.dev>'
+
+  if (!apiKey) {
+    console.error(
+      '[admin-notify] RESEND_API_KEY is not set in the web app environment '
+      + '(web/.env.local locally, project env vars in production) — admin '
+      + 'notification NOT sent',
+    )
     return false
+  }
+
+  let to: string[]
+  try {
+    to = envRecipients()
+    if (to.length === 0) to = await adminAccountRecipients()
+  } catch (e) {
+    console.error(`[admin-notify] recipient resolution failed: ${e instanceof Error ? e.message : 'error'}`)
+    return false
+  }
+  if (to.length === 0) {
+    console.error(
+      '[admin-notify] no recipients: set ADMIN_NOTIFY_TO / OPS_ALERT_TO, or '
+      + 'ensure at least one account has app_metadata.is_admin — admin '
+      + 'notification NOT sent',
+    )
+    return false
+  }
+
+  if (sender.includes(SANDBOX_SENDER)) {
+    console.warn(
+      '[admin-notify] WARNING: using the Resend sandbox sender '
+      + `(${SANDBOX_SENDER}); deliveries to anyone other than the Resend `
+      + 'account owner will silently fail. Set RESEND_FROM to a verified domain.',
+    )
   }
 
   // Strip header-breaking characters and cap length, matching core/email.py.
