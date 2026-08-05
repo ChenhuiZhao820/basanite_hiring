@@ -854,6 +854,31 @@ def list_security_events(limit: int = 100) -> list[dict]:
         return []
 
 
+def admin_notifications_disabled(email: str) -> bool:
+    """True if the account with this email switched admin notification
+    emails off from the admin dashboard (app_metadata flag, set via the
+    Next.js /api/admin/notifications route). Best-effort: returns False on
+    any failure so a read hiccup never silences an alert.
+    """
+    if not email:
+        return False
+    client = get_client()
+    if not client:
+        return False
+    try:
+        result = client.auth.admin.list_users(page=1, per_page=1000)
+        users = result if isinstance(result, list) else getattr(result, "users", []) or []
+        for user in users:
+            u_email = (getattr(user, "email", "") or "").lower()
+            if u_email == email.lower():
+                meta = getattr(user, "app_metadata", None) or {}
+                return meta.get("admin_notifications_disabled") is True
+        return False
+    except Exception as e:
+        print(f"  DB admin_notifications_disabled error: {e}")
+        return False
+
+
 def set_user_suspended(user_id: str, suspended: bool, *, reason: str | None = None) -> bool:
     """Flip the tamper-proof suspension bit in auth.users.app_metadata.
 

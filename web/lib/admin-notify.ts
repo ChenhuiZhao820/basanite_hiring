@@ -34,18 +34,32 @@ function envRecipients(): string[] {
     .filter(Boolean)
 }
 
-async function adminAccountRecipients(): Promise<string[]> {
+// Admins can switch these emails off from /dashboard/admin; the flag lives
+// in app_metadata (set via /api/admin/notifications) so it applies both to
+// the automatic admin-account lookup and to env-configured recipients whose
+// address matches an account.
+async function resolveRecipients(): Promise<string[]> {
   // One page of 1000 is far beyond the current account count — same
   // assumption as the admin security route; revisit if that changes.
   const service = createServiceClient()
   const { data, error } = await service.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  const fromEnv = envRecipients()
   if (error) {
     console.error(`[admin-notify] admin lookup failed: ${error.message}`)
-    return []
+    // Delivery beats preference filtering: fall back to env recipients
+    // unfiltered rather than dropping the notification entirely.
+    return fromEnv
   }
-  return (data?.users ?? [])
-    .filter(u => u.app_metadata?.is_admin === true && u.email)
-    .map(u => u.email as string)
+  const users = data?.users ?? []
+  const optedOut = new Set(
+    users
+      .filter(u => u.app_metadata?.admin_notifications_disabled === true && u.email)
+      .map(u => (u.email as string).toLowerCase()),
+  )
+  const candidates = fromEnv.length > 0
+    ? fromEnv
+    : users.filter(u => u.app_metadata?.is_admin === true && u.email).map(u => u.email as string)
+  return candidates.filter(e => !optedOut.has(e.toLowerCase()))
 }
 
 export async function sendAdminNotification(subject: string, lines: string[]): Promise<boolean> {
@@ -63,8 +77,7 @@ export async function sendAdminNotification(subject: string, lines: string[]): P
 
   let to: string[]
   try {
-    to = envRecipients()
-    if (to.length === 0) to = await adminAccountRecipients()
+    to = await resolveRecipients()
   } catch (e) {
     console.error(`[admin-notify] recipient resolution failed: ${e instanceof Error ? e.message : 'error'}`)
     return false
@@ -72,8 +85,8 @@ export async function sendAdminNotification(subject: string, lines: string[]): P
   if (to.length === 0) {
     console.error(
       '[admin-notify] no recipients: set ADMIN_NOTIFY_TO / OPS_ALERT_TO, or '
-      + 'ensure at least one account has app_metadata.is_admin — admin '
-      + 'notification NOT sent',
+      + 'ensure at least one account has app_metadata.is_admin (and has not '
+      + 'switched email notifications off) — admin notification NOT sent',
     )
     return false
   }
@@ -98,7 +111,9 @@ export async function sendAdminNotification(subject: string, lines: string[]): P
       <h1 style="font-size:20px;margin:0 0 12px">${escapeHtml(safeSubject)}</h1>
       ${body}
       <p style="font-size:12px;color:#8a7a5e;margin-top:24px;border-top:1px solid #eee;padding-top:16px">
-        You're receiving this because you're a Basanite admin.
+        You're receiving this because you're a Basanite admin. To stop these
+        emails, open your <a href="https://basanite.co.uk/dashboard/admin" style="color:#8a7a5e">admin dashboard</a>
+        and switch off &ldquo;Email notifications&rdquo;.
       </p>
     </div>
   </body>

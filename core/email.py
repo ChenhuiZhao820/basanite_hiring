@@ -362,22 +362,39 @@ def send_dsar_verification_email(*, to: str, request_type: str, verify_url: str)
 
 
 def send_ops_alert(subject: str, body: str) -> bool:
-    """Send a plaintext alert to the founder on critical ATS sync failures.
-    OPS_ALERT_TO env controls recipient; falls back to RESEND_FROM mailbox."""
+    """Send a plaintext alert to the admin/founder mailbox (security strikes,
+    critical ATS sync failures). OPS_ALERT_TO env controls recipient; falls
+    back to the founder mailbox. Respects the recipient's per-admin
+    email-notification opt-out (admin dashboard toggle)."""
     api_key = os.getenv("RESEND_API_KEY", "")
     sender = os.getenv("RESEND_FROM", "Basanite <onboarding@resend.dev>")
     to = os.getenv("OPS_ALERT_TO", "andrew.robertson@basanite.co.uk")
     if not api_key or not to:
         print("  [email/ops] skipped (RESEND_API_KEY or OPS_ALERT_TO missing)")
         return False
+
+    from core.db import admin_notifications_disabled
+    if admin_notifications_disabled(to):
+        print("  [email/ops] skipped (recipient switched email notifications off)")
+        return False
+
     try:
         import resend
         resend.api_key = api_key
         safe_subject = _strip_header(subject)[:160] or "Basanite ATS alert"
+        opt_out_note = (
+            "You're receiving this because you're a Basanite admin. "
+            "To stop these emails, open your admin dashboard "
+            "(https://basanite.co.uk/dashboard/admin) and switch off "
+            "\u201cEmail notifications\u201d."
+        )
         html = (
             "<pre style='font-family:ui-monospace,Menlo,monospace;"
             "font-size:13px;white-space:pre-wrap'>"
             f"{escape(body)}</pre>"
+            "<p style='font-size:12px;color:#8a7a5e;margin-top:24px;"
+            "border-top:1px solid #eee;padding-top:16px'>"
+            f"{escape(opt_out_note)}</p>"
         )
         resend.Emails.send({
             "from": sender,

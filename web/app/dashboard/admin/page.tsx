@@ -65,6 +65,10 @@ export default function AdminPage() {
   // (drives the red-dot badge on the Security card).
   const [newSecurityEvents, setNewSecurityEvents] = useState(0)
 
+  // Per-admin email notification preference (null until loaded).
+  const [emailNotifications, setEmailNotifications] = useState<boolean | null>(null)
+  const [togglingEmail, setTogglingEmail] = useState(false)
+
   useEffect(() => {
     // Greet the admin by first name. Prefer explicit profile names; fall
     // back to the email local-part so the greeting never reads bare.
@@ -84,9 +88,34 @@ export default function AdminPage() {
       .catch(() => {/* non-fatal: the waitlist is the primary admin surface */})
     fetch('/api/admin/notifications')
       .then(r => r.json())
-      .then(data => setNewSecurityEvents(data.new_security_events ?? 0))
+      .then(data => {
+        setNewSecurityEvents(data.new_security_events ?? 0)
+        setEmailNotifications(data.email_notifications_enabled ?? true)
+      })
       .catch(() => {/* non-fatal: badge only */})
   }, [])
+
+  async function toggleEmailNotifications() {
+    if (emailNotifications === null || togglingEmail) return
+    const next = !emailNotifications
+    setTogglingEmail(true)
+    try {
+      const res = await fetch('/api/admin/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_email_notifications', enabled: next }),
+      })
+      if (res.ok) {
+        setEmailNotifications(next)
+        flash(next ? 'Email notifications switched on.' : 'Email notifications switched off.')
+      } else {
+        const d = await res.json().catch(() => ({}))
+        setError(d.error ?? 'Failed to update notification preference.')
+      }
+    } finally {
+      setTogglingEmail(false)
+    }
+  }
 
   async function setIssueStatus(id: string, status: 'new' | 'resolved') {
     setResolvingIssue(id)
@@ -327,6 +356,31 @@ export default function AdminPage() {
             {inviting ? 'Sending…' : 'Send invite'}
           </button>
         </form>
+      </section>
+
+      {/* Per-admin email notification preference. Backed by app_metadata
+          via /api/admin/notifications; every admin email links here so
+          recipients can always find the off switch. */}
+      <section className="border border-slate-200 dark:border-basanite-700 bg-white dark:bg-basanite-800 p-5 mb-10 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-sm font-semibold text-[#0b1f3d] dark:text-earth-100 mb-1">Email notifications</h2>
+          <p className="text-xs text-slate-500 dark:text-earth-400">
+            Emails you when someone joins the waitlist or a security event is logged. Only affects your account — other admins keep their own setting.
+          </p>
+        </div>
+        <button
+          role="switch"
+          aria-checked={emailNotifications === true}
+          onClick={toggleEmailNotifications}
+          disabled={emailNotifications === null || togglingEmail}
+          className={`shrink-0 text-xs font-medium px-4 py-2 border transition-colors disabled:opacity-50 ${
+            emailNotifications
+              ? 'border-[#1d4ed8] text-[#1d4ed8] dark:text-[#3b82f6] dark:border-[#3b82f6]'
+              : 'border-slate-300 dark:border-basanite-600 text-slate-500 dark:text-earth-400'
+          }`}
+        >
+          {emailNotifications === null ? '…' : togglingEmail ? '…' : emailNotifications ? 'On' : 'Off'}
+        </button>
       </section>
     </div>
   )

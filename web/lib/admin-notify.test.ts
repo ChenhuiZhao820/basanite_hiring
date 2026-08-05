@@ -52,12 +52,11 @@ describe('sendAdminNotification', () => {
     errorSpy.mockRestore()
   })
 
-  it('sends to ADMIN_NOTIFY_TO recipients when set (no admin lookup)', async () => {
+  it('sends to ADMIN_NOTIFY_TO recipients when set (overrides admin lookup)', async () => {
     vi.stubEnv('ADMIN_NOTIFY_TO', 'a@x.com, b@y.com')
     const { sendAdminNotification } = await import('./admin-notify')
     const ok = await sendAdminNotification('Test', ['line'])
     expect(ok).toBe(true)
-    expect(listUsersMock).not.toHaveBeenCalled()
     expect(lastSendPayload().to).toEqual(['a@x.com', 'b@y.com'])
   })
 
@@ -78,6 +77,57 @@ describe('sendAdminNotification', () => {
       'admin@basanite.co.uk',
       'second-admin@basanite.co.uk',
     ])
+  })
+
+  it('excludes admins who switched email notifications off', async () => {
+    listUsersMock.mockResolvedValue({
+      data: {
+        users: [
+          { id: 'u1', email: 'admin@basanite.co.uk', app_metadata: { is_admin: true } },
+          { id: 'u3', email: 'second-admin@basanite.co.uk', app_metadata: { is_admin: true, admin_notifications_disabled: true } },
+        ],
+      },
+      error: null,
+    })
+    const { sendAdminNotification } = await import('./admin-notify')
+    const ok = await sendAdminNotification('Test', ['line'])
+    expect(ok).toBe(true)
+    expect(lastSendPayload().to).toEqual(['admin@basanite.co.uk'])
+  })
+
+  it('excludes env-configured recipients whose account opted out', async () => {
+    vi.stubEnv('ADMIN_NOTIFY_TO', 'Admin@Basanite.co.uk, external@x.com')
+    listUsersMock.mockResolvedValue({
+      data: {
+        users: [
+          { id: 'u1', email: 'admin@basanite.co.uk', app_metadata: { is_admin: true, admin_notifications_disabled: true } },
+        ],
+      },
+      error: null,
+    })
+    const { sendAdminNotification } = await import('./admin-notify')
+    const ok = await sendAdminNotification('Test', ['line'])
+    expect(ok).toBe(true)
+    expect(lastSendPayload().to).toEqual(['external@x.com'])
+  })
+
+  it('still sends to env recipients unfiltered when the admin lookup errors', async () => {
+    vi.stubEnv('ADMIN_NOTIFY_TO', 'a@x.com')
+    listUsersMock.mockResolvedValue({ data: null, error: { message: 'boom' } })
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { sendAdminNotification } = await import('./admin-notify')
+    const ok = await sendAdminNotification('Test', ['line'])
+    expect(ok).toBe(true)
+    expect(lastSendPayload().to).toEqual(['a@x.com'])
+    errorSpy.mockRestore()
+  })
+
+  it('tells recipients how to turn notifications off', async () => {
+    const { sendAdminNotification } = await import('./admin-notify')
+    await sendAdminNotification('Test', ['line'])
+    const html = lastSendPayload().html as string
+    expect(html).toContain('https://basanite.co.uk/dashboard/admin')
+    expect(html).toContain('Email notifications')
   })
 
   it('returns false and logs loudly when no recipients can be resolved', async () => {
