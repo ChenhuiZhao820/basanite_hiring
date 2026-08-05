@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -8,6 +9,20 @@ export default function DashboardNav({ isAdmin }: { isAdmin?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
+  const [needsAttention, setNeedsAttention] = useState(false)
+
+  // Red-dot badge on the Admin link: pending waitlist requests or security
+  // events the admin hasn't reviewed yet. Re-checked on navigation so the
+  // dot clears promptly after the admin deals with the queue.
+  useEffect(() => {
+    if (!isAdmin) return
+    fetch('/api/admin/notifications')
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (data) setNeedsAttention((data.pending_waitlist ?? 0) > 0 || (data.new_security_events ?? 0) > 0)
+      })
+      .catch(() => {/* badge is best-effort */})
+  }, [isAdmin, pathname])
 
   async function signOut() {
     await supabase.auth.signOut()
@@ -70,9 +85,15 @@ export default function DashboardNav({ isAdmin }: { isAdmin?: boolean }) {
           <span className="text-slate-200 dark:text-basanite-700 text-xs">|</span>
           <Link
             href="/dashboard/admin"
-            className="text-xs text-slate-400 dark:text-earth-500 hover:text-[#1a1a18] dark:hover:text-earth-100 px-3 py-1.5 transition-colors"
+            className="relative text-xs text-slate-400 dark:text-earth-500 hover:text-[#1a1a18] dark:hover:text-earth-100 px-3 py-1.5 transition-colors"
           >
             Admin
+            {needsAttention && (
+              <span
+                className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-red-500"
+                aria-label="Admin items need attention"
+              />
+            )}
           </Link>
         </>
       )}

@@ -60,7 +60,12 @@ export default function AdminSecurityPage() {
       .catch(() => { setError('Failed to load security events.'); setLoading(false) })
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+    // Opening this page counts as reviewing the log: advance this admin's
+    // security_seen_at watermark so the red-dot badge clears.
+    fetch('/api/admin/notifications', { method: 'POST' }).catch(() => {/* badge only */})
+  }, [])
 
   async function act(userId: string, action: 'suspend' | 'reinstate') {
     setError('')
