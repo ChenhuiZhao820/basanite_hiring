@@ -670,6 +670,7 @@ async def invite_candidate(
         company_name=role.get("company_name"),
         invite_url=invite_url,
         duration_minutes=role.get("interview_duration_minutes") or 30,
+        role_summary=role.get("job_description"),
     )
 
     # The invite URL goes back to the caller: the Next layer has already
@@ -2889,6 +2890,7 @@ async def _handle_application_event(payload: dict, linked_account_id: str | None
                 company_name=role.get("company_name"),
                 invite_url=invite_url,
                 duration_minutes=role.get("interview_duration_minutes") or 30,
+                role_summary=role.get("job_description"),
             )
         except Exception as e:
             print(f"  [ats/webhook] invite email failed: {type(e).__name__}: {e}")
