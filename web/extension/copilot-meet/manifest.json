@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Basanite Copilot for Google Meet",
+  "version": "1.0.0",
+  "description": "Overlay live Basanite Copilot suggestions inside a Google Meet call.",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "https://basanite.co.uk/*",
+    "https://*.basanite.co.uk/*",
+    "http://localhost:3000/*",
+    "http://localhost:3001/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content-meet.js"],
+      "css": ["content-meet.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://*.basanite.co.uk/*", "http://localhost:3000/*"],
+      "js": ["content-basanite.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["overlay.html", "overlay.css", "overlay.js"],
+      "matches": ["https://meet.google.com/*"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
