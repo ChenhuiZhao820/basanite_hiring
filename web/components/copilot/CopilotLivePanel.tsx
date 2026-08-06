@@ -224,26 +224,68 @@ export function CopilotLivePanel({ roleId, sessionId }: Props) {
     }
   }
 
-  async function handleProbeAction(action: 'asked' | 'adapted' | 'dismissed') {
-    const current = probe
-    setProbe(null)
-    if (!current) return
+  const logProbeAction = useCallback(async (action: 'asked' | 'adapted' | 'dismissed', probeData: Probe | null) => {
+    if (!probeData) return
     try {
       await fetch(`/api/copilot/sessions/${sessionId}/probe-event`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action,
-          dimension_key: current.dimension,
-          technique: current.technique,
-          probe_text: current.text,
-          reason: current.reason,
+          dimension_key: probeData.dimension,
+          technique: probeData.technique,
+          probe_text: probeData.text,
+          reason: probeData.reason,
         }),
       })
     } catch {
       // Metric logging is best-effort; never interrupts the interview.
     }
+  }, [sessionId])
+
+  async function handleProbeAction(action: 'asked' | 'adapted' | 'dismissed') {
+    const current = probe
+    setProbe(null)
+    if (!current) return
+    await logProbeAction(action, current)
   }
+
+  // Broadcast live state to the Chrome extension so it can render an overlay
+  // inside the Google Meet tab.
+  useEffect(() => {
+    if (phase !== 'live') return
+    window.postMessage({
+      type: 'BASANITE_COPILOT_TICK',
+      payload: {
+        sessionId,
+        roleId,
+        candidateName,
+        elapsed,
+        targetMinutes,
+        mode,
+        saturation,
+        probe,
+        flags,
+        pacing,
+      },
+    }, '*')
+  }, [phase, sessionId, roleId, candidateName, elapsed, targetMinutes, mode, saturation, probe, flags, pacing])
+
+  // Listen for probe actions sent from the Chrome extension overlay.
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (event.source !== window) return
+      const msg = event.data
+      if (msg?.type === 'BASANITE_COPILOT_PROBE_ACTION') {
+        const payload = msg.payload || {}
+        const current = probe
+        setProbe(null)
+        void logProbeAction(payload.action, payload.probe || current)
+      }
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [probe, logProbeAction])
 
   async function handleEnd() {
     setPhase('ending')
@@ -350,14 +392,25 @@ export function CopilotLivePanel({ roleId, sessionId }: Props) {
                 : `Listening — interviewing ${candidateName || 'candidate'}`}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleEnd}
-          disabled={phase === 'ending'}
-          className="border border-red-300 text-red-600 text-xs font-medium px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950 transition-colors disabled:opacity-60"
-        >
-          {phase === 'ending' ? 'Scoring…' : 'End interview'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.postMessage({ type: 'BASANITE_COPILOT_ENABLE_OVERLAY' }, '*')}
+            disabled={phase === 'ending'}
+            className="border border-earth-200 dark:border-basanite-600 text-basanite-600 dark:text-earth-300 text-xs font-medium px-3 py-2 hover:bg-earth-50 dark:hover:bg-basanite-700 transition-colors disabled:opacity-60"
+            title="Open a live suggestions overlay inside the Google Meet tab (requires the Basanite Copilot extension)"
+          >
+            Open in Meet
+          </button>
+          <button
+            type="button"
+            onClick={handleEnd}
+            disabled={phase === 'ending'}
+            className="border border-red-300 text-red-600 text-xs font-medium px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950 transition-colors disabled:opacity-60"
+          >
+            {phase === 'ending' ? 'Scoring…' : 'End interview'}
+          </button>
+        </div>
       </div>
 
       {micError && <p className="text-xs text-red-600 mb-3">{micError}</p>}

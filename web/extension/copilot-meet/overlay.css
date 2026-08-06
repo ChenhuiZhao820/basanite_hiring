@@ -1,0 +1,258 @@
+:root {
+  --bg: #1e1c1a;
+  --panel: #252320;
+  --panel-2: #2d2b28;
+  --text: #f2efe9;
+  --text-muted: #a8a29a;
+  --gold: #c49a2f;
+  --gold-light: #d4a843;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --border: rgba(255, 255, 255, 0.12);
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: transparent;
+}
+
+.app {
+  width: 320px;
+  max-width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px rgba(196, 154, 47, 0.25);
+}
+
+.brand-title {
+  letter-spacing: 0.02em;
+}
+
+.header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.icon-btn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.content {
+  padding: 12px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+}
+
+.empty-state {
+  margin: 8px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.section {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.pacing {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.pacing.warn {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+.pacing.ok {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+}
+
+.dims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dim {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.dim::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.dim.none::before {
+  background: #78716c;
+}
+
+.dim.partial::before {
+  background: var(--yellow);
+}
+
+.dim.saturated::before {
+  background: var(--green);
+}
+
+.probe-text {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 6px;
+}
+
+.probe-reason {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  font-style: italic;
+}
+
+.probe-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.probe-actions button {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.probe-actions button:hover {
+  background: var(--bg);
+}
+
+.probe-actions button.asked:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.probe-actions button.adapted:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.probe-actions button.dismissed:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.flags ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.flags li {
+  margin-bottom: 4px;
+}
+
+.flags li:last-child {
+  margin-bottom: 0;
+}
+
+.hidden {
+  display: none;
+}
