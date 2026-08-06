@@ -7,7 +7,7 @@ test_email_send.py with Resend mocked.
 import pytest
 
 from core.email import (
-    _bullet_list, _render_report_html, _scrub_recipient, _strip_header,
+    _bullet_list, _render_invite_html, _render_report_html, _scrub_recipient, _strip_header,
 )
 
 
@@ -103,3 +103,34 @@ class TestRenderReportHtml:
     def test_handles_missing_candidate_name(self):
         out = _render_report_html("", "Role", {})
         assert "there" in out  # falls back to "Hi there,"
+
+
+class TestRenderInviteHtml:
+    def test_includes_role_title_and_company(self):
+        out = _render_invite_html("Jane", "Senior Engineer", "Acme", "https://example.com/invite", 30, None)
+        assert "Senior Engineer" in out
+        assert "Acme" in out
+        assert "30 minutes" in out
+
+    def test_includes_role_summary(self):
+        summary = "We are looking for a hands-on engineer to lead our platform team. You will ship production code, mentor juniors, and own the observability stack."
+        out = _render_invite_html("Jane", "Senior Engineer", "Acme", "https://example.com/invite", 30, summary)
+        assert "About the role" in out
+        assert "hands-on engineer" in out
+        assert out.count("mentor juniors") == 1  # truncated but present
+
+    def test_escapes_summary_html_and_truncates(self):
+        summary = "<script>alert(1)</script> " + "x " * 300
+        out = _render_invite_html("Jane", "R", "C", "https://example.com/invite", 15, summary)
+        assert "<script>" not in out
+        assert "&lt;script&gt;" not in out  # stripped entirely before escape
+        assert "x x" in out
+        # The 600-char input is truncated; the rendered output should be
+        # much smaller than the un-truncated HTML would have been.
+        assert out.count("x x") < 200
+
+    def test_handles_missing_company_and_summary(self):
+        out = _render_invite_html("Jane", "Senior Engineer", None, "https://example.com/invite", 30, None)
+        assert "Senior Engineer" in out
+        assert "About the role" not in out
+        assert "Start your interview" in out

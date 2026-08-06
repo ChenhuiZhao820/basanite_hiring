@@ -145,11 +145,41 @@ def send_report_email(
 
 # ─── Candidate invite (PR5/PR6) ────────────────────────────────────────────
 
-def _render_invite_html(candidate_name: str, role_title: str, company_name: str | None, invite_url: str, duration_minutes: int) -> str:
+def _format_invite_role_summary(role_title: str, company_name: str | None, duration_minutes: int, role_summary: str | None) -> str:
+    """Build a short, email-safe role overview block."""
+    safe_title = escape(role_title or "this role")
+    safe_company = escape(company_name or "")
+    company_line = f" at {safe_company}" if safe_company else ""
+
+    if role_summary:
+        # Collapse whitespace, strip HTML-ish tags, and keep a readable snippet.
+        text = re.sub(r"<[^>]+>", "", role_summary or "")
+        text = re.sub(r"\s+", " ", text).strip()
+        text = text[:400] + ("…" if len(text) >= 400 else "")
+        safe_summary = escape(text)
+        summary_html = (
+            f'<p style="font-size:13px;line-height:1.55;color:#555;margin:12px 0 0">'
+            f'<strong>About the role</strong><br>{safe_summary}'
+            f'</p>'
+        )
+    else:
+        summary_html = ""
+
+    return f"""
+      <div style="background:#f9f7f3;border:1px solid #e5dccd;padding:16px;margin:20px 0">
+        <p style="font-size:13px;margin:0 0 4px"><strong>Role:</strong> {safe_title}{company_line}</p>
+        <p style="font-size:13px;margin:0"><strong>Estimated time:</strong> {duration_minutes} minutes</p>
+        {summary_html}
+      </div>
+    """.strip()
+
+
+def _render_invite_html(candidate_name: str, role_title: str, company_name: str | None, invite_url: str, duration_minutes: int, role_summary: str | None) -> str:
     safe_name = escape(candidate_name or "there")
     safe_role = escape(role_title or "your interview")
     safe_company = escape(company_name or "")
     company_line = f" with {safe_company}" if safe_company else ""
+    role_block = _format_invite_role_summary(role_title, company_name, duration_minutes, role_summary)
     return f"""
 <!doctype html>
 <html>
@@ -160,6 +190,7 @@ def _render_invite_html(candidate_name: str, role_title: str, company_name: str 
       <p style="font-size:15px;line-height:1.55;color:#333;margin:0 0 16px">
         Hi {safe_name}, your application{company_line} has been received and we'd like to invite you to a short conversational interview.
       </p>
+      {role_block}
       <p style="font-size:15px;line-height:1.55;color:#333;margin:0 0 24px">
         It takes about {duration_minutes} minutes. You'll talk to an AI interviewer about your real experience, no scripted questions.
         Use a quiet space and a working microphone.
@@ -190,6 +221,7 @@ def send_invite_email(
     company_name: str | None,
     invite_url: str,
     duration_minutes: int = 30,
+    role_summary: str | None = None,
 ) -> bool:
     """Send the candidate their unique interview invite link.
     Returns True on Resend success, False on any failure (logged)."""
@@ -207,14 +239,18 @@ def send_invite_email(
             "deliveries to anyone other than the Resend account email will fail."
         )
     safe_role = _strip_header(role_title)[:140] or "interview"
+    safe_company = _strip_header(company_name or "")[:80]
+    subject = f"Your interview invite, {safe_role}"
+    if safe_company:
+        subject = f"Your interview invite for {safe_role} at {safe_company}"
     try:
         import resend
         resend.api_key = api_key
         resp = resend.Emails.send({
             "from": sender,
             "to": [to],
-            "subject": f"Your interview invite, {safe_role}",
-            "html": _render_invite_html(candidate_name, safe_role, company_name, invite_url, duration_minutes),
+            "subject": subject,
+            "html": _render_invite_html(candidate_name, safe_role, company_name, invite_url, duration_minutes, role_summary),
         })
         msg_id = (resp or {}).get("id") if isinstance(resp, dict) else None
         if msg_id:
