@@ -47,7 +47,7 @@ export default function AdminWaitlistPage() {
   // Single-use sign-in link surface. Shown in a small inline panel
   // so the admin can copy it and paste into Telegram / Signal / SMS
   // when Supabase's email gets junked by the recipient's provider.
-  const [generatedLink, setGeneratedLink] = useState<{ email: string; url: string } | null>(null)
+  const [generatedLink, setGeneratedLink] = useState<{ email: string; url: string; mode: 'invite' | 'magic_link' } | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/waitlist')
@@ -114,14 +114,16 @@ export default function AdminWaitlistPage() {
     if (!res.ok) {
       setError(data.error ?? 'Failed to generate link.')
     } else {
-      setGeneratedLink({ email: entry.email, url: data.action_link })
+      const mode = data.mode === 'invite' ? 'invite' : 'magic_link'
+      const label = mode === 'invite' ? 'Invite' : 'Sign-in'
+      setGeneratedLink({ email: entry.email, url: data.action_link, mode })
       // Best-effort copy. clipboard.writeText is gated on a user gesture;
       // since this fires from a click handler, it will normally succeed.
       try {
         await navigator.clipboard.writeText(data.action_link)
-        flash(`Sign-in link for ${entry.email} copied to clipboard.`)
+        flash(`${label} link for ${entry.email} copied to clipboard.`)
       } catch {
-        flash(`Sign-in link generated; copy from the panel below.`)
+        flash(`${label} link generated; copy from the panel below.`)
       }
     }
     setLinking(null)
@@ -192,7 +194,9 @@ export default function AdminWaitlistPage() {
       {generatedLink && (
         <section className="border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/40 p-4 mb-10">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <p className="text-xs font-medium text-amber-900 dark:text-amber-100">Sign-in link for {generatedLink.email}</p>
+            <p className="text-xs font-medium text-amber-900 dark:text-amber-100">
+              {generatedLink.mode === 'invite' ? 'Invite link' : 'Sign-in link'} for {generatedLink.email}
+            </p>
             <button
               onClick={() => setGeneratedLink(null)}
               className="text-xs text-amber-700 hover:underline"
@@ -200,7 +204,12 @@ export default function AdminWaitlistPage() {
               Dismiss
             </button>
           </div>
-          <p className="text-[11px] text-amber-800 dark:text-amber-200 mb-2">Single use, expires in ~1 hour. Send via Telegram, Signal, SMS, or any out-of-band channel.</p>
+          <p className="text-[11px] text-amber-800 dark:text-amber-200 mb-2">
+            Single use, expires in ~1 hour.
+            {generatedLink.mode === 'invite'
+              ? ' The recipient uses this to create their account and set a password.'
+              : ' Send via Telegram, Signal, SMS, or any out-of-band channel.'}
+          </p>
           <textarea
             readOnly
             value={generatedLink.url}
