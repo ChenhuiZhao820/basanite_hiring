@@ -4,6 +4,7 @@ import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { safeNext } from '@/lib/validate'
+import { resolveCallbackDestination } from '@/lib/auth-callback-destination'
 
 function CallbackHandler() {
   const router = useRouter()
@@ -19,7 +20,20 @@ function CallbackHandler() {
     }
 
     const supabase = createClient()
+
+    // Supabase's redirect_to query string isn't reliable for detecting a
+    // recovery flow here — confirmed empirically that `next` can be dropped
+    // on a successful PKCE recovery exchange even though `code` survives,
+    // which silently sent password-reset users to /dashboard instead of
+    // /set-password. The PASSWORD_RECOVERY auth event is derived from the
+    // session itself rather than the URL, so it isn't subject to that.
+    let isRecovery = false
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') isRecovery = true
+    })
+
     supabase.auth.exchangeCodeForSession(code).then(async ({ error }) => {
+      subscription.unsubscribe()
       if (error) {
         const isExpired = error.code === 'otp_expired'
         if (isExpired) {
@@ -34,10 +48,8 @@ function CallbackHandler() {
           return
         }
         router.replace('/login?error=' + encodeURIComponent('Verification link has expired or has already been used. Please sign up again.'))
-      } else if (next === '/dashboard') {
-        router.replace('/login?verified=1')
       } else {
-        router.replace(next)
+        router.replace(resolveCallbackDestination(next, isRecovery))
       }
     })
   }, [router, searchParams])
