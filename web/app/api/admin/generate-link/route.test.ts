@@ -25,7 +25,10 @@ describe('POST /api/admin/generate-link', () => {
   beforeEach(() => {
     allowMock.mockResolvedValue(true)
     generateLinkMock.mockResolvedValue({
-      data: { properties: { action_link: 'https://supabase.example/auth/v1/verify?token=…' } },
+      data: {
+        user: { email_confirmed_at: null },
+        properties: { action_link: 'https://supabase.example/invite' },
+      },
       error: null,
     })
   })
@@ -63,18 +66,50 @@ describe('POST /api/admin/generate-link', () => {
     expect(res.status).toBe(429)
   })
 
-  it('returns a generated magic link on the happy path', async () => {
+  it('returns a generated invite link on the happy path', async () => {
     getUserMock.mockResolvedValue({ data: { user: { id: 'a', app_metadata: { is_admin: true } } } })
     const { POST } = await import('./route')
     const res = await POST(makeRequest({ email: 'Test@Example.COM' }) as any)
     expect(res.status).toBe(200)
     const data = await res.json()
+    expect(data.mode).toBe('invite')
     expect(data.action_link).toContain('https://supabase.example')
-    // Lower-cases the email and uses magiclink (not invite) so the call
-    // works for already-registered users too.
+    // Lower-cases the email and starts with an invite for fresh/unconfirmed
+    // users; it falls back to a magic link when the account is already
+    // confirmed.
+    expect(generateLinkMock).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'invite',
+      email: 'test@example.com',
+    }))
+  })
+
+  it('falls back to a magic link when the user is already confirmed', async () => {
+    getUserMock.mockResolvedValue({ data: { user: { id: 'a', app_metadata: { is_admin: true } } } })
+    generateLinkMock.mockImplementation((params: any) =>
+      Promise.resolve(
+        params?.type === 'invite'
+          ? {
+              data: {
+                user: { email_confirmed_at: '2026-01-01T00:00:00Z' },
+                properties: { action_link: 'https://supabase.example/invite' },
+              },
+              error: null,
+            }
+          : {
+              data: { properties: { action_link: 'https://supabase.example/magic' } },
+              error: null,
+            },
+      ),
+    )
+    const { POST } = await import('./route')
+    const res = await POST(makeRequest({ email: 'confirmed@example.com' }) as any)
+    expect(res.status).toBe(200)
+    const data = await res.json()
+    expect(data.mode).toBe('magic_link')
+    expect(data.action_link).toContain('/magic')
     expect(generateLinkMock).toHaveBeenCalledWith(expect.objectContaining({
       type: 'magiclink',
-      email: 'test@example.com',
+      email: 'confirmed@example.com',
     }))
   })
 

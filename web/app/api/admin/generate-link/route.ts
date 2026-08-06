@@ -51,26 +51,80 @@ export async function POST(request: NextRequest) {
 
   const service = createServiceClient()
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://basanite.co.uk'
+  const redirectTo = `${baseUrl}/auth/callback?next=/set-password`
 
-  const { data, error } = await service.auth.admin.generateLink({
-    type: 'magiclink',
+  // Always start with an invite-style link. This is the right link for a
+  // candidate (or hirer) who let the original account-creation email expire,
+  // because it lets them confirm their email and set a password. If the user
+  // is already confirmed, fall back to a one-time sign-in link.
+  let mode: 'invite' | 'magic_link' = 'invite'
+  let actionLink: string | null = null
+
+  const { data: inviteData, error: inviteErr } = await service.auth.admin.generateLink({
+    type: 'invite',
     email,
-    options: { redirectTo: `${baseUrl}/auth/callback?next=/set-password` },
+    options: { redirectTo },
   })
-  if (error) {
-    console.error('[admin-generate-link] failed:', error)
-    return NextResponse.json(
-      { error: `Could not generate link: ${error.message}` },
-      { status: 500 },
-    )
+
+  if (inviteErr) {
+    const alreadyRegistered =
+      inviteErr.message === 'User already registered' ||
+      /already.*registered/i.test(inviteErr.message ?? '')
+
+    if (!alreadyRegistered) {
+      console.error('[admin-generate-link] failed:', inviteErr)
+      return NextResponse.json(
+        { error: `Could not generate link: ${inviteErr.message}` },
+        { status: 500 },
+      )
+    }
+
+    // Confirmed/returning user — use a fresh sign-in link.
+    const { data: magicData, error: magicErr } = await service.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: { redirectTo },
+    })
+    if (magicErr) {
+      console.error('[admin-generate-link] magiclink failed:', magicErr)
+      return NextResponse.json(
+        { error: `Could not generate sign-in link: ${magicErr.message}` },
+        { status: 500 },
+      )
+    }
+    mode = 'magic_link'
+    actionLink =
+      magicData?.properties?.action_link
+      ?? (magicData as { action_link?: string } | null | undefined)?.action_link
+      ?? null
+  } else if (inviteData?.user?.email_confirmed_at) {
+    // generateLink for an existing, already-confirmed user will still create an
+    // invite-style link; for a sign-in use-case, swap it for a magic link.
+    const { data: magicData, error: magicErr } = await service.auth.admin.generateLink({
+      type: 'magiclink',
+      email,
+      options: { redirectTo },
+    })
+    if (magicErr) {
+      console.error('[admin-generate-link] magiclink failed:', magicErr)
+      return NextResponse.json(
+        { error: `Could not generate sign-in link: ${magicErr.message}` },
+        { status: 500 },
+      )
+    }
+    mode = 'magic_link'
+    actionLink =
+      magicData?.properties?.action_link
+      ?? (magicData as { action_link?: string } | null | undefined)?.action_link
+      ?? null
+  } else {
+    mode = 'invite'
+    actionLink =
+      inviteData?.properties?.action_link
+      ?? (inviteData as { action_link?: string } | null | undefined)?.action_link
+      ?? null
   }
 
-  // Modern Supabase SDK returns the URL on data.properties.action_link;
-  // we also tolerate older versions that put it at the top level.
-  const actionLink =
-    data?.properties?.action_link
-    ?? (data as { action_link?: string } | null | undefined)?.action_link
-    ?? null
   if (!actionLink) {
     return NextResponse.json(
       { error: 'Supabase returned no action link.' },
@@ -78,5 +132,5 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  return NextResponse.json({ ok: true, action_link: actionLink })
+  return NextResponse.json({ ok: true, mode, action_link: actionLink })
 }
