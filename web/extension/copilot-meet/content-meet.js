@@ -21,9 +21,7 @@ function createHost() {
   frameEl.setAttribute('scrolling', 'no');
   frameEl.style.cssText = `
     width: 100%;
-    height: auto;
-    min-height: 120px;
-    max-height: calc(100vh - 120px);
+    height: 100%;
     border: none;
     border-radius: 12px;
     background: transparent;
