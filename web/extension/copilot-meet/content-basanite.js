@@ -3,8 +3,6 @@
 // and listen for probe actions coming from the Meet overlay and relay them
 // back into the page.
 
-const APP_MESSAGE_TYPES = ['BASANITE_COPILOT_TICK', 'BASANITE_COPILOT_ENABLE_OVERLAY'];
-
 window.addEventListener('message', (event) => {
   if (event.source !== window) return;
   const msg = event.data;
@@ -17,6 +15,11 @@ window.addEventListener('message', (event) => {
 
   if (msg.type === 'BASANITE_COPILOT_ENABLE_OVERLAY') {
     chrome.storage.local.set({ overlayEnabled: true });
+    return;
+  }
+
+  if (msg.type === 'BASANITE_COPILOT_DISABLE_OVERLAY') {
+    chrome.storage.local.remove(['copilotData', 'overlayEnabled']);
     return;
   }
 });
