@@ -4478,24 +4478,38 @@ async def copilot_create_bot(
             status_code=400,
             detail="Bot-join currently supports Google Meet links only (https://meet.google.com/xxx-xxxx-xxx)",
         )
+    # Strip Google tracking/redirect query params (e.g. ?pli=1) before sending
+    # to Recall — the bot only needs the bare meeting code.
+    clean_url = meeting_url.split("?")[0]
 
     public_url = (os.getenv("PIPELINE_PUBLIC_URL", "") or "").rstrip("/")
     if not public_url.startswith("https://"):
         raise HTTPException(status_code=500, detail="PIPELINE_PUBLIC_URL not configured")
 
+    # meeting_captions is Recall's free, native-captions provider and is the
+    # most reliable way to get real-time transcript events on Google Meet.
+    # recallai_streaming can be opted back in via RECALL_TRANSCRIPTION_PROVIDER.
+    provider = (os.getenv("RECALL_TRANSCRIPTION_PROVIDER", "meeting_captions") or "meeting_captions").lower()
+    if provider == "recallai_streaming":
+        transcript_config = {
+            "provider": {
+                "recallai_streaming": {
+                    "mode": "prioritize_low_latency",
+                    "language_code": "en",
+                }
+            },
+            "diarization": {"use_separate_streams_when_available": True},
+        }
+    else:
+        transcript_config = {
+            "provider": {"meeting_captions": {}},
+        }
+
     payload = {
-        "meeting_url": meeting_url,
+        "meeting_url": clean_url,
         "bot_name": "Basanite Copilot (transcribing)",
         "recording_config": {
-            "transcript": {
-                "provider": {
-                    "recallai_streaming": {
-                        "mode": "prioritize_low_latency",
-                        "language_code": "en",
-                    }
-                },
-                "diarization": {"use_separate_streams_when_available": True},
-            },
+            "transcript": transcript_config,
             "realtime_endpoints": [
                 {
                     "type": "webhook",
@@ -4505,6 +4519,7 @@ async def copilot_create_bot(
             ],
         },
     }
+    print(f"  [copilot] creating bot with provider={provider}, url={clean_url}")
     async with httpx.AsyncClient(timeout=30.0) as http:
         resp = await http.post(f"{_recall_base()}/bot/", headers=_recall_headers(), json=payload)
     if resp.status_code not in (200, 201):
@@ -4522,9 +4537,10 @@ async def copilot_create_bot(
     if not bot_id:
         raise HTTPException(status_code=502, detail="Failed to send the bot to the call")
 
+    print(f"  [copilot] recall bot created: {bot_id}")
     update_copilot_session(
         session_id,
-        bot={"id": bot_id, "meeting_url": meeting_url, "status": "joining"},
+        bot={"id": bot_id, "meeting_url": clean_url, "status": "joining"},
     )
     return {"bot_id": bot_id, "cached": False}
 
@@ -4618,7 +4634,12 @@ async def copilot_bot_webhook(request: Request):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON")
 
-    if payload.get("event") != "transcript.data":
+    event = payload.get("event", "")
+    if event == "transcript.failed":
+        print(f"  [copilot] recall transcript.failed: {payload.get('data')}")
+        return {"ok": True}
+    if event != "transcript.data":
+        print(f"  [copilot] recall bot webhook ignored event: {event}")
         return {"ok": True, "ignored": True}
 
     data = (payload.get("data") or {})
@@ -4635,6 +4656,7 @@ async def copilot_bot_webhook(request: Request):
 
     session = get_copilot_session_by_bot_id(bot_id)
     if not session or session.get("status") != "live":
+        print(f"  [copilot] recall bot webhook no live session for bot {bot_id}")
         return {"ok": True, "no_session": True}
     if len(session.get("transcript") or []) >= _COPILOT_MAX_TRANSCRIPT_SEGMENTS:
         return {"ok": True, "truncated": True}
@@ -4647,12 +4669,29 @@ async def copilot_bot_webhook(request: Request):
     }
     if speaker:
         segment["speaker"] = speaker
+
+    # Provider-specific timestamp handling:
+    # - recallai_streaming gives per-word timestamps.
+    # - meeting_captions gives one timestamp for the whole utterance.
+    # If neither is present, fall back to the time since this session started.
     first = words[0] if words and isinstance(words[0], dict) else {}
     rel = ((first.get("start_timestamp") or {}).get("relative"))
+    if not isinstance(rel, (int, float)) or not (0 <= rel < 86400):
+        first_word = inner.get("words", [])
+        if isinstance(first_word, list) and first_word:
+            rel = ((first_word[0].get("start_timestamp") or {}).get("relative"))
+    if not isinstance(rel, (int, float)) or not (0 <= rel < 86400):
+        started_at = session.get("started_at")
+        if started_at:
+            try:
+                rel = (datetime.now(timezone.utc) - datetime.fromisoformat(str(started_at).replace("Z", "+00:00"))).total_seconds()
+            except Exception:
+                rel = None
     if isinstance(rel, (int, float)) and 0 <= rel < 86400:
         segment["elapsed_seconds"] = int(rel)
 
     append_copilot_transcript(session["id"], [segment])
+    print(f"  [copilot] appended transcript segment for bot {bot_id}: {text[:80]}")
     return {"ok": True}
 
 
