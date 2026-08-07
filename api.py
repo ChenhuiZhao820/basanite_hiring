@@ -4587,29 +4587,40 @@ async def _copilot_leave_bot(session_id: str, bot_id: str):
 
 
 def _verify_recall_signature(headers, body_bytes: bytes) -> bool:
-    """Svix-style verification of a Recall webhook using the workspace
-    verification secret (whsec_...). Fails closed when unconfigured."""
+    """Verify a Recall real-time or dashboard webhook.
+
+    New Recall accounts (created on/after 2025-12-15) use a workspace
+    verification secret and `webhook-*` headers. Legacy accounts and Svix
+    dashboard endpoints use `svix-*` headers. We accept either.
+    """
     import base64
 
-    secret = os.getenv("RECALL_WEBHOOK_SECRET", "")
-    if not secret:
+    secret = (
+        os.getenv("RECALL_WORKSPACE_VERIFICATION_SECRET", "")
+        or os.getenv("RECALL_WEBHOOK_SECRET", "")
+        or os.getenv("RECALL_SVIX_WEBHOOK_SECRET", "")
+    )
+    if not secret or not secret.startswith("whsec_"):
         return False
-    svix_id = headers.get("svix-id", "")
-    svix_timestamp = headers.get("svix-timestamp", "")
-    svix_signature = headers.get("svix-signature", "")
-    if not (svix_id and svix_timestamp and svix_signature):
+
+    msg_id = headers.get("webhook-id") or headers.get("svix-id") or ""
+    msg_timestamp = headers.get("webhook-timestamp") or headers.get("svix-timestamp") or ""
+    msg_signature = headers.get("webhook-signature") or headers.get("svix-signature") or ""
+    if not (msg_id and msg_timestamp and msg_signature):
         return False
+
     try:
-        ts = int(svix_timestamp)
+        ts = int(msg_timestamp)
         now = int(datetime.now(timezone.utc).timestamp())
         if abs(now - ts) > 300:
             return False
         key = base64.b64decode(secret.removeprefix("whsec_"))
-        signed = f"{svix_id}.{svix_timestamp}.".encode("utf-8") + body_bytes
+        signed = f"{msg_id}.{msg_timestamp}.".encode("utf-8") + body_bytes
         expected = base64.b64encode(hmac.new(key, signed, hashlib.sha256).digest()).decode()
     except Exception:
         return False
-    for candidate in svix_signature.split(" "):
+
+    for candidate in msg_signature.split(" "):
         _, _, sig = candidate.partition(",")
         if sig and hmac.compare_digest(sig, expected):
             return True
