@@ -14,7 +14,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -3844,14 +3844,13 @@ async def copilot_probe_event_endpoint(
     return {"ok": True}
 
 
-@app.post("/copilot/sessions/{session_id}/wrapup")
-async def copilot_wrapup_endpoint(
-    session_id: str,
-    authorization: str | None = Header(default=None),
-):
-    """End the live phase and run the full Sonnet pass: proposed scores with
-    verbatim citations + synthesis draft, pending human review."""
-    _verify_internal(authorization)
+async def _run_copilot_wrapup(session_id: str) -> dict:
+    """End the live phase and run the full Sonnet pass.
+
+    Shared by the manual wrap-up endpoint and the bot-leave webhook so the
+    interview is auto-wrapped when the call ends without the hirer clicking
+    "End interview".
+    """
     from core.db import update_copilot_session, list_copilot_probe_events
     from core.adherence import compute_plan_adherence
     from agents.copilot_score import generate_proposed_review
@@ -3896,6 +3895,17 @@ async def copilot_wrapup_endpoint(
 
     update_copilot_session(session_id, proposed_review=review, status="review")
     return {"proposed_review": review, "plan_adherence": adherence, "cached": False}
+
+
+@app.post("/copilot/sessions/{session_id}/wrapup")
+async def copilot_wrapup_endpoint(
+    session_id: str,
+    authorization: str | None = Header(default=None),
+):
+    """End the live phase and run the full Sonnet pass: proposed scores with
+    verbatim citations + synthesis draft, pending human review."""
+    _verify_internal(authorization)
+    return await _run_copilot_wrapup(session_id)
 
 
 class CopilotReviewScore(BaseModel):
@@ -4146,7 +4156,11 @@ async def copilot_create_bot(
                 {
                     "type": "webhook",
                     "url": f"{public_url}/copilot/bot-webhook",
-                    "events": ["transcript.data"],
+                    "events": [
+                        "transcript.data",
+                        "participant_events.join",
+                        "participant_events.leave",
+                    ],
                 }
             ],
         },
@@ -4259,13 +4273,45 @@ def _verify_recall_signature(headers, body_bytes: bytes) -> bool:
     return False
 
 
-@app.post("/copilot/bot-webhook")
-async def copilot_bot_webhook(request: Request):
-    """Recall real-time transcript ingestion (public endpoint, signed).
+def _is_bot_participant(session: dict, participant: dict) -> bool:
+    """Match a Recall participant to the Basanite bot for this session."""
+    bot = _coerce_json_field(session.get("bot")) or {}
+    name = str(participant.get("name") or "").strip()
+    if not name:
+        return False
+    # Match by stored participant id if we've seen a join event.
+    if "participant_id" in bot and participant.get("id") is not None:
+        return str(participant["id"]) == str(bot["participant_id"])
+    # Fallback to the bot name we configured.
+    return name.startswith("Basanite Copilot") or name == bot.get("name")
 
-    Each transcript.data event is one diarized utterance; we append it as a
-    speaker-labelled transcript segment on the bot's session. Return 2xx
-    fast — Recall retries slow responses.
+
+async def _auto_wrapup_bot_session(session_id: str):
+    """Background wrap-up triggered when the bot leaves the call."""
+    try:
+        from core.db import get_copilot_session
+
+        session = get_copilot_session(session_id)
+        if not session or session.get("status") != "live":
+            print(f"  [copilot] auto wrap-up skipped for {session_id} (status={session.get('status')})")
+            return
+
+        await _run_copilot_wrapup(session_id)
+        print(f"  [copilot] auto wrap-up completed for {session_id}")
+    except Exception as e:
+        print(f"  [copilot] auto wrap-up failed for {session_id}: {type(e).__name__}: {e}")
+
+
+@app.post("/copilot/bot-webhook")
+async def copilot_bot_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks,
+):
+    """Recall real-time transcript / participant event ingestion.
+
+    Handles transcript.data, participant join/leave, and triggers automatic
+    wrap-up when the bot leaves the call so interviews don't stay "live"
+    when the hirer ends the Google Meet without clicking "End interview".
     """
     _rate_limit(request, bucket="copilot-bot-webhook", max_requests=1200, window_seconds=60)
     body_bytes = await request.body()
@@ -4278,64 +4324,93 @@ async def copilot_bot_webhook(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON")
 
     event = payload.get("event", "")
+    data = payload.get("data") or {}
+    bot_id = (data.get("bot") or {}).get("id") or ""
+    inner = data.get("data") or {}
+
+    if not bot_id:
+        return {"ok": True, "empty": True}
+
+    from core.db import get_copilot_session_by_bot_id, append_copilot_transcript, update_copilot_session
+
     if event == "transcript.failed":
         print(f"  [copilot] recall transcript.failed: {payload.get('data')}")
         return {"ok": True}
-    if event != "transcript.data":
-        print(f"  [copilot] recall bot webhook ignored event: {event}")
-        return {"ok": True, "ignored": True}
 
-    data = (payload.get("data") or {})
-    bot_id = ((data.get("bot") or {}).get("id")) or ""
-    inner = (data.get("data") or {})
-    words = inner.get("words") or []
-    text = " ".join(
-        str(w.get("text") or "").strip() for w in words if isinstance(w, dict)
-    ).strip()
-    if not bot_id or not text:
-        return {"ok": True, "empty": True}
+    if event == "transcript.data":
+        words = inner.get("words") or []
+        text = " ".join(
+            str(w.get("text") or "").strip() for w in words if isinstance(w, dict)
+        ).strip()
+        if not text:
+            return {"ok": True, "empty": True}
 
-    from core.db import get_copilot_session_by_bot_id, append_copilot_transcript
+        session = get_copilot_session_by_bot_id(bot_id)
+        if not session or session.get("status") != "live":
+            print(f"  [copilot] recall bot webhook no live session for bot {bot_id}")
+            return {"ok": True, "no_session": True}
+        if len(session.get("transcript") or []) >= _COPILOT_MAX_TRANSCRIPT_SEGMENTS:
+            return {"ok": True, "truncated": True}
 
-    session = get_copilot_session_by_bot_id(bot_id)
-    if not session or session.get("status") != "live":
-        print(f"  [copilot] recall bot webhook no live session for bot {bot_id}")
-        return {"ok": True, "no_session": True}
-    if len(session.get("transcript") or []) >= _COPILOT_MAX_TRANSCRIPT_SEGMENTS:
-        return {"ok": True, "truncated": True}
+        participant = inner.get("participant") or {}
+        speaker = str(participant.get("name") or "").strip()[:120]
+        segment: dict = {
+            "text": text[:_COPILOT_MAX_SEGMENT_CHARS],
+            "at": datetime.now(timezone.utc).isoformat(),
+        }
+        if speaker:
+            segment["speaker"] = speaker
 
-    participant = inner.get("participant") or {}
-    speaker = str(participant.get("name") or "").strip()[:120]
-    segment: dict = {
-        "text": text[:_COPILOT_MAX_SEGMENT_CHARS],
-        "at": datetime.now(timezone.utc).isoformat(),
-    }
-    if speaker:
-        segment["speaker"] = speaker
+        first = words[0] if words and isinstance(words[0], dict) else {}
+        rel = ((first.get("start_timestamp") or {}).get("relative"))
+        if not isinstance(rel, (int, float)) or not (0 <= rel < 86400):
+            if isinstance(inner.get("words"), list) and inner["words"]:
+                rel = ((inner["words"][0].get("start_timestamp") or {}).get("relative"))
+        if not isinstance(rel, (int, float)) or not (0 <= rel < 86400):
+            started_at = session.get("started_at")
+            if started_at:
+                try:
+                    rel = (datetime.now(timezone.utc) - datetime.fromisoformat(str(started_at).replace("Z", "+00:00"))).total_seconds()
+                except Exception:
+                    rel = None
+        if isinstance(rel, (int, float)) and 0 <= rel < 86400:
+            segment["elapsed_seconds"] = int(rel)
 
-    # Provider-specific timestamp handling:
-    # - recallai_streaming gives per-word timestamps.
-    # - meeting_captions gives one timestamp for the whole utterance.
-    # If neither is present, fall back to the time since this session started.
-    first = words[0] if words and isinstance(words[0], dict) else {}
-    rel = ((first.get("start_timestamp") or {}).get("relative"))
-    if not isinstance(rel, (int, float)) or not (0 <= rel < 86400):
-        first_word = inner.get("words", [])
-        if isinstance(first_word, list) and first_word:
-            rel = ((first_word[0].get("start_timestamp") or {}).get("relative"))
-    if not isinstance(rel, (int, float)) or not (0 <= rel < 86400):
-        started_at = session.get("started_at")
-        if started_at:
-            try:
-                rel = (datetime.now(timezone.utc) - datetime.fromisoformat(str(started_at).replace("Z", "+00:00"))).total_seconds()
-            except Exception:
-                rel = None
-    if isinstance(rel, (int, float)) and 0 <= rel < 86400:
-        segment["elapsed_seconds"] = int(rel)
+        append_copilot_transcript(session["id"], [segment])
+        print(f"  [copilot] appended transcript segment for bot {bot_id}: {text[:80]}")
+        return {"ok": True}
 
-    append_copilot_transcript(session["id"], [segment])
-    print(f"  [copilot] appended transcript segment for bot {bot_id}: {text[:80]}")
-    return {"ok": True}
+    if event == "participant_events.join":
+        session = get_copilot_session_by_bot_id(bot_id)
+        if not session or session.get("status") != "live":
+            return {"ok": True, "no_session": True}
+        participant = inner.get("participant") or {}
+        if _is_bot_participant(session, participant):
+            bot = _coerce_json_field(session.get("bot")) or {}
+            bot["status"] = "joined"
+            if participant.get("id") is not None:
+                bot["participant_id"] = participant["id"]
+            update_copilot_session(session["id"], bot=bot)
+            print(f"  [copilot] bot joined call: {bot_id}")
+        return {"ok": True}
+
+    if event == "participant_events.leave":
+        session = get_copilot_session_by_bot_id(bot_id)
+        if not session or session.get("status") != "live":
+            return {"ok": True, "no_session": True}
+        participant = inner.get("participant") or {}
+        if _is_bot_participant(session, participant):
+            bot = _coerce_json_field(session.get("bot")) or {}
+            bot["status"] = "left"
+            if participant.get("id") is not None:
+                bot["participant_id"] = participant["id"]
+            update_copilot_session(session["id"], bot=bot)
+            print(f"  [copilot] bot left call, auto wrap-up scheduled: {bot_id}")
+            background_tasks.add_task(_auto_wrapup_bot_session, session["id"])
+        return {"ok": True}
+
+    print(f"  [copilot] recall bot webhook ignored event: {event}")
+    return {"ok": True, "ignored": True}
 
 
 @app.get("/copilot/scribe-token")

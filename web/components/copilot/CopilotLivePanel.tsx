@@ -287,11 +287,16 @@ export function CopilotLivePanel({ roleId, sessionId }: Props) {
     return () => window.removeEventListener('message', onMessage)
   }, [probe, logProbeAction])
 
-  async function handleEnd() {
+  function beginEnding() {
     setPhase('ending')
     if (tickTimerRef.current) { clearInterval(tickTimerRef.current); tickTimerRef.current = null }
     if (clockTimerRef.current) { clearInterval(clockTimerRef.current); clockTimerRef.current = null }
     captureRef.current?.stop()
+    window.postMessage({ type: 'BASANITE_COPILOT_DISABLE_OVERLAY' }, '*')
+  }
+
+  async function handleEnd() {
+    beginEnding()
     try {
       // Wrap-up also tells the meeting bot to leave server-side.
       const res = await fetch(`/api/copilot/sessions/${sessionId}/wrapup`, { method: 'POST' })
@@ -303,6 +308,30 @@ export function CopilotLivePanel({ roleId, sessionId }: Props) {
       setPhase('live')
     }
   }
+
+  // Poll for session state changes while the interview is active. When the
+  // Google Meet ends without the hirer clicking "End interview", the backend
+  // sees the bot leave and triggers auto wrap-up; this loop picks that up and
+  // redirects to review once the proposed review is ready.
+  useEffect(() => {
+    if (phase !== 'live' && phase !== 'ending') return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/copilot/sessions/${sessionId}`)
+        const data = await res.json().catch(() => ({} as any))
+        const status = data.session?.status
+        if (status === 'review' || status === 'submitted') {
+          window.postMessage({ type: 'BASANITE_COPILOT_DISABLE_OVERLAY' }, '*')
+          router.push(`/dashboard/roles/${roleId}/copilot/${sessionId}/review`)
+        } else if (status === 'wrapup' && phase === 'live') {
+          beginEnding()
+        }
+      } catch {
+        // Polling is best-effort; the next tick or user click can still end it.
+      }
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [phase, sessionId, roleId, router])
 
   if (phase === 'loading') {
     return <p className="text-sm text-basanite-400 dark:text-earth-500">Loading session…</p>

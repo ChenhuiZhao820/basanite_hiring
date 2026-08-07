@@ -221,7 +221,7 @@ class TestBotWebhook:
         assert bot_client.captured["appended"] is None
 
     def test_non_transcript_events_ignored(self, bot_client):
-        body = json.dumps({"event": "participant_events.join", "data": {}}).encode()
+        body = json.dumps({"event": "participant_events.update", "data": {"bot": {"id": _BOT_ID}}}).encode()
         r = bot_client.post("/copilot/bot-webhook", content=body, headers=_sign(body))
         assert r.status_code == 200
         assert r.json()["ignored"] is True
